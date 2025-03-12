@@ -1,0 +1,52 @@
+[
+    {
+        "Event": "Dynamite #1",
+        "Number": "1",
+        "Header": "",
+        "Participants": "Kenny Omega vs. Will Ospreay",
+        "Result": "Kenny Omega vs. Will Ospreay ended in a 30 minute time limit draw",
+        "Time": "30:00",
+        "Championship": "",
+        "Hidden": ""
+    },
+    {
+        "Event": "Dynamite #1",
+        "Number": "2",
+        "Header": "",
+        "Participants": "FTR (Cash Wheeler and Dax Harwood) vs. The Learning Tree (Big Bill and Bryan Keith)",
+        "Result": "The Learning Tree def. FTR by pinfall",
+        "Time": "12:27",
+        "Championship": "",
+        "Hidden": ""
+    },
+    {
+        "Event": "Dynamite #1",
+        "Number": "4",
+        "Header": "AEW Women&apos;s World Championship",
+        "Participants": "Meriah May \u00a9 vs. Thunder Rosa",
+        "Result": "Meriah May \u00a9 def. Thunder Rosa by pinfall to retain the AEW Women&apos;s World Championship",
+        "Time": "10:09",
+        "Championship": "AEW Women's World Championship",
+        "Hidden": ""
+    },
+    {
+        "Event": "Dynamite #1",
+        "Number": "3",
+        "Header": "",
+        "Participants": "Darby Allin vs. Wheeler Yuta",
+        "Result": "Darby Allin def. Wheeler Yuta by pinfall",
+        "Time": "13:38",
+        "Championship": "",
+        "Hidden": ""
+    },
+    {
+        "Event": "Dynamite #1",
+        "Number": "5",
+        "Header": "Main Event - Tag-Team Grudge Match",
+        "Participants": "The Death Riders (Jon Moxley and Claudio Castagnoli) vs. Adam Copeland and Jay White",
+        "Result": "The Death Riders def. Adam Copeland and Jay White by knockout",
+        "Time": "21:25",
+        "Championship": "",
+        "Hidden": ""
+    }
+]
