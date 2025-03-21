@@ -21,6 +21,7 @@ SlamSim! empowers you to craft and oversee your very own wrestling promotion wit
    - [Preferences and Content](#preferences-and-content)
    - [Adding Data](#adding-data)
    - [Running](#running)
+-   [The Future](#the-future)
 -   [Contributing](#contributing)
 
 ## About
@@ -127,7 +128,7 @@ All preferences and content are managed using JSON files located in the `data` d
    - **tagteams**: `Name, Wins, Losses, Draws, Status, Division, Location, Weight, Alignment, Music, Members, Faction, Manager, Moves, Belt, Awards`
    - **wrestlers**: `Name, Singles_Wins, Singles_Losses, Singles_Draws, Tag_Wins, Tag_Losses, Tag_Draws, Status, Division, Nickname, Location, Height, Weight, DOB, Alignment, Music, Team, Faction, Manager, Moves, Belt, Awards, Real_Name, Start_Date, Salary`
 
-### Suggestions for Adding Data
+### Adding Data
 
 It's recommended to add your data in the following order for optimal organization:
 
@@ -196,6 +197,15 @@ You can also choose to only build certain elements, such as 'wrestlers'.  The va
 ```bash
 python bin/gen_wrestlers.py
 ```
+
+## The Future
+
+SlamSim! is still in it's infancy.  Here are some possible future features that may be added.
+
+* More prefs
+* Console or graphical UI for adding content
+* AI match writer
+* Automatic tracking of wins/losses/draws
 
 ## Contributing
 
