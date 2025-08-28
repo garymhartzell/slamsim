@@ -10,25 +10,11 @@ __pycache__/
 .Python
 env/
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs-info/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.tox/
-*.egg
 
 # Virtual environment
 slam_dev/
+slam_env_linux/
 .venv/ # common alternative
 env/ # common alternative
 
@@ -36,8 +22,6 @@ env/ # common alternative
 *.manifest
 *.spec
 
-# Jupyter Notebook
-.ipynb_checkpoints/
 
 # Environments (VS Code, etc.)
 .env
@@ -51,10 +35,11 @@ tmp/
 # Log files
 *.log
 
-# Database files (if applicable)
-*.sqlite
-*.db
-
 # Configuration files (if they contain sensitive data)
 config.ini
 secrets.json
+.aider*
+
+# Temporary
+bin_old/
+
