@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Preferences</title>
+</head>
+<body>
+    <h1>General Preferences</h1>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('prefs.general_prefs') }}">General Preferences</a>
+    </nav>
+    <hr>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flashes">
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('prefs.general_prefs') }}">
+        <div>
+            <label for="league_name">League Name:</label><br>
+            <input type="text" id="league_name" name="league_name" value="{{ prefs.league_name }}" size="50">
+        </div>
+        <br>
+        <div>
+            <label for="league_short">League Short Name (Abbreviation):</label><br>
+            <input type="text" id="league_short" name="league_short" value="{{ prefs.league_short }}" size="10">
+        </div>
+        <br>
+        <button type="submit">Save Preferences</button>
+    </form>
+</body>
+</html>
