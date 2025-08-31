@@ -1,0 +1,38 @@
+{% extends "_base.html" %}
+
+{% block title %}Wrestler List{% endblock %}
+
+{% block content %}
+    <h1>Wrestler List</h1>
+    <p><a href="{{ url_for('wrestlers.create_wrestler') }}">Create New Wrestler</a></p>
+
+    {% if wrestlers %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Division</th>
+                    <th>Alignment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for wrestler in wrestlers %}
+                <tr>
+                    <td>{{ wrestler.Name }}</td>
+                    <td>{{ wrestler.Status }}</td>
+                    <td>{{ wrestler.Division }}</td>
+                    <td>{{ wrestler.Alignment }}</td>
+                    <td>
+                        <a href="{{ url_for('wrestlers.view_wrestler', wrestler_name=wrestler.Name) }}">View</a> |
+                        <a href="{{ url_for('wrestlers.edit_wrestler', wrestler_name=wrestler.Name) }}">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No wrestlers found.</p>
+    {% endif %}
+{% endblock %}

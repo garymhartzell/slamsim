@@ -1,0 +1,51 @@
+{% extends "_base.html" %}
+
+{% block title %}View Tag-Team: {{ tagteam.Name }}{% endblock %}
+
+{% block content %}
+    <h1>Tag-Team Details: {{ tagteam.Name }}</h1>
+    
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ tagteam.Name }}</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Status:</strong> {{ tagteam.Status }}</li>
+                <li class="list-group-item"><strong>Members:</strong> 
+                    {% if tagteam.Members %}
+                        {{ tagteam.Members | join(', ') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Wins:</strong> {{ tagteam.Wins }}</li>
+                <li class="list-group-item"><strong>Losses:</strong> {{ tagteam.Losses }}</li>
+                <li class="list-group-item"><strong>Draws:</strong> {{ tagteam.Draws }}</li>
+                <li class="list-group-item"><strong>Division:</strong> {{ tagteam.Division }}</li>
+                <li class="list-group-item"><strong>Location:</strong> {{ tagteam.Location }}</li>
+                <li class="list-group-item"><strong>Weight:</strong> {{ tagteam.Weight }}</li>
+                <li class="list-group-item"><strong>Alignment:</strong> {{ tagteam.Alignment }}</li>
+                <li class="list-group-item"><strong>Music:</strong> {{ tagteam.Music }}</li>
+                <li class="list-group-item"><strong>Faction:</strong> {{ tagteam.Faction }}</li>
+                <li class="list-group-item"><strong>Manager:</strong> {{ tagteam.Manager }}</li>
+                <li class="list-group-item"><strong>Moves:</strong> 
+                    {% if tagteam.Moves %}
+                        {{ tagteam.Moves | join(', ') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Belt:</strong> {{ tagteam.Belt }}</li>
+                <li class="list-group-item"><strong>Awards:</strong> 
+                    {% if tagteam.Awards %}
+                        {{ tagteam.Awards | join(', ') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <a href="{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-warning">Edit Tag-Team</a>
+    <a href="{{ url_for('tagteams.list_tagteams') }}" class="btn btn-secondary">Back to List</a>
+{% endblock %}
