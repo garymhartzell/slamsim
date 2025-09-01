@@ -1,0 +1,43 @@
+{% extends "_base.html" %}
+
+{% block title %}Events List{% endblock %}
+
+{% block content %}
+    <h1>Events List</h1>
+    <a href="{{ url_for('events.create_event') }}" class="btn btn-primary mb-3">Create New Event</a>
+
+    {% if events %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Venue</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td>{{ event.Event_Name }}</td>
+                        <td>{{ event.Date }}</td>
+                        <td>{{ event.Status }}</td>
+                        <td>{{ event.Venue }}</td>
+                        <td>{{ event.Location }}</td>
+                        <td>
+                            <a href="{{ url_for('events.view_event', event_name=event.Event_Name) }}" class="btn btn-sm btn-info">View</a>
+                            <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form action="{{ url_for('events.delete_event_route', event_name=event.Event_Name) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete event \\'{{ event.Event_Name }}\\'?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No events found. Start by <a href="{{ url_for('events.create_event') }}">creating a new event</a>.</p>
+    {% endif %}
+{% endblock %}

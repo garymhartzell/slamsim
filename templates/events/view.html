@@ -1,0 +1,22 @@
+{% extends "_base.html" %}
+
+{% block title %}Event: {{ event.Event_Name }}{% endblock %}
+
+{% block content %}
+    <h1>Event: {{ event.Event_Name }}</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ event.Event_Name }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ event.Subtitle }}</h6>
+            <p class="card-text"><strong>Status:</strong> {{ event.Status }}</p>
+            <p class="card-text"><strong>Date:</strong> {{ event.Date }}</p>
+            <p class="card-text"><strong>Venue:</strong> {{ event.Venue }}</p>
+            <p class="card-text"><strong>Location:</strong> {{ event.Location }}</p>
+            <p class="card-text"><strong>Broadcasters:</strong> {{ event.Broadcasters }}</p>
+            <hr>
+            <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-warning">Edit Event</a>
+            <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+{% endblock %}

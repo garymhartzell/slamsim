@@ -1,32 +1,11 @@
 [
     {
-        "Name": "Dynamite #1",
-        "Subtitle": "Fight for the Fallen",
-        "Summary_File": "dynamite-1.html",
-        "Status": "Past",
-        "Date": "2025-01-01",
-        "Venue": "Harrah&apos;s Cherokee Center",
-        "Location": "Asheville, North Carolina",
-        "Broadcasters": "Excalibur, Taz, Tony Schiavone"
-    },
-    {
-        "Name": "Collision #1",
+        "Event_Name": "Dynamite #100",
         "Subtitle": "",
-        "Summary_File": "collision-1.html",
         "Status": "Future",
-        "Date": "2025-01-04",
-        "Venue": "Dorton Arena",
-        "Location": "Raleigh, South Carolina",
-        "Broadcasters": "Tony Schiavone, Nigel McGuiness"
-    },
-    {
-        "Name": "Dynamite #2",
-        "Subtitle": "",
-        "Summary_File": "dynamite-2.html",
-        "Status": "Future",
-        "Date": "2025-01-08",
-        "Venue": "Daley's Place",
-        "Location": "Jacksonville, Florida",
-        "Broadcasters": "Excalibur, Taz, Tony Schiavone"
+        "Date": "2025-09-03",
+        "Venue": "Dailey's Place",
+        "Location": "Jacksonville, FL, USA",
+        "Broadcasters": "Excalibur, Taz"
     }
 ]
