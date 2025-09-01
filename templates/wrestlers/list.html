@@ -22,7 +22,7 @@
                 <tr>
                     <td>{{ wrestler.Name }}</td>
                     <td>{{ wrestler.Status }}</td>
-                    <td>{{ wrestler.Division }}</td>
+                    <td>{{ wrestler.DivisionName }}</td>
                     <td>{{ wrestler.Alignment }}</td>
                     <td>
                         <a href="{{ url_for('wrestlers.view_wrestler', wrestler_name=wrestler.Name) }}">View</a> |

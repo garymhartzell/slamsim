@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.wrestlers import load_wrestlers, get_wrestler_by_name, add_wrestler, update_wrestler, delete_wrestler
+from src import divisions # Import divisions
 import html # Import the html module for sanitization
 
 wrestlers_bp = Blueprint('wrestlers', __name__, url_prefix='/wrestlers')
@@ -42,17 +43,24 @@ def _get_form_data(form):
 @wrestlers_bp.route('/')
 def list_wrestlers():
     """Displays a list of all wrestlers."""
-    wrestlers = load_wrestlers()
-    return render_template('wrestlers/list.html', wrestlers=wrestlers)
+    wrestlers_list = load_wrestlers()
+    for wrestler in wrestlers_list:
+        wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
+    return render_template('wrestlers/list.html', wrestlers=wrestlers_list)
 
 @wrestlers_bp.route('/create', methods=['GET', 'POST'])
 def create_wrestler():
     """Handles creation of a new wrestler."""
+    all_divisions = divisions.get_all_division_ids_and_names()
     if request.method == 'POST':
         wrestler_data = _get_form_data(request.form)
         if not wrestler_data.get('Name'):
             flash('Wrestler Name is required.', 'error')
-            return render_template('wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, edit_mode=False)
+            return render_template('wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
+        
+        if wrestler_data.get('Division') not in [d['ID'] for d in all_divisions]:
+            flash('Invalid Division selected.', 'error')
+            return render_template('wrestlers/form.html', wrestler=wrestler_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
 
         if add_wrestler(wrestler_data):
             flash(f'Wrestler "{wrestler_data["Name"]}" created successfully!', 'success')
@@ -61,7 +69,7 @@ def create_wrestler():
             flash(f'Wrestler with the name "{wrestler_data["Name"]}" already exists. Please choose a unique name.', 'error')
     
     # GET request or failed POST
-    return render_template('wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, edit_mode=False)
+    return render_template('wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
 
 @wrestlers_bp.route('/edit/<string:wrestler_name>', methods=['GET', 'POST'])
 def edit_wrestler(wrestler_name):
@@ -71,12 +79,18 @@ def edit_wrestler(wrestler_name):
         flash(f'Wrestler "{wrestler_name}" not found.', 'error')
         return redirect(url_for('wrestlers.list_wrestlers'))
 
+    all_divisions = divisions.get_all_division_ids_and_names()
+
     if request.method == 'POST':
         updated_data = _get_form_data(request.form)
         if not updated_data.get('Name'):
             flash('Wrestler Name is required.', 'error')
             # Retain current wrestler data on error for user convenience
-            return render_template('wrestlers/form.html', wrestler=wrestler, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, edit_mode=True)
+            return render_template('wrestlers/form.html', wrestler=wrestler, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
+        
+        if updated_data.get('Division') not in [d['ID'] for d in all_divisions]:
+            flash('Invalid Division selected.', 'error')
+            return render_template('wrestlers/form.html', wrestler=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
 
         # The wrestler_name might have been changed in the form, so pass the original name for lookup
         if update_wrestler(wrestler_name, updated_data):
@@ -92,7 +106,7 @@ def edit_wrestler(wrestler_name):
                 updated_data_display['Awards'] = updated_data_display['Awards'].replace('|', '\n')
             if 'Salary' in updated_data_display and updated_data_display['Salary']:
                 updated_data_display['Salary'] = updated_data_display['Salary'].replace('|', '\n')
-            return render_template('wrestlers/form.html', wrestler=updated_data_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, edit_mode=True)
+            return render_template('wrestlers/form.html', wrestler=updated_data_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
 
     # GET request
     # Format multiline fields for textarea display
@@ -104,7 +118,7 @@ def edit_wrestler(wrestler_name):
     if 'Salary' in wrestler_display and wrestler_display['Salary']:
         wrestler_display['Salary'] = wrestler_display['Salary'].replace('|', '\n')
 
-    return render_template('wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, edit_mode=True)
+    return render_template('wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
 
 @wrestlers_bp.route('/view/<string:wrestler_name>')
 def view_wrestler(wrestler_name):
@@ -113,6 +127,8 @@ def view_wrestler(wrestler_name):
     if not wrestler:
         flash(f'Wrestler "{wrestler_name}" not found.', 'error')
         return redirect(url_for('wrestlers.list_wrestlers'))
+    
+    wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
     return render_template('wrestlers/view.html', wrestler=wrestler)
 
 @wrestlers_bp.route('/delete/<string:wrestler_name>', methods=['POST'])

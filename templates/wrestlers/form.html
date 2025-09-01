@@ -38,7 +38,12 @@
         </select><br>
 
         <label for="division">Division:</label>
-        <input type="text" id="division" name="division" value="{{ wrestler.Division | default('') }}"><br>
+        <select id="division" name="division" required>
+            <option value="">-- Select Division --</option>
+            {% for div in divisions %}
+                <option value="{{ div.ID }}" {% if wrestler.Division == div.ID %}selected{% endif %}>{{ div.Name }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="nickname">Nickname:</label>
         <input type="text" id="nickname" name="nickname" value="{{ wrestler.Nickname | default('') }}"><br>

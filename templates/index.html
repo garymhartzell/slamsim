@@ -5,4 +5,10 @@
 {% block content %}
     <h1>SlamSim! Main Menu</h1>
     <p>Welcome to SlamSim!</p>
+    <h2>Management</h2>
+    <ul>
+        <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
+        <li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag Teams</a></li>
+        <li><a href="{{ url_for('divisions.list_divisions') }}">Divisions</a></li>
+    </ul>
 {% endblock %}

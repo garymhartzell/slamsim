@@ -70,7 +70,12 @@
         </div>
         <div class="mb-3">
             <label for="Division" class="form-label">Division</label>
-            <input type="text" class="form-control" id="Division" name="Division" value="{{ tagteam.Division | default('') }}">
+            <select class="form-select" id="Division" name="Division" required>
+                <option value="">-- Select Division --</option>
+                {% for div in divisions %}
+                    <option value="{{ div.ID }}" {% if tagteam.Division == div.ID %}selected{% endif %}>{{ div.Name }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="mb-3">
             <label for="Location" class="form-label">Location</label>

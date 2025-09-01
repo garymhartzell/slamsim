@@ -1,0 +1,50 @@
+{% extends "_base.html" %}
+
+{% block title %}Divisions List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Divisions</h2>
+        <a href="{{ url_for('divisions.create_division') }}" class="btn btn-primary">Add New Division</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for division in divisions %}
+            <tr>
+                <td>{{ division.ID }}</td>
+                <td><a href="{{ url_for('divisions.view_division', division_id=division.ID) }}">{{ division.Name }}</a></td>
+                <td>{{ division.Status }}</td>
+                <td>
+                    <a href="{{ url_for('divisions.edit_division', division_id=division.ID) }}" class="btn btn-sm btn-warning">Edit</a>
+                    <form action="{{ url_for('divisions.delete_division_route', division_id=division.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this division?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">No divisions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

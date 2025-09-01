@@ -23,6 +23,7 @@
                 <th>Wins</th>
                 <th>Losses</th>
                 <th>Draws</th>
+                <th>Division</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -35,6 +36,7 @@
                     <td>{{ tagteam.Wins }}</td>
                     <td>{{ tagteam.Losses }}</td>
                     <td>{{ tagteam.Draws }}</td>
+                    <td>{{ tagteam.DivisionName }}</td>
                     <td>
                         <a href="{{ url_for('tagteams.view_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-info btn-sm">View</a>
                         <a href="{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-warning btn-sm">Edit</a>
@@ -45,7 +47,7 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="7">No tag-teams found.</td>
+                    <td colspan="8">No tag-teams found.</td>
                 </tr>
             {% endfor %}
         </tbody>

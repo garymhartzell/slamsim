@@ -4,6 +4,7 @@ from src.tagteams import (
     add_tagteam, update_tagteam, delete_tagteam,
     get_wrestler_names, get_active_members_status
 )
+from src import divisions # Import divisions
 from werkzeug.utils import escape
 
 tagteams_bp = Blueprint('tagteams', __name__, url_prefix='/tagteams')
@@ -49,13 +50,17 @@ def _get_form_data(form):
 @tagteams_bp.route('/')
 def list_tagteams():
     """Displays a list of all tag-teams."""
-    tagteams = load_tagteams()
-    return render_template('tagteams/list.html', tagteams=tagteams)
+    tagteams_list = load_tagteams()
+    for team in tagteams_list:
+        team['DivisionName'] = divisions.get_division_name_by_id(team.get('Division', ''))
+    return render_template('tagteams/list.html', tagteams=tagteams_list)
 
 @tagteams_bp.route('/create', methods=['GET', 'POST'])
 def create_tagteam():
     """Handles creation of a new tag-team."""
     wrestler_names = get_wrestler_names()
+    all_divisions = divisions.get_all_division_ids_and_names()
+
     if request.method == 'POST':
         tagteam_data = _get_form_data(request.form)
         
@@ -66,6 +71,7 @@ def create_tagteam():
                                    status_options=STATUS_OPTIONS,
                                    alignment_options=ALIGNMENT_OPTIONS,
                                    wrestler_names=wrestler_names,
+                                   divisions=all_divisions,
                                    edit_mode=False)
         
         if not request.form.get('Member1') or not request.form.get('Member2'):
@@ -74,7 +80,14 @@ def create_tagteam():
                                    status_options=STATUS_OPTIONS,
                                    alignment_options=ALIGNMENT_OPTIONS,
                                    wrestler_names=wrestler_names,
+                                   divisions=all_divisions,
                                    edit_mode=False)
+
+        if tagteam_data.get('Division') not in [d['ID'] for d in all_divisions]:
+            flash('Invalid Division selected.', 'danger')
+            return render_template('tagteams/form.html', tagteam=tagteam_data,
+                                   status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS,
+                                   wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=False)
 
         # Check for duplicate name
         if get_tagteam_by_name(tagteam_data['Name']):
@@ -83,6 +96,7 @@ def create_tagteam():
                                    status_options=STATUS_OPTIONS,
                                    alignment_options=ALIGNMENT_OPTIONS,
                                    wrestler_names=wrestler_names,
+                                   divisions=all_divisions,
                                    edit_mode=False)
         
         add_tagteam(tagteam_data)
@@ -93,6 +107,7 @@ def create_tagteam():
                            status_options=STATUS_OPTIONS,
                            alignment_options=ALIGNMENT_OPTIONS,
                            wrestler_names=wrestler_names,
+                           divisions=all_divisions,
                            edit_mode=False)
 
 @tagteams_bp.route('/edit/<string:tagteam_name>', methods=['GET', 'POST'])
@@ -104,6 +119,7 @@ def edit_tagteam(tagteam_name):
         return redirect(url_for('tagteams.list_tagteams'))
 
     wrestler_names = get_wrestler_names()
+    all_divisions = divisions.get_all_division_ids_and_names()
 
     if request.method == 'POST':
         updated_data = _get_form_data(request.form)
@@ -114,6 +130,7 @@ def edit_tagteam(tagteam_name):
                                    status_options=STATUS_OPTIONS,
                                    alignment_options=ALIGNMENT_OPTIONS,
                                    wrestler_names=wrestler_names,
+                                   divisions=all_divisions,
                                    edit_mode=True)
         
         if not request.form.get('Member1') or not request.form.get('Member2'):
@@ -122,7 +139,14 @@ def edit_tagteam(tagteam_name):
                                    status_options=STATUS_OPTIONS,
                                    alignment_options=ALIGNMENT_OPTIONS,
                                    wrestler_names=wrestler_names,
+                                   divisions=all_divisions,
                                    edit_mode=True)
+
+        if updated_data.get('Division') not in [d['ID'] for d in all_divisions]:
+            flash('Invalid Division selected.', 'danger')
+            return render_template('tagteams/form.html', tagteam=updated_data,
+                                   status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS,
+                                   wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=True)
 
         # Check for duplicate name only if the name has changed
         if updated_data['Name'] != tagteam_name and get_tagteam_by_name(updated_data['Name']):
@@ -131,6 +155,7 @@ def edit_tagteam(tagteam_name):
                                    status_options=STATUS_OPTIONS,
                                    alignment_options=ALIGNMENT_OPTIONS,
                                    wrestler_names=wrestler_names,
+                                   divisions=all_divisions,
                                    edit_mode=True)
 
         update_tagteam(tagteam_name, updated_data)
@@ -148,6 +173,7 @@ def edit_tagteam(tagteam_name):
                            status_options=STATUS_OPTIONS,
                            alignment_options=ALIGNMENT_OPTIONS,
                            wrestler_names=wrestler_names,
+                           divisions=all_divisions,
                            edit_mode=True)
 
 @tagteams_bp.route('/view/<string:tagteam_name>')
@@ -162,6 +188,7 @@ def view_tagteam(tagteam_name):
     tagteam['Members'] = tagteam.get('Members', '').split('|')
     tagteam['Moves'] = tagteam.get('Moves', '').split('|')
     tagteam['Awards'] = tagteam.get('Awards', '').split('|')
+    tagteam['DivisionName'] = divisions.get_division_name_by_id(tagteam.get('Division', ''))
 
     return render_template('tagteams/view.html', tagteam=tagteam)
 
