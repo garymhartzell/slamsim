@@ -15,8 +15,45 @@
             <p class="card-text"><strong>Location:</strong> {{ event.Location }}</p>
             <p class="card-text"><strong>Broadcasters:</strong> {{ event.Broadcasters }}</p>
             <hr>
-            <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-warning">Edit Event</a>
+            <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-warning mr-2">Edit Event</a>
             <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary">Back to List</a>
+
+            <h2 class="mt-4">Segments</h2>
+            <a href="{{ url_for('segments.create_segment', event_slug=event.Event_Name) }}" class="btn btn-primary mb-3">Add New Segment</a>
+
+            {% if segments %}
+                <ul class="list-group">
+                    {% for segment in segments %}
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">
+                                    {{ segment.position }}. {{ segment.type }}
+                                    {% if segment.header %}: {{ segment.header }}{% endif %}
+                                </h5>
+                                <small>
+                                    <a href="{{ url_for('segments.edit_segment', event_slug=event.Event_Name, position=segment.position) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    <form action="{{ url_for('segments.delete_segment_route', event_slug=event.Event_Name, position=segment.position) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete segment ' + {{ (segment.header | default('No Header')) | tojson }} + ' (Position: {{ segment.position }})?')">Delete</button>
+                                    </form>
+                                </small>
+                            </div>
+                            {% if segment.participants %}<p class="mb-1"><strong>Participants:</strong> {{ segment.participants }}</p>{% endif %}
+                            {% if segment.match_result %}<p class="mb-1"><strong>Result:</strong> {{ segment.match_result }}</p>{% endif %}
+                            {% if segment.match_time %}<p class="mb-1"><strong>Time:</strong> {{ segment.match_time }}</p>{% endif %}
+                            {% if segment.match_championship %}<p class="mb-1"><strong>Championship:</strong> {{ segment.match_championship }}</p>{% endif %}
+                            {% if segment.match_hidden %}<p class="mb-1 text-muted"><em>Match Hidden</em></p>{% endif %}
+                            {% if segment.summary_content %}
+                                <div class="card card-body bg-light mt-2">
+                                    <strong>Summary:</strong>
+                                    <p class="mb-0">{{ segment.summary_content }}</p>
+                                </div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No segments found for this event. <a href="{{ url_for('segments.create_segment', event_slug=event.Event_Name) }}">Add the first segment</a>.</p>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

@@ -1,0 +1,58 @@
+{% extends "_base.html" %}
+
+{% block title %}
+    {% if segment.position %}Edit Segment (Pos: {{ segment.position }}) for {{ event_slug }}{% else %}Create New Segment for {{ event_slug }}{% endif %}
+{% endblock %}
+
+{% block content %}
+    <h1>{% if segment.position %}Edit Segment (Pos: {{ segment.position }}){% else %}Create New Segment{% endif %} for {{ event_slug }}</h1>
+
+    <form method="POST" action="{{ url_for('segments.create_segment', event_slug=event_slug) if not segment.position else url_for('segments.edit_segment', event_slug=event_slug, position=original_position) }}">
+        <div class="form-group">
+            <label for="position">Position <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="position" name="position" value="{{ segment.position | default('') }}" required min="1">
+        </div>
+        <div class="form-group">
+            <label for="type">Type <span class="text-danger">*</span></label>
+            <select class="form-control" id="type" name="type" required>
+                <option value="">--Select Type--</option>
+                {% for seg_type in segment_type_options %}
+                    <option value="{{ seg_type }}" {% if segment.get('type', '') == seg_type %}selected{% endif %}>{{ seg_type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="header">Header</label>
+            <input type="text" class="form-control" id="header" name="header" value="{{ segment.header | default('') }}">
+        </div>
+        <div class="form-group">
+            <label for="participants">Participants (placeholder)</label>
+            <input type="text" class="form-control" id="participants" name="participants" value="{{ segment.participants | default('') }}">
+        </div>
+        <div class="form-group">
+            <label for="match_result">Match Result (placeholder)</label>
+            <input type="text" class="form-control" id="match_result" name="match_result" value="{{ segment.match_result | default('') }}">
+        </div>
+        <div class="form-group">
+            <label for="match_time">Match Time (MM:SS)</label>
+            <input type="text" class="form-control" id="match_time" name="match_time" value="{{ segment.match_time | default('') }}" pattern="^\d{2}:\d{2}$" placeholder="e.g., 05:30">
+        </div>
+        <div class="form-group">
+            <label for="match_championship">Match Championship (placeholder)</label>
+            <input type="text" class="form-control" id="match_championship" name="match_championship" value="{{ segment.match_championship | default('') }}">
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="match_hidden" name="match_hidden" {% if segment.match_hidden %}checked{% endif %}>
+            <label class="form-check-label" for="match_hidden">Match Hidden</label>
+        </div>
+        <div class="form-group">
+            <label for="summary_text">Summary Text</label>
+            <textarea class="form-control" id="summary_text" name="summary_text" rows="8">{{ summary_content | default('') }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            {% if segment.position %}Update Segment{% else %}Create Segment{% endif %}
+        </button>
+        <a href="{{ url_for('events.view_event', event_name=event_slug) }}" class="btn btn-secondary">Cancel</a>
+    </form>
+{% endblock %}

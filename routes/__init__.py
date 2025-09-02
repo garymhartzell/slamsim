@@ -3,5 +3,6 @@ from .prefs import prefs_bp
 from .wrestlers import wrestlers_bp
 from .tagteams import tagteams_bp
 from .events import events_bp
+from .segments import segments_bp
 
-__all__ = ['divisions_bp', 'prefs_bp', 'wrestlers_bp', 'tagteams_bp', 'events_bp']
+__all__ = ['divisions_bp', 'prefs_bp', 'wrestlers_bp', 'tagteams_bp', 'events_bp', 'segments_bp']

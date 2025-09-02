@@ -21,7 +21,7 @@
             <select class="form-control" id="status" name="status" required>
                 <option value="">--Select Status--</option>
                 {% for status in status_options %}
-                    <option value="{{ status }}" {% if event.Status | default('') == status %}selected{% endif %}>{{ status }}</option>
+                    <option value="{{ status }}" {% if event.get('Status', '') == status %}selected{% endif %}>{{ status }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -45,6 +45,9 @@
         <button type="submit" class="btn btn-primary">
             {% if event.Event_Name %}Update Event{% else %}Create Event{% endif %}
         </button>
-        <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ url_for('events.list_events') }}" class="btn btn-secondary mr-2">Cancel</a>
+        {% if event.Event_Name %}
+        <a href="{{ url_for('segments.create_segment', event_slug=event.Event_Name) }}" class="btn btn-info">Add New Segment</a>
+        {% endif %}
     </form>
 {% endblock %}

@@ -4,6 +4,7 @@ from routes.prefs import prefs_bp # Import the preferences blueprint
 from routes.wrestlers import wrestlers_bp # Import the wrestlers blueprint
 from routes.tagteams import tagteams_bp # Import the tagteams blueprint
 from routes.events import events_bp # Import the events blueprint
+from routes.segments import segments_bp # Import the segments blueprint
 
 app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = 'a_very_secret_key_for_flash_messages' # Required for flash messages
@@ -14,6 +15,7 @@ app.register_blueprint(prefs_bp)
 app.register_blueprint(wrestlers_bp)
 app.register_blueprint(tagteams_bp)
 app.register_blueprint(events_bp)
+app.register_blueprint(segments_bp)
 
 @app.route('/')
 def index():
