@@ -12,6 +12,7 @@
         <nav>
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('events.list_events') }}">Events</a></li> {# Added Events link #}
                 <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
 				<li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag-Teams</a></li>
                 <li><a href="{{ url_for('prefs.general_prefs') }}">Preferences</a></li>

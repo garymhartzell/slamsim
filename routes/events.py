@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.events import load_events, get_event_by_name, add_event, update_event, delete_event
-from src.segments import load_segments, load_summary_content, slugify, delete_all_segments_for_event # Import slugify and delete_all_segments_for_event
+from src.segments import load_segments, load_summary_content, _slugify, delete_all_segments_for_event
 from datetime import datetime
 
 events_bp = Blueprint('events', __name__, url_prefix='/events')
@@ -87,7 +87,7 @@ def view_event(event_name):
         flash('Event not found.', 'danger')
         return redirect(url_for('events.list_events'))
 
-    segments = load_segments(slugify(event_name)) # Use sluggified name
+    segments = load_segments(_slugify(event_name)) # Use sluggified name
     # Load summary content for each segment to display directly
     for segment in segments:
         if segment.get('summary_file'):
@@ -105,13 +105,6 @@ def delete_event_route(event_name):
         # Also attempt to delete all segments and their summary files for this event
         delete_all_segments_for_event(event_name)
         flash(f"Event '{event_name}' and its segments deleted successfully!", 'success')
-    else:
-        flash(f"Failed to delete event '{event_name}'. Event not found.", 'danger')
-    return redirect(url_for('events.list_events'))
-def delete_event_route(event_name):
-    """Handles event deletion."""
-    if delete_event(event_name):
-        flash(f"Event '{event_name}' deleted successfully!", 'success')
     else:
         flash(f"Failed to delete event '{event_name}'. Event not found.", 'danger')
     return redirect(url_for('events.list_events'))

@@ -13,8 +13,7 @@ build/
 dist/
 
 # Virtual environment
-slam_dev/
-slam_env_linux/
+ss_linux_env/
 .venv/ # common alternative
 env/ # common alternative
 
