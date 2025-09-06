@@ -1,8 +1,6 @@
 [
     {
-        "match_id": "15a4aac4-7ef0-4311-aca1-13e72cc86118",
-        "segment_position": 2,
-        "participants_display": "Daniel Garcia vs Matthew Jackson",
+        "participants_display": "Daniel Garcia vs Bryan Keith",
         "sides": [
             {
                 "members": [
@@ -12,15 +10,109 @@
             },
             {
                 "members": [
-                    "Matthew Jackson"
+                    "Bryan Keith"
                 ],
                 "tagteam": null
             }
         ],
-        "match_class": "",
-        "match_result": "Daniel Garcia def. Matthew Jackson to retain the TNT Championship",
+        "match_result": "Daniel Garcia def. Bryan Keith  to retain the TNT Championship",
+        "match_time": "15:14",
         "match_championship": "TNT Championship",
         "match_hidden": false,
-        "match_time": "15:14"
+        "match_class": "tag",
+        "individual_results": {
+            "members": "No Contest",
+            "tagteam": "No Contest"
+        },
+        "team_results": {},
+        "winning_side_index": -1,
+        "sync_teams_to_individuals": true,
+        "match_id": "15a4aac4-7ef0-4311-aca1-13e72cc86118",
+        "segment_position": 2
+    },
+    {
+        "participants_display": "The Young Bucks vs Kenny Omega, Will Ospreay",
+        "sides": [
+            {
+                "members": [
+                    "Matthew Jackson",
+                    "Nicholas Jackson"
+                ],
+                "tagteam": "The Young Bucks"
+            },
+            {
+                "members": [
+                    "Kenny Omega",
+                    "Will Ospreay"
+                ],
+                "tagteam": null
+            }
+        ],
+        "match_result": "Kenny Omega, Will Osprey def. The Young Bucks by pinfall",
+        "match_time": "18:21",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "tag",
+        "individual_results": {
+            "members": "No Contest",
+            "tagteam": "No Contest"
+        },
+        "team_results": {},
+        "winning_side_index": -1,
+        "sync_teams_to_individuals": true,
+        "match_id": "f4714b30-b791-40a5-8267-c4ce2abf516c",
+        "segment_position": 3
+    },
+    {
+        "participants_display": "Willow Nightengale vs Kris Statlander",
+        "sides": [
+            [
+                "Willow Nightengale"
+            ],
+            [
+                "Kris Statlander"
+            ]
+        ],
+        "match_time": "14:43",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "",
+        "winning_side_index": 1,
+        "individual_results": {
+            "Willow Nightengale": "Loss",
+            "Kris Statlander": "Win"
+        },
+        "team_results": {},
+        "sync_teams_to_individuals": true,
+        "match_id": "f24373e9-44fc-46aa-ba3f-760578b2196a",
+        "segment_position": 4
+    },
+    {
+        "participants_display": "Jamie Hayter, Thunder Rosa vs Julia Hart, Skye Blue",
+        "sides": [
+            [
+                "Jamie Hayter",
+                "Thunder Rosa"
+            ],
+            [
+                "Julia Hart",
+                "Skye Blue"
+            ]
+        ],
+        "match_time": "09:31",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "",
+        "winning_side_index": 1,
+        "individual_results": {
+            "Jamie Hayter": "Loss",
+            "Thunder Rosa": "Loss",
+            "Julia Hart": "Win",
+            "Skye Blue": "Win"
+        },
+        "team_results": {},
+        "sync_teams_to_individuals": true,
+        "match_id": "69389f4d-cd4d-434f-9256-57ba21465167",
+        "segment_position": 5
     }
 ]

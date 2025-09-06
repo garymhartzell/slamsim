@@ -1,125 +1,135 @@
 {% extends "_base.html" %}
 
-{% block title %}{% if edit_mode %}Edit Tag-Team{% else %}Create Tag-Team{% endif %}{% endblock %}
+{% block title %}{% if edit_mode %}Edit Tag Team{% else %}Create Tag Team{% endif %}{% endblock %}
 
 {% block content %}
-    <h1>{% if edit_mode %}Edit Tag-Team: {{ tagteam.Name }}{% else %}Create New Tag-Team{% endif %}</h1>
+    <h2>{% if edit_mode %}Edit Tag Team: {{ tagteam.Name }}{% else %}Create New Tag Team{% endif %}</h2>
     
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <form class="wide-form" method="POST" action="{% if edit_mode %}{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}{% else %}{{ url_for('tagteams.create_tagteam') }}{% endif %}">
+        <div class="form-group">
+            <label for="Name">Name <span class="required">*</span></label>
+            <input type="text" id="Name" name="Name" value="{{ tagteam.Name | default('') }}" required>
+        </div>
 
-    <form method="POST" action="{% if edit_mode %}{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}{% else %}{{ url_for('tagteams.create_tagteam') }}{% endif %}">
-        <div class="mb-3">
-            <label for="Name" class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="Name" name="Name" value="{{ tagteam.Name | default('') }}" required>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="Status">Status <span class="required">*</span></label>
+                <select id="Status" name="Status" required>
+                    {% for option in status_options %}
+                        <option value="{{ option }}" {% if tagteam.Status | default('') == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+                <small>Status will be forced to 'Inactive' if any members are inactive.</small>
+            </div>
+            <div class="form-group">
+                <label for="Division">Division</label>
+                <select id="Division" name="Division" required>
+                    <option value="">-- Select Division --</option>
+                    {% for div in divisions %}
+                        <option value="{{ div.ID }}" {% if tagteam.Division == div.ID %}selected{% endif %}>{{ div.Name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="Status" class="form-label">Status <span class="text-danger">*</span></label>
-            <select class="form-control" id="Status" name="Status" required>
-                {% for option in status_options %}
-                    <option value="{{ option }}" {% if tagteam.Status | default('') == option %}selected{% endif %}>{{ option }}</option>
-                {% endfor %}
-            </select>
-            <small class="form-text text-muted">Status will be forced to 'Inactive' if any members are inactive.</small>
+
+        <div class="form-group">
+            <label>Members <span class="required">*</span> (select at least two)</label>
+            <div class="form-row">
+                <select id="Member1" name="Member1" required>
+                    <option value="">-- Select Member 1 --</option>
+                    {% for wrestler_name in wrestler_names %}
+                        <option value="{{ wrestler_name }}" {% if tagteam.Member1 | default('') == wrestler_name %}selected{% endif %}>{{ wrestler_name }}</option>
+                    {% endfor %}
+                </select>
+                <select id="Member2" name="Member2" required>
+                    <option value="">-- Select Member 2 --</option>
+                    {% for wrestler_name in wrestler_names %}
+                        <option value="{{ wrestler_name }}" {% if tagteam.Member2 | default('') == wrestler_name %}selected{% endif %}>{{ wrestler_name }}</option>
+                    {% endfor %}
+                </select>
+                <select id="Member3" name="Member3">
+                    <option value="">-- Select Member 3 (Optional) --</option>
+                    {% for wrestler_name in wrestler_names %}
+                        <option value="{{ wrestler_name }}" {% if tagteam.Member3 | default('') == wrestler_name %}selected{% endif %}>{{ wrestler_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Members <span class="text-danger">*</span> (select at least two)</label>
-            <div class="row">
-                <div class="col">
-                    <select class="form-control" id="Member1" name="Member1" required>
-                        <option value="">-- Select Member 1 --</option>
-                        {% for wrestler_name in wrestler_names %}
-                            <option value="{{ wrestler_name }}" {% if tagteam.Member1 | default('') == wrestler_name %}selected{% endif %}>{{ wrestler_name }}</option>
-                        {% endfor %}
-                    </select>
+
+        <fieldset>
+            <legend>Record</legend>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="Wins">Wins</label>
+                    <input type="number" id="Wins" name="Wins" value="{{ tagteam.Wins | default('0') }}" min="0">
                 </div>
-                <div class="col">
-                    <select class="form-control" id="Member2" name="Member2" required>
-                        <option value="">-- Select Member 2 --</option>
-                        {% for wrestler_name in wrestler_names %}
-                            <option value="{{ wrestler_name }}" {% if tagteam.Member2 | default('') == wrestler_name %}selected{% endif %}>{{ wrestler_name }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="form-group">
+                    <label for="Losses">Losses</label>
+                    <input type="number" id="Losses" name="Losses" value="{{ tagteam.Losses | default('0') }}" min="0">
                 </div>
-                <div class="col">
-                    <select class="form-control" id="Member3" name="Member3">
-                        <option value="">-- Select Member 3 (Optional) --</option>
-                        {% for wrestler_name in wrestler_names %}
-                            <option value="{{ wrestler_name }}" {% if tagteam.Member3 | default('') == wrestler_name %}selected{% endif %}>{{ wrestler_name }}</option>
+                <div class="form-group">
+                    <label for="Draws">Draws</label>
+                    <input type="number" id="Draws" name="Draws" value="{{ tagteam.Draws | default('0') }}" min="0">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Details</legend>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="Location">Location</label>
+                    <input type="text" id="Location" name="Location" value="{{ tagteam.Location | default('') }}">
+                </div>
+                <div class="form-group">
+                    <label for="Weight">Weight</label>
+                    <input type="text" id="Weight" name="Weight" value="{{ tagteam.Weight | default('') }}">
+                </div>
+                <div class="form-group">
+                    <label for="Alignment">Alignment</label>
+                    <select id="Alignment" name="Alignment">
+                        <option value="">-- Select Alignment --</option>
+                        {% for option in alignment_options %}
+                            <option value="{{ option }}" {% if tagteam.Alignment | default('') == option %}selected{% endif %}>{{ option }}</option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
-        </div>
-        <div class="mb-3">
-            <label for="Wins" class="form-label">Wins</label>
-            <input type="number" class="form-control" id="Wins" name="Wins" value="{{ tagteam.Wins | default('0') }}" min="0">
-        </div>
-        <div class="mb-3">
-            <label for="Losses" class="form-label">Losses</label>
-            <input type="number" class="form-control" id="Losses" name="Losses" value="{{ tagteam.Losses | default('0') }}" min="0">
-        </div>
-        <div class="mb-3">
-            <label for="Draws" class="form-label">Draws</label>
-            <input type="number" class="form-control" id="Draws" name="Draws" value="{{ tagteam.Draws | default('0') }}" min="0">
-        </div>
-        <div class="mb-3">
-            <label for="Division" class="form-label">Division</label>
-            <select class="form-select" id="Division" name="Division" required>
-                <option value="">-- Select Division --</option>
-                {% for div in divisions %}
-                    <option value="{{ div.ID }}" {% if tagteam.Division == div.ID %}selected{% endif %}>{{ div.Name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="Location" class="form-label">Location</label>
-            <input type="text" class="form-control" id="Location" name="Location" value="{{ tagteam.Location | default('') }}">
-        </div>
-        <div class="mb-3">
-            <label for="Weight" class="form-label">Weight</label>
-            <input type="text" class="form-control" id="Weight" name="Weight" value="{{ tagteam.Weight | default('') }}">
-        </div>
-        <div class="mb-3">
-            <label for="Alignment" class="form-label">Alignment</label>
-            <select class="form-control" id="Alignment" name="Alignment">
-                <option value="">-- Select Alignment --</option>
-                {% for option in alignment_options %}
-                    <option value="{{ option }}" {% if tagteam.Alignment | default('') == option %}selected{% endif %}>{{ option }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="Music" class="form-label">Music</label>
-            <input type="text" class="form-control" id="Music" name="Music" value="{{ tagteam.Music | default('') }}">
-        </div>
-        <div class="mb-3">
-            <label for="Faction" class="form-label">Faction</label>
-            <input type="text" class="form-control" id="Faction" name="Faction" value="{{ tagteam.Faction | default('') }}">
-        </div>
-        <div class="mb-3">
-            <label for="Manager" class="form-label">Manager</label>
-            <input type="text" class="form-control" id="Manager" name="Manager" value="{{ tagteam.Manager | default('') }}">
-        </div>
-        <div class="mb-3">
-            <label for="Moves" class="form-label">Moves (separate with |)</label>
-            <textarea class="form-control" id="Moves" name="Moves" rows="3">{{ tagteam.Moves | default('') }}</textarea>
-        </div>
-        <div class="mb-3">
-            <label for="Belt" class="form-label">Belt</label>
-            <input type="text" class="form-control" id="Belt" name="Belt" value="{{ tagteam.Belt | default('') }}">
-        </div>
-        <div class="mb-3">
-            <label for="Awards" class="form-label">Awards (separate with |)</label>
-            <textarea class="form-control" id="Awards" name="Awards" rows="3">{{ tagteam.Awards | default('') }}</textarea>
-        </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="Faction">Faction</label>
+                    <input type="text" id="Faction" name="Faction" value="{{ tagteam.Faction | default('') }}">
+                </div>
+                <div class="form-group">
+                    <label for="Manager">Manager</label>
+                    <input type="text" id="Manager" name="Manager" value="{{ tagteam.Manager | default('') }}">
+                </div>
+            </div>
+             <div class="form-row">
+                <div class="form-group">
+                    <label for="Music">Music</label>
+                    <input type="text" id="Music" name="Music" value="{{ tagteam.Music | default('') }}">
+                </div>
+                 <div class="form-group">
+                    <label for="Belt">Belt</label>
+                    <input type="text" id="Belt" name="Belt" value="{{ tagteam.Belt | default('') }}">
+                </div>
+            </div>
+        </fieldset>
         
-        <button type="submit" class="btn btn-success">{% if edit_mode %}Update Tag-Team{% else %}Create Tag-Team{% endif %}</button>
-        <a href="{{ url_for('tagteams.list_tagteams') }}" class="btn btn-secondary">Cancel</a>
+        <fieldset>
+            <legend>Accomplishments</legend>
+             <div class="form-group">
+                <label for="Moves">Moves (separate with |)</label>
+                <textarea id="Moves" name="Moves" rows="3">{{ tagteam.Moves | default('') }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="Awards">Awards (separate with |)</label>
+                <textarea id="Awards" name="Awards" rows="3">{{ tagteam.Awards | default('') }}</textarea>
+            </div>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary">{% if edit_mode %}Update Tag Team{% else %}Create Tag Team{% endif %}</button>
+        <a href="{{ url_for('tagteams.list_tagteams') }}">Cancel</a>
     </form>
 {% endblock %}

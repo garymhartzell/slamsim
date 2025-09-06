@@ -3,32 +3,21 @@
 {% block title %}View Division: {{ division.Name }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Division Details: {{ division.Name }}</h2>
-        <div>
-            <a href="{{ url_for('divisions.edit_division', division_id=division.ID) }}" class="btn btn-warning">Edit</a>
-            <form action="{{ url_for('divisions.delete_division_route', division_id=division.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this division?');">
+        <div class="action-buttons">
+            <a href="{{ url_for('divisions.edit_division', division_id=division.ID) }}" class="btn btn-primary">Edit</a>
+            <form action="{{ url_for('divisions.delete_division_route', division_id=division.ID) }}" method="POST" style="display:inline;">
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
         </div>
     </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">ID: {{ division.ID }}</h5>
-            <p class="card-text"><strong>Name:</strong> {{ division.Name }}</p>
-            <p class="card-text"><strong>Status:</strong> {{ division.Status }}</p>
-        </div>
+    <div class="details-card" style="background-color: var(--surface-color); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <h3>ID: {{ division.ID }}</h3>
+        <p><strong>Name:</strong> {{ division.Name }}</p>
+        <p><strong>Status:</strong> {{ division.Status }}</p>
     </div>
-    <a href="{{ url_for('divisions.list_divisions') }}" class="btn btn-secondary mt-3">Back to Divisions List</a>
-</div>
+    
+    <a href="{{ url_for('divisions.list_divisions') }}" style="margin-top: 1.5rem; display: inline-block;">Back to Divisions List</a>
 {% endblock %}

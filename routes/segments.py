@@ -13,8 +13,10 @@ segments_bp = Blueprint('segments', __name__, url_prefix='/events/<string:event_
 SEGMENT_TYPE_OPTIONS = ["Match", "Promo", "Interview", "In-ring", "Brawl"]
 
 
+MATCH_RESULT_OPTIONS = ["Win", "Loss", "Draw", "No Contest"]
+
 def _get_segment_form_data(form):
-    """Extracts segment data from the form, including new match participant data."""
+    """Extracts segment data from the form, including new match participant and result data."""
     position_str = form.get('position')
     position = int(position_str) if position_str and position_str.isdigit() else None
     
@@ -35,13 +37,21 @@ def _get_segment_form_data(form):
         match_sides = json.loads(match_sides_json)
         participants_display = form.get('participants_display', '')
         
+        match_results_json = form.get('match_results_json', '{}')
+        match_results_data = json.loads(match_results_json)
+
         match_details = {
             'participants_display': participants_display,
             'sides': match_sides,
-            'match_result': form.get('match_result', ''),
             'match_time': form.get('match_time', ''),
             'match_championship': form.get('match_championship', ''),
             'match_hidden': form.get('match_hidden') == 'on',
+            'match_class': form.get('match_class', ''), # This is set by JS, then backend
+            'winning_side_index': match_results_data.get('winning_side_index', -1),
+            'individual_results': match_results_data.get('individual_results', {}),
+            'team_results': match_results_data.get('team_results', {}),
+            'sync_teams_to_individuals': match_results_data.get('sync_teams_to_individuals', True),
+            'warnings': [], # Will be populated by backend validation
         }
     
     return segment_data, match_details, summary_text
@@ -74,13 +84,19 @@ def create_segment(event_slug):
 
     summary_content = ""
     # Default match data for template if type is 'Match'
+    # Default match data for template if type is 'Match'
     match_data_for_template = {
         'sides': [],
         'participants_display': '',
-        'match_result': '',
         'match_time': '',
         'match_championship': '',
         'match_hidden': False,
+        'match_class': '',
+        'winning_side_index': -1,
+        'individual_results': {},
+        'team_results': {},
+        'sync_teams_to_individuals': True,
+        'warnings': [],
     }
 
     if request.method == 'POST':
@@ -89,11 +105,13 @@ def create_segment(event_slug):
         errors = _validate_segment_base_data(segment_data)
         
         if segment_data['type'] == 'Match':
-            if match_details: # Ensure match_details is not None
-                match_errors, match_warnings = validate_match_data(match_details['sides'])
+            if match_details:
+                # Backend validate_match_data expects (sides, match_results)
+                match_errors, match_warnings = validate_match_data(match_details['sides'], match_details)
                 errors.extend(match_errors)
-                for warning in match_warnings:
-                    flash(warning, 'warning')
+                # Flash warnings, but allow submission
+                match_details['warnings'] = match_warnings # Attach warnings to match_details for re-rendering
+
             else:
                 errors.append("Match data is missing for a segment of type 'Match'.")
             
@@ -101,27 +119,43 @@ def create_segment(event_slug):
             if match_details:
                 match_data_for_template.update(match_details)
 
-
         if errors:
             for error in errors:
                 flash(error, 'danger')
+            # Flash warnings from match_details if any (not added to errors directly)
+            for warning in match_data_for_template.get('warnings', []):
+                flash(warning, 'warning')
+
             return render_template('segments/form.html', event_slug=event_slug, segment=segment_data,
                                    segment_type_options=SEGMENT_TYPE_OPTIONS,
                                    summary_content=summary_content,
                                    all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
-                                   match_data=match_data_for_template)
+                                   match_data=match_data_for_template,
+                                   match_result_options=MATCH_RESULT_OPTIONS)
 
-        success, message = add_segment(sluggified_event_name, segment_data, summary_content, match_details)
-        if success:
-            flash(message, 'success')
-            return redirect(url_for('events.view_event', event_name=event_slug))
-        else:
-            flash(message, 'danger')
+        try:
+            success, message = add_segment(sluggified_event_name, segment_data, summary_content, match_details)
+            if success:
+                flash(message, 'success')
+                return redirect(url_for('events.view_event', event_name=event_slug))
+            else:
+                flash(message, 'danger')
+        except ValueError as e:
+            flash(str(e), 'danger')
+            # Re-render with posted data and errors/warnings
+            return render_template('segments/form.html', event_slug=event_slug, segment=segment_data,
+                                   segment_type_options=SEGMENT_TYPE_OPTIONS,
+                                   summary_content=summary_content,
+                                   all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
+                                   match_data=match_data_for_template,
+                                   match_result_options=MATCH_RESULT_OPTIONS)
+
 
     return render_template('segments/form.html', event_slug=event_slug, segment={},
                            segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                            all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
-                           match_data=match_data_for_template)
+                           match_data=match_data_for_template, # Pass default match_data for template
+                           match_result_options=MATCH_RESULT_OPTIONS)
 
 
 @segments_bp.route('/edit/<int:position>', methods=['GET', 'POST'])
@@ -148,10 +182,15 @@ def edit_segment(event_slug, position):
     match_data_for_template = {
         'sides': segment.get('sides', []),
         'participants_display': segment.get('participants_display', ''),
-        'match_result': '', # Default, will be overridden if full match data exists
         'match_time': '',
         'match_championship': '',
         'match_hidden': False,
+        'match_class': '',
+        'winning_side_index': -1,
+        'individual_results': {},
+        'team_results': {},
+        'sync_teams_to_individuals': True,
+        'warnings': [],
     }
 
     # If it's a match segment, load full match details
@@ -159,12 +198,17 @@ def edit_segment(event_slug, position):
         full_match = get_match_by_id(sluggified_event_name, segment['match_id'])
         if full_match:
             match_data_for_template.update({
-                'match_result': full_match.get('match_result', ''),
                 'match_time': full_match.get('match_time', ''),
                 'match_championship': full_match.get('match_championship', ''),
                 'match_hidden': full_match.get('match_hidden', False),
                 'sides': full_match.get('sides', []), # Ensure full sides structure is passed
                 'participants_display': full_match.get('participants_display', ''),
+                'match_class': full_match.get('match_class', ''),
+                'winning_side_index': full_match.get('winning_side_index', -1),
+                'individual_results': full_match.get('individual_results', {}),
+                'team_results': full_match.get('team_results', {}),
+                'sync_teams_to_individuals': full_match.get('sync_teams_to_individuals', True),
+                'warnings': full_match.get('warnings', []),
             })
 
     if request.method == 'POST':
@@ -177,10 +221,11 @@ def edit_segment(event_slug, position):
 
         if updated_segment_data['type'] == 'Match':
             if updated_match_details:
-                match_errors, match_warnings = validate_match_data(updated_match_details['sides'])
+                # Backend validate_match_data expects (sides, match_results)
+                match_errors, match_warnings = validate_match_data(updated_match_details['sides'], updated_match_details)
                 errors.extend(match_errors)
-                for warning in match_warnings:
-                    flash(warning, 'warning')
+                # Attach warnings to match_details for re-rendering
+                updated_match_details['warnings'] = match_warnings
             else:
                 errors.append("Match data is missing for a segment of type 'Match'.")
             
@@ -191,38 +236,55 @@ def edit_segment(event_slug, position):
         # If segment type changed from 'Match' to something else, clear match_data_for_template
         if segment.get('type') == 'Match' and updated_segment_data['type'] != 'Match':
              match_data_for_template = {
-                'sides': [], 'participants_display': '', 'match_result': '',
-                'match_time': '', 'match_championship': '', 'match_hidden': False,
+                'sides': [], 'participants_display': '', 'match_time': '',
+                'match_championship': '', 'match_hidden': False,
+                'match_class': '', 'winning_side_index': -1, 'individual_results': {},
+                'team_results': {}, 'sync_teams_to_individuals': True, 'warnings': [],
             }
-
 
         if errors:
             for error in errors:
                 flash(error, 'danger')
+            # Flash warnings from match_data_for_template if any (not added to errors directly)
+            for warning in match_data_for_template.get('warnings', []):
+                flash(warning, 'warning')
             return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
                                    segment_type_options=SEGMENT_TYPE_OPTIONS,
                                    summary_content=new_summary_content, original_position=position,
                                    all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
-                                   match_data=match_data_for_template)
+                                   match_data=match_data_for_template,
+                                   match_result_options=MATCH_RESULT_OPTIONS)
+        try:
+            success, message = update_segment(sluggified_event_name, position, updated_segment_data, new_summary_content, updated_match_details)
+            if success:
+                flash(message, 'success')
+                return redirect(url_for('events.view_event', event_name=event_slug))
+            else:
+                flash(message, 'danger')
+                # Re-render with updated_data if update failed due to conflict or other reason
+                return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
+                                       segment_type_options=SEGMENT_TYPE_OPTIONS,
+                                       summary_content=new_summary_content, original_position=position,
+                                       all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
+                                       match_data=match_data_for_template,
+                                       match_result_options=MATCH_RESULT_OPTIONS)
+        except ValueError as e:
+            flash(str(e), 'danger')
+            # Re-render with posted data and errors/warnings
+            return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
+                                   segment_type_options=SEGMENT_TYPE_OPTIONS,
+                                   summary_content=new_summary_content, original_position=position,
+                                   all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
+                                   match_data=match_data_for_template,
+                                   match_result_options=MATCH_RESULT_OPTIONS)
 
-        success, message = update_segment(sluggified_event_name, position, updated_segment_data, new_summary_content, updated_match_details)
-        if success:
-            flash(message, 'success')
-            return redirect(url_for('events.view_event', event_name=event_slug))
-        else:
-            flash(message, 'danger')
-            # Re-render with updated_data if update failed due to conflict or other reason
-            return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
-                                   segment_type_options=SEGMENT_TYPE_OPTIONS,
-                                   summary_content=new_summary_content, original_position=position,
-                                   all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
-                                   match_data=match_data_for_template)
 
     return render_template('segments/form.html', event_slug=event_slug, segment=segment,
                            segment_type_options=SEGMENT_TYPE_OPTIONS,
                            summary_content=summary_content, original_position=position,
                            all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
-                           match_data=match_data_for_template)
+                           match_data=match_data_for_template,
+                           match_result_options=MATCH_RESULT_OPTIONS)
 
 
 @segments_bp.route('/delete/<int:position>', methods=['POST'])

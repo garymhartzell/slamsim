@@ -1,40 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>General Preferences</title>
-</head>
-<body>
-    <h1>General Preferences</h1>
-    <nav>
-        <a href="{{ url_for('index') }}">Home</a> |
-        <a href="{{ url_for('prefs.general_prefs') }}">General Preferences</a>
-    </nav>
-    <hr>
+{% extends "_base.html" %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul class="flashes">
-            {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+{% block title %}General Preferences{% endblock %}
+
+{% block content %}
+    <h2>General Preferences</h2>
 
     <form method="POST" action="{{ url_for('prefs.general_prefs') }}">
-        <div>
-            <label for="league_name">League Name:</label><br>
-            <input type="text" id="league_name" name="league_name" value="{{ prefs.league_name }}" size="50">
+        <fieldset class="form-section">
+            <legend>League Settings</legend>
+            <div class="form-group">
+                <label for="league_name">League Name:</label>
+                <input type="text" id="league_name" name="league_name" value="{{ prefs.league_name }}">
+            </div>
+            <div class="form-group">
+                <label for="league_short">League Abbreviation:</label>
+                <input type="text" id="league_short" name="league_short" value="{{ prefs.league_short }}" maxlength="10">
+            </div>
+        </fieldset>
+
+        <div class="action-buttons form-actions">
+            <button type="submit" class="btn btn-primary">Save Preferences</button>
+            <a href="{{ url_for('index') }}">Cancel</a>
         </div>
-        <br>
-        <div>
-            <label for="league_short">League Short Name (Abbreviation):</label><br>
-            <input type="text" id="league_short" name="league_short" value="{{ prefs.league_short }}" size="10">
-        </div>
-        <br>
-        <button type="submit">Save Preferences</button>
     </form>
-</body>
-</html>
+{% endblock %}

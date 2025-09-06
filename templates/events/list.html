@@ -3,11 +3,13 @@
 {% block title %}Events List{% endblock %}
 
 {% block content %}
-    <h1>Events List</h1>
-    <a href="{{ url_for('events.create_event') }}" class="btn btn-primary mb-3">Create New Event</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Events List</h1>
+        <a href="{{ url_for('events.create_event') }}" class="btn btn-primary">Create New Event</a>
+    </div>
 
     {% if events %}
-        <table class="table table-striped">
+        <table>
             <thead>
                 <tr>
                     <th>Event Name</th>
@@ -27,17 +29,22 @@
                         <td>{{ event.Venue }}</td>
                         <td>{{ event.Location }}</td>
                         <td>
-                            <a href="{{ url_for('events.view_event', event_name=event.Event_Name) }}" class="btn btn-sm btn-info">View</a>
-                            <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-sm btn-warning">Edit</a>
-                            <form action="{{ url_for('events.delete_event_route', event_name=event.Event_Name) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete event \\'{{ event.Event_Name }}\\'?')">Delete</button>
-                            </form>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('events.view_event', event_name=event.Event_Name) }}" class="btn btn-secondary">View</a>
+                                <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-primary">Edit</a>
+                                <form action="{{ url_for('events.delete_event_route', event_name=event.Event_Name) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p>No events found. Start by <a href="{{ url_for('events.create_event') }}">creating a new event</a>.</p>
+        <div class="empty-state">
+            <p>No events found.</p>
+            <a href="{{ url_for('events.create_event') }}" class="btn btn-primary">Create Your First Event</a>
+        </div>
     {% endif %}
 {% endblock %}

@@ -3,37 +3,27 @@
 {% block title %}{% if form_action == 'create' %}Create Division{% else %}Edit Division{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
     <h2>{% if form_action == 'create' %}Create New Division{% else %}Edit Division: {{ division.Name }}{% endif %}</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
     <form method="POST" action="{% if form_action == 'create' %}{{ url_for('divisions.create_division') }}{% else %}{{ url_for('divisions.edit_division', division_id=division.ID) }}{% endif %}">
-        <div class="mb-3">
-            <label for="division_id" class="form-label">ID</label>
-            <input type="text" class="form-control" id="division_id" name="division_id" value="{{ division.ID | default('') }}" {% if form_action == 'edit' %}readonly{% endif %} required>
-            {% if form_action == 'edit' %}<small class="form-text text-muted">ID cannot be changed after creation.</small>{% endif %}
+        <div class="form-group">
+            <label for="division_id">ID</label>
+            <input type="text" id="division_id" name="division_id" value="{{ division.ID | default('') }}" {% if form_action == 'edit' %}readonly{% endif %} required>
+            {% if form_action == 'edit' %}<small>ID cannot be changed after creation.</small>{% endif %}
         </div>
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name" name="name" value="{{ division.Name | default('') }}" required>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ division.Name | default('') }}" required>
         </div>
-        <div class="mb-3">
-            <label for="status" class="form-label">Status</label>
-            <select class="form-select" id="status" name="status" required>
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
                 {% for status in status_options %}
                     <option value="{{ status }}" {% if division.Status == status %}selected{% endif %}>{{ status }}</option>
                 {% endfor %}
             </select>
         </div>
         <button type="submit" class="btn btn-primary">{% if form_action == 'create' %}Add Division{% else %}Update Division{% endif %}</button>
-        <a href="{{ url_for('divisions.list_divisions') }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ url_for('divisions.list_divisions') }}">Cancel</a>
     </form>
-</div>
 {% endblock %}
