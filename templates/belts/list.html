@@ -1,0 +1,50 @@
+{% extends "_base.html" %}
+
+{% block title %}Belts List{% endblock %}
+
+{% block content %}
+<div class="header-bar">
+    <h2>Championship Belts</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('belts.create_belt') }}" class="btn btn-primary">Add New Belt</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Holder Type</th>
+                <th>Current Holder</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for belt in belts %}
+            <tr>
+                <td>{{ belt.ID }}</td>
+                <td>{{ belt.Name }}</td>
+                <td>{{ belt.Status }}</td>
+                <td>{{ belt.Holder_Type }}</td>
+                <td>{{ belt.Current_Holder or 'N/A' }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('belts.edit_belt', belt_id=belt.ID) }}" class="btn btn-secondary">Edit</a>
+                        <form action="{{ url_for('belts.delete_belt_route', belt_id=belt.ID) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No belts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

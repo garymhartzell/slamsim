@@ -1,111 +1,170 @@
 {% extends "_base.html" %}
 
-{% block title %}
-    {% if edit_mode %}Edit Wrestler: {{ wrestler.Name }}{% else %}Create New Wrestler{% endif %}
-{% endblock %}
+{% block title %}{% if edit_mode %}Edit Wrestler{% else %}Create Wrestler{% endif %}{% endblock %}
 
 {% block content %}
-    <h1>{% if edit_mode %}Edit Wrestler: {{ wrestler.Name }}{% else %}Create New Wrestler{% endif %}</h1>
+<div class="header-bar">
+    <h2>{% if edit_mode %}Edit Wrestler: {{ wrestler.Name }}{% else %}Create New Wrestler{% endif %}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('wrestlers.list_wrestlers') }}">Back to List</a>
+    </div>
+</div>
 
-    <form method="POST">
-        <label for="name">Name <span style="color: red;">*</span>:</label>
-        <input type="text" id="name" name="name" value="{{ wrestler.Name | default('') }}" {% if edit_mode %} readonly {% endif %} required><br>
-        {% if edit_mode %}<small>(Name cannot be changed directly after creation. To change name, delete and recreate wrestler.)</small><br>{% endif %}
+<form class="wide-form" method="POST" action="{% if edit_mode %}{{ url_for('wrestlers.edit_wrestler', wrestler_name=wrestler.Name) }}{% else %}{{ url_for('wrestlers.create_wrestler') }}{% endif %}">
+    <div class="form-grid">
+        <fieldset class="form-section">
+            <legend>Primary Info</legend>
+            <div class="form-group">
+                <label for="name">Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" value="{{ wrestler.Name | default('') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="nickname">Nickname</label>
+                <input type="text" id="nickname" name="nickname" value="{{ wrestler.Nickname | default('') }}">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="status">Status <span class="required">*</span></label>
+                    <select id="status" name="status" required>
+                        {% for option in status_options %}
+                        <option value="{{ option }}" {% if wrestler.Status | default('') == option %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="division">Division <span class="required">*</span></label>
+                    <select id="division" name="division" required>
+                        <option value="">-- Select Division --</option>
+                        {% for div in divisions %}
+                        <option value="{{ div.ID }}" {% if wrestler.Division == div.ID %}selected{% endif %}>{{ div.Name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </fieldset>
 
-        <label for="singles_wins">Singles Wins:</label>
-        <input type="text" id="singles_wins" name="singles_wins" value="{{ wrestler.Singles_Wins | default('0') }}"><br>
+        <fieldset class="form-section">
+            <legend>Record</legend>
+            <p>Singles</p>
+            <div class="form-row record">
+                <div class="form-group">
+                    <label for="singles_wins">Wins</label>
+                    <input type="number" id="singles_wins" name="singles_wins" value="{{ wrestler.Singles_Wins | default('0') }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="singles_losses">Losses</label>
+                    <input type="number" id="singles_losses" name="singles_losses" value="{{ wrestler.Singles_Losses | default('0') }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="singles_draws">Draws</label>
+                    <input type="number" id="singles_draws" name="singles_draws" value="{{ wrestler.Singles_Draws | default('0') }}" min="0">
+                </div>
+            </div>
+            <p>Tag Team</p>
+            <div class="form-row record">
+                <div class="form-group">
+                    <label for="tag_wins">Wins</label>
+                    <input type="number" id="tag_wins" name="tag_wins" value="{{ wrestler.Tag_Wins | default('0') }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="tag_losses">Losses</label>
+                    <input type="number" id="tag_losses" name="tag_losses" value="{{ wrestler.Tag_Losses | default('0') }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="tag_draws">Draws</label>
+                    <input type="number" id="tag_draws" name="tag_draws" value="{{ wrestler.Tag_Draws | default('0') }}" min="0">
+                </div>
+            </div>
+        </fieldset>
 
-        <label for="singles_losses">Singles Losses:</label>
-        <input type="text" id="singles_losses" name="singles_losses" value="{{ wrestler.Singles_Losses | default('0') }}"><br>
+        <fieldset class="form-section">
+            <legend>Personal Details</legend>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="height">Height</label>
+                    <input type="text" id="height" name="height" value="{{ wrestler.Height | default('') }}">
+                </div>
+                <div class="form-group">
+                    <label for="weight">Weight</label>
+                    <input type="text" id="weight" name="weight" value="{{ wrestler.Weight | default('') }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="{{ wrestler.Location | default('') }}">
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" value="{{ wrestler.DOB | default('') }}">
+                </div>
+            </div>
+        </fieldset>
+        
+        <fieldset class="form-section">
+            <legend>Gimmick</legend>
+            <div class="form-group">
+                <label for="alignment">Alignment <span class="required">*</span></label>
+                <select id="alignment" name="alignment" required>
+                    {% for option in alignment_options %}
+                    <option value="{{ option }}" {% if wrestler.Alignment | default('') == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="music">Entrance Music</label>
+                <input type="text" id="music" name="music" value="{{ wrestler.Music | default('') }}">
+            </div>
+             <div class="form-group">
+                <label for="moves">Signature Moves (one per line)</label>
+                <textarea id="moves" name="moves" rows="4">{{ wrestler.Moves | default('') }}</textarea>
+            </div>
+        </fieldset>
+        
+        <fieldset class="form-section">
+            <legend>Affiliations</legend>
+             <div class="form-group">
+                <label for="team">Team</label>
+                <input type="text" id="team" name="team" value="{{ wrestler.Team | default('') }}">
+            </div>
+            <div class="form-group">
+                <label for="faction">Faction</label>
+                <input type="text" id="faction" name="faction" value="{{ wrestler.Faction | default('') }}">
+            </div>
+            <div class="form-group">
+                <label for="manager">Manager</label>
+                <input type="text" id="manager" name="manager" value="{{ wrestler.Manager | default('') }}">
+            </div>
+        </fieldset>
 
-        <label for="singles_draws">Singles Draws:</label>
-        <input type="text" id="singles_draws" name="singles_draws" value="{{ wrestler.Singles_Draws | default('0') }}"><br>
+        <fieldset class="form-section">
+            <legend>Contract</legend>
+             <div class="form-group">
+                <label for="real_name">Real Name</label>
+                <input type="text" id="real_name" name="real_name" value="{{ wrestler.Real_Name | default('') }}">
+            </div>
+            <div class="form-group">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" name="start_date" value="{{ wrestler.Start_Date | default('') }}">
+            </div>
+            <div class="form-group">
+                <label for="salary">Salary Details</label>
+                <textarea id="salary" name="salary" rows="3">{{ wrestler.Salary | default('') }}</textarea>
+            </div>
+        </fieldset>
 
-        <label for="tag_wins">Tag Wins:</label>
-        <input type="text" id="tag_wins" name="tag_wins" value="{{ wrestler.Tag_Wins | default('0') }}"><br>
-
-        <label for="tag_losses">Tag Losses:</label>
-        <input type="text" id="tag_losses" name="tag_losses" value="{{ wrestler.Tag_Losses | default('0') }}"><br>
-
-        <label for="tag_draws">Tag Draws:</label>
-        <input type="text" id="tag_draws" name="tag_draws" value="{{ wrestler.Tag_Draws | default('0') }}"><br>
-
-        <label for="status">Status <span style="color: red;">*</span>:</label>
-        <select id="status" name="status" required>
-            {% for option in status_options %}
-                <option value="{{ option }}" {% if wrestler.Status == option %}selected{% endif %}>{{ option }}</option>
-            {% endfor %}
-        </select><br>
-
-        <label for="division">Division:</label>
-        <select id="division" name="division" required>
-            <option value="">-- Select Division --</option>
-            {% for div in divisions %}
-                <option value="{{ div.ID }}" {% if wrestler.Division == div.ID %}selected{% endif %}>{{ div.Name }}</option>
-            {% endfor %}
-        </select><br>
-
-        <label for="nickname">Nickname:</label>
-        <input type="text" id="nickname" name="nickname" value="{{ wrestler.Nickname | default('') }}"><br>
-
-        <label for="location">Location:</label>
-        <input type="text" id="location" name="location" value="{{ wrestler.Location | default('') }}"><br>
-
-        <label for="height">Height:</label>
-        <input type="text" id="height" name="height" value="{{ wrestler.Height | default('') }}"><br>
-
-        <label for="weight">Weight:</label>
-        <input type="text" id="weight" name="weight" value="{{ wrestler.Weight | default('') }}"><br>
-
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" name="dob" value="{{ wrestler.DOB | default('') }}"><br>
-
-        <label for="alignment">Alignment:</label>
-        <select id="alignment" name="alignment">
-            <option value="">-- Select --</option> {# Optional: Add an empty default option #}
-            {% for option in alignment_options %}
-                <option value="{{ option }}" {% if wrestler.Alignment == option %}selected{% endif %}>{{ option }}</option>
-            {% endfor %}
-        </select><br>
-
-        <label for="music">Music:</label>
-        <input type="text" id="music" name="music" value="{{ wrestler.Music | default('') }}"><br>
-
-        <label for="team">Team:</label>
-        <input type="text" id="team" name="team" value="{{ wrestler.Team | default('') }}"><br>
-
-        <label for="faction">Faction:</label>
-        <input type="text" id="faction" name="faction" value="{{ wrestler.Faction | default('') }}"><br>
-
-        <label for="manager">Manager:</label>
-        <input type="text" id="manager" name="manager" value="{{ wrestler.Manager | default('') }}"><br>
-
-        <label for="moves">Moves (separate with new lines):</label>
-        <textarea id="moves" name="moves" rows="4">{{ wrestler.Moves | default('') }}</textarea><br>
-
-        <label for="belt">Belt:</label>
-        <input type="text" id="belt" name="belt" value="{{ wrestler.Belt | default('') }}"><br>
-
-        <label for="awards">Accomplishments (separate with new lines):</label>
-        <textarea id="awards" name="awards" rows="4">{{ wrestler.Awards | default('') }}</textarea><br>
-
-        <label for="real_name">Real Name:</label>
-        <input type="text" id="real_name" name="real_name" value="{{ wrestler.Real_Name | default('') }}"><br>
-
-        <label for="start_date">Start Date:</label>
-        <input type="text" id="start_date" name="start_date" value="{{ wrestler.Start_Date | default('') }}"><br>
-
-        <label for="salary">Salary (Year: Amount, separate with new lines):</label>
-        <textarea id="salary" name="salary" rows="4">{{ wrestler.Salary | default('') }}</textarea><br>
-
-        <input type="submit" value="{% if edit_mode %}Update Wrestler{% else %}Create Wrestler{% endif %}">
-    </form>
-
-    {% if edit_mode %}
-        <form action="{{ url_for('wrestlers.delete_wrestler_route', wrestler_name=wrestler.Name) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ wrestler.Name }}?');" style="display:inline-block;">
-            <input type="submit" value="Delete Wrestler" style="background-color: red; color: white; margin-top: 10px;">
-        </form>
-    {% endif %}
-
-    <p><a href="{{ url_for('wrestlers.list_wrestlers') }}">Back to Wrestler List</a></p>
+        <fieldset class="form-section full-width">
+            <legend>Accomplishments</legend>
+            <div class="form-group">
+                <label for="awards">Awards & Accomplishments (one per line)</label>
+                <textarea id="awards" name="awards" rows="4">{{ wrestler.Awards | default('') }}</textarea>
+            </div>
+        </fieldset>
+    </div>
+    <div class="action-buttons form-actions">
+        <button type="submit" class="btn btn-primary">{% if edit_mode %}Update Wrestler{% else %}Create Wrestler{% endif %}</button>
+        <a href="{{ url_for('wrestlers.list_wrestlers') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
 {% endblock %}
+

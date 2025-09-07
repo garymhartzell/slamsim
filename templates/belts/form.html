@@ -1,0 +1,93 @@
+{% extends "_base.html" %}
+
+{% block title %}{% if form_action == 'create' %}Create Belt{% else %}Edit Belt{% endif %}{% endblock %}
+
+{% block content %}
+<div class="header-bar">
+    <h2>{% if form_action == 'create' %}Create New Belt{% else %}Edit Belt: {{ belt.Name }}{% endif %}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('belts.list_belts') }}">Back to List</a>
+    </div>
+</div>
+
+<form class="wide-form" method="POST" action="{% if form_action == 'create' %}{{ url_for('belts.create_belt') }}{% else %}{{ url_for('belts.edit_belt', belt_id=belt.ID) }}{% endif %}">
+    <fieldset class="form-section">
+        <legend>Belt Details</legend>
+        {% if form_action == 'edit' %}
+        <div class="form-group">
+            <label>ID</label>
+            <p class="form-static-text">{{ belt.ID }}</p>
+            <input type="hidden" name="belt_id" value="{{ belt.ID }}">
+            <small>ID cannot be changed after creation.</small>
+        </div>
+        {% endif %}
+        <div class="form-group">
+            <label for="name">Name <span class="required">*</span></label>
+            <input type="text" id="name" name="name" value="{{ belt.Name | default('') }}" required>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="status">Status <span class="required">*</span></label>
+                <select id="status" name="status" required>
+                    <option value="">-- Select --</option>
+                    {% for status in status_options %}
+                        <option value="{{ status }}" {% if belt.Status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="holder_type">Holder Type <span class="required">*</span></label>
+                <select id="holder_type" name="holder_type" required onchange="updateHolderDropdown()">
+                    <option value="">-- Select --</option>
+                    {% for type in holder_type_options %}
+                        <option value="{{ type }}" {% if belt.Holder_Type == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="current_holder">Current Holder</label>
+            <select id="current_holder" name="current_holder">
+                <option value="">-- Select Holder Type First --</option>
+            </select>
+            <small>Leave blank if status is 'Vacant'.</small>
+        </div>
+    </fieldset>
+
+    <div class="action-buttons form-actions">
+        <button type="submit" class="btn btn-primary">{% if form_action == 'create' %}Add Belt{% else %}Update Belt{% endif %}</button>
+        <a href="{{ url_for('belts.list_belts') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+    const holderData = {
+        'Singles': {{ wrestlers | tojson | safe }},
+        'Tag-Team': {{ tagteams | tojson | safe }}
+    };
+
+    function updateHolderDropdown() {
+        const holderType = document.getElementById('holder_type').value;
+        const holderSelect = document.getElementById('current_holder');
+        const currentHolder = "{{ belt.Current_Holder | default('') }}";
+        
+        holderSelect.innerHTML = '<option value="">-- None (Vacant) --</option>'; // Default option
+
+        if (holderData[holderType]) {
+            holderData[holderType].forEach(holderName => {
+                const option = document.createElement('option');
+                option.value = holderName;
+                option.textContent = holderName;
+                if (holderName === currentHolder) {
+                    option.selected = true;
+                }
+                holderSelect.appendChild(option);
+            });
+        }
+    }
+
+    // Call on page load to initialize the dropdown correctly
+    document.addEventListener('DOMContentLoaded', updateHolderDropdown);
+</script>
+{% endblock %}
+
