@@ -3,56 +3,45 @@
 {% block title %}Event: {{ event.Event_Name }}{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Event: {{ event.Event_Name }}</h2>
+    <div class="header-bar">
+        <h2>Event Details: {{ event.Event_Name }}</h2>
         <div class="action-buttons">
-            <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-primary">Edit Event</a>
-            <a href="{{ url_for('segments.create_segment', event_slug=event.Event_Name) }}" class="btn btn-secondary">Add New Segment</a>
+            <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-primary">Edit Event & Segments</a>
+            <a href="{{ url_for('events.list_events') }}">Back to List</a>
         </div>
     </div>
 
-    <!-- Event Details Card -->
-    <div class="details-card">
-        <h4>{{ event.Subtitle }}</h4>
-        <div class="details-grid">
-            <div class="details-column">
-                <p><strong>Status:</strong> {{ event.Status }}</p>
+    <div class="details-card-grid">
+        <div class="details-card">
+            <div class="card-header">
+                <h3>{{ event.Event_Name }}</h3>
+                {% if event.Subtitle %}<p>{{ event.Subtitle }}</p>{% endif %}
+            </div>
+            <div class="card-content">
                 <p><strong>Date:</strong> {{ event.Date }}</p>
+                <p><strong>Status:</strong> {{ event.Status }}</p>
+                <p><strong>Venue:</strong> {{ event.Venue }}</p>
+                <p><strong>Location:</strong> {{ event.Location }}</p>
+                <p><strong>Broadcasters:</strong> {{ event.Broadcasters }}</p>
             </div>
-            <div class="details-column">
-                <p><strong>Venue:</strong> {{ event.Venue or 'N/A' }}</p>
-                <p><strong>Location:</strong> {{ event.Location or 'N/A' }}</p>
-            </div>
-        </div>
-        <div class="details-full-width">
-            <p><strong>Broadcasters:</strong> {{ event.Broadcasters or 'N/A' }}</p>
         </div>
     </div>
 
-    <!-- Segments Section -->
-    <h3 class="mt-4">Segments</h3>
+    <h3>Segments</h3>
     {% if segments %}
-        <div class="segments-list">
+        <div class="segment-list view-only">
             {% for segment in segments %}
-                <div class="segment-card">
+                <div class="segment-item">
                     <div class="segment-header">
                         <h4>{{ segment.position }}. {{ segment.type }}{% if segment.header %}: {{ segment.header }}{% endif %}</h4>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('segments.edit_segment', event_slug=event.Event_Name, position=segment.position) }}" class="btn btn-primary">Edit</a>
-                            <form action="{{ url_for('segments.delete_segment_route', event_slug=event.Event_Name, position=segment.position) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                            </form>
-                        </div>
                     </div>
-                    <div class="segment-body">
-                        {% if segment.type == 'Match' %}
-                            <p><strong>Participants:</strong> {{ segment.participants_display or 'Not set' }}</p>
-                            {% if segment.match_hidden %}<p class="text-muted"><em>Match result is hidden</em></p>{% endif %}
+                    <div class="segment-content">
+                         {% if segment.type == 'Match' and segment.match_result %}
+                            <p class="match-result"><strong>Result:</strong> {{ segment.match_result }}</p>
                         {% endif %}
                         {% if segment.summary_content %}
                             <div class="summary-content">
-                                <strong>Summary:</strong>
-                                <p>{{ segment.summary_content | safe }}</p>
+                                {{ segment.summary_content | safe }}
                             </div>
                         {% endif %}
                     </div>
@@ -60,11 +49,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="empty-state">
-            <p>No segments found for this event.</p>
-            <a href="{{ url_for('segments.create_segment', event_slug=event.Event_Name) }}" class="btn btn-primary">Add the First Segment</a>
-        </div>
+        <p>No segments found for this event.</p>
     {% endif %}
-
-    <a href="{{ url_for('events.list_events') }}" style="margin-top: 1.5rem; display: inline-block;">Back to Events List</a>
 {% endblock %}
+

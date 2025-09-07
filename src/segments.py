@@ -22,23 +22,18 @@ TAGTEAMS_FILE = os.path.join(DATA_DIR, 'tagteams.json')
 def _classify_match(sides):
     """
     Classifies a match based on its sides array.
-    - 'battle_royal': 10+ sides, each with exactly one wrestler.
-    - 'singles': 2–9 sides, each with exactly one wrestler.
-    - 'tag': any match where any side has 2+ wrestlers.
-    - 'other': fallback for unclassifiable formats.
     """
     num_sides = len(sides)
     all_single_wrestlers = all(len(side) == 1 for side in sides)
     any_side_has_multiple_wrestlers = any(len(side) > 1 for side in sides)
 
-    if all_single_wrestlers and num_sides >= 10:
+    if any_side_has_multiple_wrestlers:
+        return "tag"
+    elif all_single_wrestlers and num_sides >= 10:
         return "battle_royal"
     elif all_single_wrestlers and 2 <= num_sides <= 9:
         return "singles"
-    elif any_side_has_multiple_wrestlers:
-        return "tag"
     else:
-        # This covers cases like 1-on-X handicap or other complex formats
         return "other"
 
 def _get_all_wrestlers_involved(sides):
@@ -51,28 +46,73 @@ def _get_all_wrestlers_involved(sides):
 
 def _get_all_tag_teams_involved(sides, all_tagteams_data):
     """
-    Identifies tag teams from the provided `sides` that match known tag teams in `all_tagteams_data`.
-    A team is considered involved if its members are fully present in any single side of the match.
+    Identifies tag teams from the provided `sides` that match known tag teams.
     """
     teams = set()
-    
-    # Create a map of team name to a set of its members for efficient lookup
-    team_member_sets = {}
-    for team_data in all_tagteams_data:
-        team_name = team_data.get('Name')
-        members_str = team_data.get('Members', '')
-        if team_name and members_str:
-            team_member_sets[team_name] = set(members_str.split('|'))
+    team_member_sets = {
+        team_data.get('Name'): set(team_data.get('Members', '').split('|'))
+        for team_data in all_tagteams_data if team_data.get('Name') and team_data.get('Members')
+    }
     
     for side in sides:
         side_members_set = set(side)
         for team_name, members_set in team_member_sets.items():
-            # Check if all members of a known team are present in the current side
-            # and that the team has more than one member (to avoid single wrestlers being seen as teams)
             if members_set.issubset(side_members_set) and len(members_set) > 1:
                 teams.add(team_name)
     
     return list(teams)
+
+def _generate_side_display_string(side, all_tagteams_data):
+    """Generates a display string for a single side, expanding tag teams."""
+    side_set = set(side)
+    # Find teams whose members are fully contained within this side
+    contained_teams = [
+        team for team in all_tagteams_data 
+        if set(team.get('Members', '').split('|')).issubset(side_set) and len(team.get('Members', '').split('|')) > 1
+    ]
+    
+    # Get all wrestlers who are part of the found teams
+    wrestlers_in_teams = set()
+    for team in contained_teams:
+        for member in team.get('Members', '').split('|'):
+            wrestlers_in_teams.add(member)
+            
+    # Get wrestlers who are not in any of the found teams
+    independent_wrestlers = [w for w in side if w not in wrestlers_in_teams]
+    
+    # Build the string parts
+    parts = []
+    for team in contained_teams:
+        members_str = ", ".join(team.get('Members', '').split('|'))
+        parts.append(f"{team['Name']} ({members_str})")
+    
+    parts.extend(independent_wrestlers)
+    
+    return ", ".join(parts)
+
+def _generate_match_result_string(match_data, all_tagteams_data):
+    """Constructs the match result string, e.g., 'Winner(s) def. Loser(s) (Time)'."""
+    winning_idx = match_data.get('winning_side_index')
+    if winning_idx is None or winning_idx == -1:
+        return "Result not determined."
+
+    sides = match_data.get('sides', [])
+    if not (0 <= winning_idx < len(sides)):
+        return "Invalid winning side."
+
+    winning_side_participants = sides[winning_idx]
+    losing_sides_participants = [side for i, side in enumerate(sides) if i != winning_idx]
+
+    winning_side_str = _generate_side_display_string(winning_side_participants, all_tagteams_data)
+    
+    losing_sides_strs = [_generate_side_display_string(side, all_tagteams_data) for side in losing_sides_participants]
+    losing_side_str = ", ".join(losing_sides_strs)
+
+    match_time = match_data.get('match_time')
+    time_str = f"({match_time})" if match_time else ""
+
+    return f"{winning_side_str} def. {losing_side_str} {time_str}".strip()
+
 
 def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_tagteams_data):
     """
@@ -82,7 +122,7 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
     prepared_match_data = match_data_input.copy()
     sides = prepared_match_data.get('sides', [])
 
-    if "match_class" not in prepared_match_data:
+    if "match_class" not in prepared_match_data or not prepared_match_data["match_class"]:
         prepared_match_data["match_class"] = _classify_match(sides)
 
     all_wrestlers_in_match = _get_all_wrestlers_involved(sides)
@@ -92,12 +132,10 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
     if "individual_results" not in prepared_match_data:
         prepared_match_data["individual_results"] = {}
     
-    # Add new wrestlers to results, defaulting to "No Contest"
     for wrestler in all_wrestlers_in_match:
         if wrestler not in prepared_match_data["individual_results"]:
             prepared_match_data["individual_results"][wrestler] = "No Contest"
     
-    # Remove wrestlers from results who are no longer in the match
     current_wrestler_results_keys = list(prepared_match_data["individual_results"].keys())
     for wrestler_key in current_wrestler_results_keys:
         if wrestler_key not in all_wrestlers_in_match:
@@ -107,34 +145,31 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
     if "team_results" not in prepared_match_data:
         prepared_match_data["team_results"] = {}
     
-    # Add new teams to results, defaulting to "No Contest"
     for team in all_teams_in_match:
         if team not in prepared_match_data["team_results"]:
             prepared_match_data["team_results"][team] = "No Contest"
 
-    # Remove teams from results who are no longer in the match
     current_team_results_keys = list(prepared_match_data["team_results"].keys())
     for team_key in current_team_results_keys:
         if team_key not in all_teams_in_match:
             del prepared_match_data["team_results"][team_key]
 
-    # Initialize winning side index
     if "winning_side_index" not in prepared_match_data:
-        prepared_match_data["winning_side_index"] = -1 # -1 means no winning side selected
+        prepared_match_data["winning_side_index"] = -1
 
-    # Initialize sync toggle
     if "sync_teams_to_individuals" not in prepared_match_data:
-        prepared_match_data["sync_teams_to_individuals"] = True # Default to syncing
+        prepared_match_data["sync_teams_to_individuals"] = True
 
     return prepared_match_data
 
+# ... (rest of the validation and helper functions remain the same) ...
+
 def _sync_team_results_to_individuals(match_results, all_tagteams_data):
     """
-    Synchronizes team results to individual members, respecting existing manual overrides
-    (i.e., only overwrites if individual result is "No Contest" or missing).
+    Synchronizes team results to individual members.
     """
     if not match_results.get("sync_teams_to_individuals", True):
-        return match_results # Skip if syncing is disabled
+        return match_results
 
     team_results = match_results.get("team_results", {})
     individual_results = match_results.get("individual_results", {})
@@ -147,7 +182,6 @@ def _sync_team_results_to_individuals(match_results, all_tagteams_data):
     for team_name, result in team_results.items():
         if team_name in team_members_map:
             for member in team_members_map[team_name]:
-                # Only sync if the individual result is "No Contest" or not set
                 if individual_results.get(member) in ["No Contest", None]:
                     individual_results[member] = result
     
@@ -187,7 +221,6 @@ def _validate_result_completeness(match_results, sides, all_wrestlers_in_match, 
     team_results = match_results.get("team_results", {})
     winning_side_index = match_results.get("winning_side_index")
 
-    # Check if all participants have a result
     valid_results = ["Win", "Loss", "Draw", "No Contest"]
     for wrestler in all_wrestlers_in_match:
         if wrestler not in individual_results or individual_results[wrestler] not in valid_results:
@@ -197,23 +230,19 @@ def _validate_result_completeness(match_results, sides, all_wrestlers_in_match, 
         if team not in team_results or team_results[team] not in valid_results:
             warnings.append(f"Result missing or invalid for team: {team}")
 
-    # Check consistency with winning side, if one is selected
     if winning_side_index is not None and winning_side_index != -1 and 0 <= winning_side_index < len(sides):
         winning_side_members = set(sides[winning_side_index])
         
-        # Check individuals on winning side
         for wrestler in winning_side_members:
             if individual_results.get(wrestler) != "Win":
                 warnings.append(f"Wrestler '{wrestler}' on declared winning side has result '{individual_results.get(wrestler, 'N/A')}' instead of 'Win'.")
         
-        # Check individuals on non-winning sides
         for i, side in enumerate(sides):
             if i != winning_side_index:
                 for wrestler in side:
                     if individual_results.get(wrestler) == "Win":
                         warnings.append(f"Wrestler '{wrestler}' on a non-winning side has result 'Win'.")
         
-        # Check consistency for tag teams
         team_members_map = {
             team_data['Name']: set(team_data.get('Members', '').split('|'))
             for team_data in all_tagteams_data if 'Name' in team_data and 'Members' in team_data
@@ -222,18 +251,18 @@ def _validate_result_completeness(match_results, sides, all_wrestlers_in_match, 
         for team_name in all_teams_in_match:
             if team_name in team_members_map:
                 members_of_this_team = team_members_map[team_name]
-                # A team is on the winning side if ALL its members are on the winning side
                 is_team_on_winning_side = members_of_this_team.issubset(winning_side_members)
                 
                 if is_team_on_winning_side:
                     if team_results.get(team_name) != "Win":
-                        warnings.append(f"Team '{team_name}' (whose members are all on the winning side) has result '{team_results.get(team_name, 'N/A')}' instead of 'Win'.")
+                        warnings.append(f"Team '{team_name}' (on winning side) has result '{team_results.get(team_name, 'N/A')}' instead of 'Win'.")
                 else:
                     if team_results.get(team_name) == "Win":
-                        warnings.append(f"Team '{team_name}' (whose members are not all on the winning side) has result 'Win'.")
+                        warnings.append(f"Team '{team_name}' (on non-winning side) has result 'Win'.")
 
     return warnings
 
+# ... (File path, slugify, and other load/save functions remain the same) ...
 def _get_project_root():
     """Returns the absolute path to the project root directory."""
     current_dir = os.path.dirname(__file__)
@@ -268,7 +297,6 @@ def _get_summary_file_path(event_slug, segment_type, header, position):
     """Constructs the absolute path to a segment's summary Markdown file."""
     root = _get_project_root()
     event_tmp_dir = os.path.join(root, TMP_DIR, _slugify(event_slug))
-    # Ensure header is not empty for filename generation
     header_slug = _slugify(header) if header else "no-header"
     type_slug = _slugify(segment_type)
     return os.path.join(event_tmp_dir, f'{type_slug}_{header_slug}_{position}.md')
@@ -297,7 +325,6 @@ def load_segments(event_slug):
 def save_segments(event_slug, segments_list):
     """Saves segments for a specific event to its JSON file."""
     file_path = _get_segments_file_path(event_slug)
-    # Ensure the directory for event segment files exists
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(segments_list, f, indent=4)
@@ -364,24 +391,12 @@ def delete_summary_file(summary_file_path):
 
 def load_active_wrestlers():
     """Loads active wrestlers from wrestlers.json."""
-    root = _get_project_root()
-    file_path = os.path.join(root, WRESTLERS_FILE)
-    if not os.path.exists(file_path):
-        return []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        wrestlers = json.load(f)
-    return [w for w in wrestlers if w.get('Status') == 'Active']
+    return [w for w in load_wrestlers() if w.get('Status') == 'Active']
 
 
 def load_active_tagteams():
     """Loads active tag teams from tagteams.json."""
-    root = _get_project_root()
-    file_path = os.path.join(root, TAGTEAMS_FILE)
-    if not os.path.exists(file_path):
-        return []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        tagteams = json.load(f)
-    return [t for t in tagteams if t.get('Status') == 'Active']
+    return [t for t in load_tagteams() if t.get('Status') == 'Active']
 
 
 def generate_match_display_string(sides):
@@ -397,24 +412,21 @@ def generate_match_display_string(sides):
 
 def validate_match_data(sides, match_results=None):
     """
-    Validates match data based on specified rules, including structural and result completeness.
-    Returns a list of errors and warnings.
+    Validates match data based on specified rules.
     """
     errors = []
     warnings = []
 
     if not sides or len(sides) < 2:
         errors.append("A match must have at least 2 sides.")
-        return errors, warnings # Early exit if fundamental structure is missing
+        return errors, warnings
 
     for i, side in enumerate(sides):
-        if not side: # Check if the side list itself is empty
+        if not side:
             errors.append(f"Side {i+1} must have at least one participant.")
 
-    # Perform structural validation (e.g., unbalanced sides)
     warnings.extend(_validate_match_structure(sides))
 
-    # Perform result completeness validation if match_results are provided
     if match_results:
         all_tagteams_data = load_tagteams()
         all_wrestlers_in_match = _get_all_wrestlers_involved(sides)
@@ -423,14 +435,55 @@ def validate_match_data(sides, match_results=None):
 
     return errors, warnings
 
-
 def add_segment(event_slug, segment_data, summary_content, match_data=None):
     """Adds a new segment to an event. If it's a match, also adds match data."""
     segments = load_segments(event_slug)
     if any(s.get('position') == segment_data['position'] for s in segments):
         return False, "A segment with this position already exists."
 
-    # Generate summary file path
+    if segment_data['type'] == 'Match' and match_data is not None:
+        all_wrestlers_data = load_wrestlers()
+        all_tagteams_data = load_tagteams()
+        processed_match_data = _prepare_match_data_for_storage(match_data, all_wrestlers_data, all_tagteams_data)
+        processed_match_data = _sync_team_results_to_individuals(processed_match_data, all_tagteams_data)
+
+        # NEW: Auto-generate header if empty
+        if not segment_data.get('header'):
+            match_class = processed_match_data.get('match_class', 'other')
+            if match_class == 'singles':
+                segment_data['header'] = 'Singles Match'
+            elif match_class == 'tag':
+                segment_data['header'] = 'Tag-Team Match'
+            elif match_class == 'battle_royal':
+                segment_data['header'] = 'Battle Royal'
+            else:
+                segment_data['header'] = 'Match'
+
+        errors, warnings = validate_match_data(processed_match_data.get('sides', []), processed_match_data)
+        if errors:
+            raise ValueError(f"Match data validation failed: {', '.join(errors)}")
+        processed_match_data['warnings'] = warnings if warnings else []
+
+        match_id = str(uuid.uuid4())
+        segment_data['match_id'] = match_id
+        segment_data['participants_display'] = processed_match_data['participants_display']
+        segment_data['sides'] = processed_match_data['sides']
+        # NEW: Generate and store the match result string
+        segment_data['match_result'] = _generate_match_result_string(processed_match_data, all_tagteams_data)
+        
+        full_match_data_to_save = processed_match_data.copy()
+        full_match_data_to_save['match_id'] = match_id
+        full_match_data_to_save['segment_position'] = segment_data['position']
+        
+        _add_match(event_slug, full_match_data_to_save)
+    else:
+        # If not a match, ensure match-specific fields are cleared
+        segment_data.pop('match_id', None)
+        segment_data.pop('participants_display', None)
+        segment_data.pop('sides', None)
+        segment_data.pop('match_result', None)
+
+    # Generate summary file path (must be done after header is set)
     segment_data['summary_file'] = _get_summary_file_path(
         event_slug,
         segment_data.get('type', ''),
@@ -438,47 +491,8 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
         segment_data['position']
     )
 
-    if segment_data['type'] == 'Match' and match_data is not None:
-        # Load necessary data for classification and result preparation
-        all_wrestlers_data = load_wrestlers()
-        all_tagteams_data = load_tagteams()
-
-        # Prepare match data (classify, initialize results)
-        processed_match_data = _prepare_match_data_for_storage(match_data, all_wrestlers_data, all_tagteams_data)
-        
-        # Sync team results to individuals if enabled
-        processed_match_data = _sync_team_results_to_individuals(processed_match_data, all_tagteams_data)
-
-        # Validate the processed match data
-        errors, warnings = validate_match_data(processed_match_data.get('sides', []), processed_match_data)
-        if errors:
-            # If there are errors, do not add the segment
-            raise ValueError(f"Match data validation failed: {', '.join(errors)}")
-        if warnings:
-            processed_match_data['warnings'] = warnings
-        else:
-            processed_match_data.pop('warnings', None) # Remove warnings if none exist
-
-        # Generate a unique match ID
-        match_id = str(uuid.uuid4())
-        segment_data['match_id'] = match_id
-        segment_data['participants_display'] = processed_match_data['participants_display']
-        segment_data['sides'] = processed_match_data['sides'] # Store simplified sides in segment data
-
-        # Store the full processed match data separately
-        full_match_data_to_save = processed_match_data.copy()
-        full_match_data_to_save['match_id'] = match_id
-        full_match_data_to_save['segment_position'] = segment_data['position']
-        
-        _add_match(event_slug, full_match_data_to_save)
-    else:
-        # Remove match-specific fields if segment is not a match or no match_data provided
-        segment_data.pop('match_id', None)
-        segment_data.pop('participants_display', None)
-        segment_data.pop('sides', None)
-
     segments.append(segment_data)
-    segments.sort(key=lambda s: s['position'])  # Keep segments sorted
+    segments.sort(key=lambda s: s['position'])
     save_segments(event_slug, segments)
     save_summary_content(segment_data['summary_file'], summary_content)
     return True, "Segment added successfully."
@@ -494,97 +508,82 @@ def _add_match(event_slug, match_data):
 def update_segment(event_slug, original_position, updated_data, summary_content, match_data=None):
     """Updates an existing segment for an event. If it's a match, also updates match data."""
     segments = load_segments(event_slug)
-    found = False
-    old_summary_file_path = None
-    old_match_id = None
     segment_index = -1
-
     for i, segment in enumerate(segments):
         if segment.get('position') == int(original_position):
-            found = True
             segment_index = i
             old_summary_file_path = segment.get('summary_file')
             old_match_id = segment.get('match_id')
             break
 
-    if not found:
+    if segment_index == -1:
         return False, f"Segment at position {original_position} not found."
 
-    # Check for position conflict if position is changed
     if updated_data['position'] != int(original_position) and \
-       any(s.get('position') == updated_data['position'] and s.get('position') != int(original_position) for s in segments):
+       any(s.get('position') == updated_data['position'] for s in segments if s.get('position') != int(original_position)):
         return False, f"New position '{updated_data['position']}' conflicts with another segment."
 
-    # Handle match data if the segment is a match
     if updated_data['type'] == 'Match' and match_data is not None:
-        # Load necessary data for classification and result preparation
         all_wrestlers_data = load_wrestlers()
         all_tagteams_data = load_tagteams()
-
-        # Prepare match data (classify, initialize results)
-        # Use existing match_id if present in match_data to ensure continuity
         processed_match_data = _prepare_match_data_for_storage(match_data, all_wrestlers_data, all_tagteams_data)
-        
-        # Sync team results to individuals if enabled
         processed_match_data = _sync_team_results_to_individuals(processed_match_data, all_tagteams_data)
 
-        # Validate the processed match data
+        # NEW: Auto-generate header if empty
+        if not updated_data.get('header'):
+            match_class = processed_match_data.get('match_class', 'other')
+            if match_class == 'singles':
+                updated_data['header'] = 'Singles Match'
+            elif match_class == 'tag':
+                updated_data['header'] = 'Tag-Team Match'
+            elif match_class == 'battle_royal':
+                updated_data['header'] = 'Battle Royal'
+            else:
+                updated_data['header'] = 'Match'
+
         errors, warnings = validate_match_data(processed_match_data.get('sides', []), processed_match_data)
         if errors:
             raise ValueError(f"Match data validation failed: {', '.join(errors)}")
-        if warnings:
-            processed_match_data['warnings'] = warnings
-        else:
-            processed_match_data.pop('warnings', None) # Remove warnings if none exist
+        processed_match_data['warnings'] = warnings if warnings else []
 
+        updated_data['participants_display'] = processed_match_data['participants_display']
+        updated_data['sides'] = processed_match_data['sides']
+        # NEW: Generate and store the match result string
+        updated_data['match_result'] = _generate_match_result_string(processed_match_data, all_tagteams_data)
+
+        full_match_data_to_save = processed_match_data.copy()
+        full_match_data_to_save['segment_position'] = updated_data['position']
 
         if old_match_id:
-            # Update existing match
-            updated_data['match_id'] = old_match_id # Preserve existing match_id
-            updated_data['participants_display'] = processed_match_data['participants_display']
-            updated_data['sides'] = processed_match_data['sides']
-
-            full_match_data_to_save = processed_match_data.copy()
+            updated_data['match_id'] = old_match_id
             full_match_data_to_save['match_id'] = old_match_id
-            full_match_data_to_save['segment_position'] = updated_data['position'] # Update position in match data as well
-            
             _update_match(event_slug, old_match_id, full_match_data_to_save)
         else:
-            # It became a match, add new match data
             match_id = str(uuid.uuid4())
             updated_data['match_id'] = match_id
-            updated_data['participants_display'] = processed_match_data['participants_display']
-            updated_data['sides'] = processed_match_data['sides']
-
-            full_match_data_to_save = processed_match_data.copy()
             full_match_data_to_save['match_id'] = match_id
-            full_match_data_to_save['segment_position'] = updated_data['position']
-            
             _add_match(event_slug, full_match_data_to_save)
+            
     elif old_match_id:
-        # Segment changed from Match to another type, delete associated match data
         _delete_match(event_slug, old_match_id)
-        # Ensure match-specific fields are removed from the segment data itself
         updated_data.pop('match_id', None)
         updated_data.pop('participants_display', None)
         updated_data.pop('sides', None)
+        updated_data.pop('match_result', None)
 
-    # Update segment data with new values (including potentially new match_id/display/sides/warnings)
     segments[segment_index] = updated_data
-    # Generate new summary file path based on potentially updated fields
-    segments[segment_index]['summary_file'] = _get_summary_file_path(
+    new_summary_file_path = _get_summary_file_path(
         event_slug,
         updated_data.get('type', ''),
         updated_data.get('header', ''),
         updated_data['position']
     )
+    segments[segment_index]['summary_file'] = new_summary_file_path
 
-    # Delete old summary file if its path changed
-    new_summary_file_path = segments[segment_index]['summary_file']
     if old_summary_file_path and old_summary_file_path != new_summary_file_path:
         delete_summary_file(old_summary_file_path)
 
-    segments.sort(key=lambda s: s['position'])  # Re-sort segments
+    segments.sort(key=lambda s: s['position'])
     save_segments(event_slug, segments)
     save_summary_content(new_summary_file_path, summary_content)
     return True, "Segment updated successfully."
@@ -607,59 +606,47 @@ def _update_match(event_slug, match_id, updated_match_data):
 def delete_segment(event_slug, position):
     """Deletes a segment and its associated summary file and match data for an event."""
     segments = load_segments(event_slug)
-    initial_len = len(segments)
-    segment_to_delete = None
-
-    for segment in segments:
-        if segment.get('position') == int(position):
-            segment_to_delete = segment
-            break
+    segment_to_delete = next((s for s in segments if s.get('position') == int(position)), None)
 
     if segment_to_delete:
         segments = [s for s in segments if s.get('position') != int(position)]
-        if len(segments) < initial_len:
-            save_segments(event_slug, segments)
-            delete_summary_file(segment_to_delete.get('summary_file', ''))
-            
-            # If it was a match, delete its associated match data
-            if segment_to_delete.get('type') == 'Match' and segment_to_delete.get('match_id'):
-                _delete_match(event_slug, segment_to_delete['match_id'])
-            return True
+        save_segments(event_slug, segments)
+        delete_summary_file(segment_to_delete.get('summary_file', ''))
+        
+        if segment_to_delete.get('match_id'):
+            _delete_match(event_slug, segment_to_delete['match_id'])
+        return True
     return False
 
 
 def _delete_match(event_slug, match_id):
     """Internal function to delete a match from an event's matches file."""
     matches = load_matches(event_slug)
-    initial_len = len(matches)
-    matches = [m for m in matches if m.get('match_id') != match_id]
-    if len(matches) < initial_len:
-        save_matches(event_slug, matches)
+    matches_after_delete = [m for m in matches if m.get('match_id') != match_id]
+    if len(matches_after_delete) < len(matches):
+        save_matches(event_slug, matches_after_delete)
         return True
     return False
 
 
 def delete_all_segments_for_event(event_name):
     """
-    Deletes the segments JSON file and all associated summary Markdown files
-    and the matches JSON file for a given event.
+    Deletes the segments and matches JSON files and all associated summary Markdown files.
     """
     sluggified_event_name = _slugify(event_name)
     segments_file_path = _get_segments_file_path(sluggified_event_name)
-    matches_file_path = _get_matches_file_path(sluggified_event_name) # Path to matches file
+    matches_file_path = _get_matches_file_path(sluggified_event_name)
 
-    # Load segments to get paths to summary files and match IDs
     segments = load_segments(sluggified_event_name)
     for segment in segments:
         if 'summary_file' in segment:
             delete_summary_file(segment['summary_file'])
 
-    # Delete the main segments JSON file
     if os.path.exists(segments_file_path):
         os.remove(segments_file_path)
 
-    # Delete the matches JSON file
     if os.path.exists(matches_file_path):
         os.remove(matches_file_path)
         
-    return True # Return True if segment file existed or if processing completes
+    return True
+

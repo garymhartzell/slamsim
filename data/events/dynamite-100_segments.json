@@ -13,54 +13,43 @@
     {
         "position": 2,
         "type": "Match",
-        "header": "TNT Championship",
-        "match_id": "15a4aac4-7ef0-4311-aca1-13e72cc86118",
+        "header": "Singles Match",
+        "match_id": "88a6825d-2be5-4b1d-8465-ddb3ded6ca2e",
         "participants_display": "Daniel Garcia vs Bryan Keith",
         "sides": [
-            {
-                "members": [
-                    "Daniel Garcia"
-                ],
-                "tagteam": null
-            },
-            {
-                "members": [
-                    "Bryan Keith"
-                ],
-                "tagteam": null
-            }
+            [
+                "Daniel Garcia"
+            ],
+            [
+                "Bryan Keith"
+            ]
         ],
-        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_tnt-championship_2.md"
+        "match_result": "Daniel Garcia def. Bryan Keith",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_singles-match_2.md"
     },
     {
         "position": 3,
         "type": "Match",
         "header": "Tag-Team Grudge Match",
-        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_tag-team-grudge-match_3.md",
-        "match_id": "f4714b30-b791-40a5-8267-c4ce2abf516c",
-        "participants_display": "The Young Bucks vs Kenny Omega, Will Ospreay",
+        "match_id": "256bae8f-229b-491a-a53f-c79afd868241",
+        "participants_display": "Kenny Omega, Will Ospreay vs The Young Bucks",
         "sides": [
-            {
-                "members": [
-                    "Matthew Jackson",
-                    "Nicholas Jackson"
-                ],
-                "tagteam": "The Young Bucks"
-            },
-            {
-                "members": [
-                    "Kenny Omega",
-                    "Will Ospreay"
-                ],
-                "tagteam": null
-            }
-        ]
+            [
+                "Kenny Omega",
+                "Will Ospreay"
+            ],
+            [
+                "Matthew Jackson",
+                "Nicholas Jackson"
+            ]
+        ],
+        "match_result": "Kenny Omega, Will Ospreay def. The Young Bucks (Matthew Jackson, Nicholas Jackson) (16:55)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_tag-team-grudge-match_3.md"
     },
     {
         "position": 4,
         "type": "Match",
-        "header": "",
-        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_no-header_4.md",
+        "header": "Singles Match",
         "match_id": "f24373e9-44fc-46aa-ba3f-760578b2196a",
         "participants_display": "Willow Nightengale vs Kris Statlander",
         "sides": [
@@ -70,14 +59,15 @@
             [
                 "Kris Statlander"
             ]
-        ]
+        ],
+        "match_result": "Kris Statlander def. Willow Nightengale (14:43)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_singles-match_4.md"
     },
     {
         "position": 5,
         "type": "Match",
-        "header": "",
-        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_no-header_5.md",
-        "match_id": "69389f4d-cd4d-434f-9256-57ba21465167",
+        "header": "Tag-Team Match",
+        "match_id": "798602e4-4b06-4e09-a911-0e0af7637295",
         "participants_display": "Jamie Hayter, Thunder Rosa vs Julia Hart, Skye Blue",
         "sides": [
             [
@@ -88,12 +78,14 @@
                 "Julia Hart",
                 "Skye Blue"
             ]
-        ]
+        ],
+        "match_result": "Julia Hart, Skye Blue def. Jamie Hayter, Thunder Rosa (09:14)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_tag-team-match_5.md"
     },
     {
         "position": 6,
         "type": "Promo",
-        "header": "",
-        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/promo_no-header_6.md"
+        "header": "Better Than You",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/promo_better-than-you_6.md"
     }
 ]

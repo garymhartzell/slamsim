@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.events import load_events, get_event_by_name, add_event, update_event, delete_event
-from src.segments import load_segments, load_summary_content, _slugify, delete_all_segments_for_event
+from src.segments import load_segments, _slugify, delete_all_segments_for_event
 from datetime import datetime
 
 events_bp = Blueprint('events', __name__, url_prefix='/events')
@@ -30,71 +30,70 @@ def create_event():
     """Handles event creation."""
     if request.method == 'POST':
         event_data = _get_form_data(request.form)
-        if not event_data['Event_Name'] or not event_data['Status'] or not event_data['Date']:
+        if not all([event_data['Event_Name'], event_data['Status'], event_data['Date']]):
             flash('Event Name, Status, and Date are required.', 'danger')
             return render_template('events/form.html', event={}, status_options=STATUS_OPTIONS)
 
-        # Basic date validation for format (can be expanded)
         try:
             datetime.strptime(event_data['Date'], '%Y-%m-%d')
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return render_template('events/form.html', event={}, status_options=STATUS_OPTIONS)
+            return render_template('events/form.html', event=event_data, status_options=STATUS_OPTIONS)
 
         if add_event(event_data):
-            flash(f"Event '{event_data['Event_Name']}' created successfully!", 'success')
-            return redirect(url_for('events.list_events'))
+            flash(f"Event '{event_data['Event_Name']}' created successfully! You can now add segments.", 'success')
+            return redirect(url_for('events.edit_event', event_name=event_data['Event_Name']))
         else:
             flash(f"Event with name '{event_data['Event_Name']}' already exists.", 'danger')
+            return render_template('events/form.html', event=event_data, status_options=STATUS_OPTIONS)
 
-    return render_template('events/form.html', event={}, status_options=STATUS_OPTIONS)
+    return render_template('events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[])
 
 @events_bp.route('/edit/<string:event_name>', methods=['GET', 'POST'])
 def edit_event(event_name):
-    """Handles event editing."""
+    """Handles event editing and segment management."""
     event = get_event_by_name(event_name)
     if not event:
         flash('Event not found.', 'danger')
         return redirect(url_for('events.list_events'))
 
+    # Load segments to display on the edit page
+    sluggified_name = _slugify(event_name)
+    segments = load_segments(sluggified_name)
+
     if request.method == 'POST':
         updated_data = _get_form_data(request.form)
-        if not updated_data['Event_Name'] or not updated_data['Status'] or not updated_data['Date']:
+        if not all([updated_data['Event_Name'], updated_data['Status'], updated_data['Date']]):
             flash('Event Name, Status, and Date are required.', 'danger')
-            return render_template('events/form.html', event=event, status_options=STATUS_OPTIONS)
+            return render_template('events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
 
         try:
             datetime.strptime(updated_data['Date'], '%Y-%m-%d')
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return render_template('events/form.html', event=event, status_options=STATUS_OPTIONS)
+            return render_template('events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
 
         if update_event(event_name, updated_data):
             flash(f"Event '{updated_data['Event_Name']}' updated successfully!", 'success')
-            return redirect(url_for('events.list_events'))
+            # If name changes, redirect to the new edit URL
+            return redirect(url_for('events.edit_event', event_name=updated_data['Event_Name']))
         else:
-            flash(f"Failed to update event '{event_name}'. New name might conflict or event not found.", 'danger')
-            # If update fails, re-render form with current data (could be conflicting new name)
-            return render_template('events/form.html', event=updated_data, status_options=STATUS_OPTIONS, original_name=event_name)
-
-    return render_template('events/form.html', event=event, status_options=STATUS_OPTIONS, original_name=event_name)
+            flash(f"Failed to update event. New name might conflict.", 'danger')
+            return render_template('events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+    
+    # GET request
+    return render_template('events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
 
 @events_bp.route('/view/<string:event_name>')
 def view_event(event_name):
-    """Displays details of a single event and its segments."""
+    """Displays details of a single event and its segments (read-only)."""
     event = get_event_by_name(event_name)
     if not event:
         flash('Event not found.', 'danger')
         return redirect(url_for('events.list_events'))
 
-    segments = load_segments(_slugify(event_name)) # Use sluggified name
-    # Load summary content for each segment to display directly
-    for segment in segments:
-        if segment.get('summary_file'):
-            segment['summary_content'] = load_summary_content(segment['summary_file'])
-        else:
-            segment['summary_content'] = ''
-    segments.sort(key=lambda s: s['position']) # Ensure segments are sorted by position
+    segments = load_segments(_slugify(event_name))
+    segments.sort(key=lambda s: s.get('position', 0))
 
     return render_template('events/view.html', event=event, segments=segments)
 
@@ -102,9 +101,9 @@ def view_event(event_name):
 def delete_event_route(event_name):
     """Handles event deletion and also deletes associated segment files."""
     if delete_event(event_name):
-        # Also attempt to delete all segments and their summary files for this event
         delete_all_segments_for_event(event_name)
         flash(f"Event '{event_name}' and its segments deleted successfully!", 'success')
     else:
-        flash(f"Failed to delete event '{event_name}'. Event not found.", 'danger')
+        flash(f"Failed to delete event '{event_name}'.", 'danger')
     return redirect(url_for('events.list_events'))
+

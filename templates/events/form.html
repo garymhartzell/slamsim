@@ -5,10 +5,16 @@
 {% endblock %}
 
 {% block content %}
-    <h2>{% if event.Event_Name %}Edit Event: {{ event.Event_Name }}{% else %}Create New Event{% endif %}</h2>
+    <div class="header-bar">
+        <h2>{% if event.Event_Name %}Edit Event{% else %}Create New Event{% endif %}</h2>
+        <div class="action-buttons">
+             <a href="{{ url_for('events.list_events') }}">Back to List</a>
+        </div>
+    </div>
 
     <form class="wide-form" method="POST" action="{{ url_for('events.create_event') if not event.Event_Name else url_for('events.edit_event', event_name=original_name) }}">
-        <div class="form-row">
+        <fieldset class="form-section">
+            <legend>Event Details</legend>
             <div class="form-group">
                 <label for="event_name">Event Name <span class="required">*</span></label>
                 <input type="text" id="event_name" name="event_name" value="{{ event.Event_Name | default('') }}" required>
@@ -17,45 +23,76 @@
                 <label for="subtitle">Subtitle</label>
                 <input type="text" id="subtitle" name="subtitle" value="{{ event.Subtitle | default('') }}">
             </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="status">Status <span class="required">*</span></label>
-                <select id="status" name="status" required>
-                    <option value="">--Select Status--</option>
-                    {% for status_option in status_options %}
-                        <option value="{{ status_option }}" {% if event.get('Status', '') == status_option %}selected{% endif %}>{{ status_option }}</option>
-                    {% endfor %}
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Date <span class="required">*</span></label>
+                    <input type="date" id="date" name="date" value="{{ event.Date | default('') }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status <span class="required">*</span></label>
+                    <select id="status" name="status" required>
+                        <option value="">--Select Status--</option>
+                        {% for status in status_options %}
+                            <option value="{{ status }}" {% if event.get('Status', '') == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="date">Date <span class="required">*</span></label>
-                <input type="date" id="date" name="date" value="{{ event.Date | default('') }}" required>
+             <div class="form-row">
+                <div class="form-group">
+                    <label for="venue">Venue</label>
+                    <input type="text" id="venue" name="venue" value="{{ event.Venue | default('') }}">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="{{ event.Location | default('') }}">
+                </div>
             </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="venue">Venue</label>
-                <input type="text" id="venue" name="venue" value="{{ event.Venue | default('') }}">
+             <div class="form-group">
+                <label for="broadcasters">Broadcasters</label>
+                <input type="text" id="broadcasters" name="broadcasters" value="{{ event.Broadcasters | default('') }}">
             </div>
-            <div class="form-group">
-                <label for="location">Location</label>
-                <input type="text" id="location" name="location" value="{{ event.Location | default('') }}">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="broadcasters">Broadcasters</label>
-            <input type="text" id="broadcasters" name="broadcasters" value="{{ event.Broadcasters | default('') }}">
-        </div>
-
-        <div class="action-buttons form-actions">
+        </fieldset>
+         <div class="action-buttons form-actions">
             <button type="submit" class="btn btn-primary">
-                {% if event.Event_Name %}Update Event{% else %}Create Event{% endif %}
+                {% if event.Event_Name %}Update Event Details{% else %}Create Event{% endif %}
             </button>
-            <a href="{{ url_for('events.list_events') }}">Cancel</a>
         </div>
     </form>
+
+    {% if event.Event_Name %}
+    <hr class="section-divider">
+    <div class="header-bar">
+        <h3>Manage Segments</h3>
+        <div class="action-buttons">
+            <a href="{{ url_for('segments.create_segment', event_slug=event.Event_Name) }}" class="btn btn-primary">Add New Segment</a>
+        </div>
+    </div>
+    
+    <div class="segment-list">
+        {% if segments %}
+            {% for segment in segments|sort(attribute='position') %}
+                <div class="segment-item">
+                    <div class="segment-header">
+                        <h4>{{ segment.position }}. {{ segment.type }}{% if segment.header %}: {{ segment.header }}{% endif %}</h4>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('segments.edit_segment', event_slug=event.Event_Name, position=segment.position) }}" class="btn btn-secondary">Edit</a>
+                            <form action="{{ url_for('segments.delete_segment_route', event_slug=event.Event_Name, position=segment.position) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                     {% if segment.type == 'Match' and segment.match_result %}
+                        <div class="segment-content">
+                             <p class="match-result"><strong>Result:</strong> {{ segment.match_result }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No segments found for this event. Click "Add New Segment" to get started.</p>
+        {% endif %}
+    </div>
+    {% endif %}
 {% endblock %}
+
