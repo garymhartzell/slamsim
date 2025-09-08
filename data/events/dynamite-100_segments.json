@@ -13,8 +13,8 @@
     {
         "position": 2,
         "type": "Match",
-        "header": "Singles Match",
-        "match_id": "88a6825d-2be5-4b1d-8465-ddb3ded6ca2e",
+        "header": "TNT Championship",
+        "match_id": "dfd1e503-ee4f-443d-83b0-788f9475bdd9",
         "participants_display": "Daniel Garcia vs Bryan Keith",
         "sides": [
             [
@@ -24,8 +24,8 @@
                 "Bryan Keith"
             ]
         ],
-        "match_result": "Daniel Garcia def. Bryan Keith",
-        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_singles-match_2.md"
+        "match_result": "Daniel Garcia def. Bryan Keith (13:09)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/dynamite-100/match_tnt-championship_2.md"
     },
     {
         "position": 3,

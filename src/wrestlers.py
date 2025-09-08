@@ -4,10 +4,7 @@ import os
 WRESTLERS_FILE_RELATIVE_TO_ROOT = 'data/wrestlers.json'
 
 def _get_wrestlers_file_path():
-    """Constructs the absolute path to the wrestlers data file, relative to the project root."""
-    # __file__ is src/wrestlers.py
-    # os.path.dirname(__file__) is src/
-    # os.path.join(os.path.dirname(__file__), '..') is the project root
+    """Constructs the absolute path to the wrestlers data file."""
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     return os.path.join(project_root, WRESTLERS_FILE_RELATIVE_TO_ROOT)
 
@@ -34,29 +31,28 @@ def get_wrestler_by_name(name):
     return None
 
 def add_wrestler(wrestler_data):
-    """Adds a new wrestler to the data. Returns True on success, False if wrestler name already exists."""
+    """Adds a new wrestler to the data."""
     wrestlers = load_wrestlers()
     if any(w.get('Name') == wrestler_data.get('Name') for w in wrestlers):
-        return False # Wrestler with this name already exists
+        return False
     wrestlers.append(wrestler_data)
     save_wrestlers(wrestlers)
     return True
 
 def update_wrestler(original_name, updated_data):
-    """Updates an existing wrestler's data. Returns True on success, False if wrestler not found or new name conflicts."""
+    """Updates an existing wrestler's data."""
     wrestlers = load_wrestlers()
     for i, wrestler in enumerate(wrestlers):
         if wrestler.get('Name') == original_name:
-            # Check if the name itself was changed and if the new name conflicts with another wrestler
-            if original_name != updated_data.get('Name') and any(w.get('Name') == updated_data.get('Name') for w in wrestlers if w.get('Name') != original_name):
-                return False # New name conflicts with existing wrestler
+            if original_name != updated_data.get('Name') and any(w.get('Name') == updated_data.get('Name') for w in wrestlers):
+                return False
             wrestlers[i] = updated_data
             save_wrestlers(wrestlers)
             return True
     return False
 
 def delete_wrestler(name):
-    """Deletes a wrestler by their unique name. Returns True on success, False if wrestler not found."""
+    """Deletes a wrestler by their unique name."""
     wrestlers = load_wrestlers()
     original_len = len(wrestlers)
     wrestlers = [w for w in wrestlers if w.get('Name') != name]
@@ -64,3 +60,30 @@ def delete_wrestler(name):
         save_wrestlers(wrestlers)
         return True
     return False
+
+def update_wrestler_record(wrestler_name, match_class, result):
+    """Updates a wrestler's win/loss/draw record for a given match type."""
+    all_wrestlers = load_wrestlers()
+    wrestler_found = False
+    for wrestler in all_wrestlers:
+        if wrestler['Name'] == wrestler_name:
+            wrestler_found = True
+            if match_class == 'singles':
+                if result == 'Win':
+                    wrestler['Singles_Wins'] = str(int(wrestler.get('Singles_Wins', 0)) + 1)
+                elif result == 'Loss':
+                    wrestler['Singles_Losses'] = str(int(wrestler.get('Singles_Losses', 0)) + 1)
+                elif result == 'Draw':
+                    wrestler['Singles_Draws'] = str(int(wrestler.get('Singles_Draws', 0)) + 1)
+            elif match_class in ['tag', 'other', 'battle_royal']: # Tag-like matches affect tag record
+                if result == 'Win':
+                    wrestler['Tag_Wins'] = str(int(wrestler.get('Tag_Wins', 0)) + 1)
+                elif result == 'Loss':
+                    wrestler['Tag_Losses'] = str(int(wrestler.get('Tag_Losses', 0)) + 1)
+                elif result == 'Draw':
+                    wrestler['Tag_Draws'] = str(int(wrestler.get('Tag_Draws', 0)) + 1)
+            break
+    if wrestler_found:
+        save_wrestlers(all_wrestlers)
+    return wrestler_found
+

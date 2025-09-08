@@ -25,31 +25,6 @@
         "match_id": "f24373e9-44fc-46aa-ba3f-760578b2196a"
     },
     {
-        "participants_display": "Daniel Garcia vs Bryan Keith",
-        "sides": [
-            [
-                "Daniel Garcia"
-            ],
-            [
-                "Bryan Keith"
-            ]
-        ],
-        "match_time": "",
-        "match_championship": "TNT Championship",
-        "match_hidden": false,
-        "match_class": "singles",
-        "winning_side_index": 0,
-        "individual_results": {
-            "Daniel Garcia": "Win",
-            "Bryan Keith": "Loss"
-        },
-        "team_results": {},
-        "sync_teams_to_individuals": true,
-        "warnings": [],
-        "match_id": "88a6825d-2be5-4b1d-8465-ddb3ded6ca2e",
-        "segment_position": 2
-    },
-    {
         "participants_display": "Kenny Omega, Will Ospreay vs The Young Bucks",
         "sides": [
             [
@@ -108,5 +83,30 @@
         "warnings": [],
         "match_id": "798602e4-4b06-4e09-a911-0e0af7637295",
         "segment_position": 5
+    },
+    {
+        "participants_display": "Daniel Garcia vs Bryan Keith",
+        "sides": [
+            [
+                "Daniel Garcia"
+            ],
+            [
+                "Bryan Keith"
+            ]
+        ],
+        "match_time": "13:09",
+        "match_championship": "TNT Championship",
+        "match_hidden": false,
+        "match_class": "singles",
+        "winning_side_index": 0,
+        "individual_results": {
+            "Daniel Garcia": "Win",
+            "Bryan Keith": "Loss"
+        },
+        "team_results": {},
+        "sync_teams_to_individuals": true,
+        "warnings": [],
+        "match_id": "dfd1e503-ee4f-443d-83b0-788f9475bdd9",
+        "segment_position": 2
     }
 ]

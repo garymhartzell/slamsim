@@ -1,0 +1,48 @@
+{% extends "_base.html" %}
+
+{% block title %}{% if form_action == 'create' %}Add Reign{% else %}Edit Reign{% endif %}{% endblock %}
+
+{% block content %}
+<div class="header-bar">
+    <h2>{% if form_action == 'create' %}Add Reign to {{ belt.Name }}{% else %}Edit Reign{% endif %}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('belts.history', belt_id=belt.ID) }}">Back to History</a>
+    </div>
+</div>
+
+<form class="wide-form" method="POST" action="{% if form_action == 'create' %}{{ url_for('belts.add_reign', belt_id=belt.ID) }}{% else %}{{ url_for('belts.edit_reign', reign_id=reign.Reign_ID) }}{% endif %}">
+    <input type="hidden" name="belt_id" value="{{ belt.ID }}">
+    
+    <fieldset class="form-section">
+        <legend>Reign Details</legend>
+        <div class="form-group">
+            <label for="champion_name">Champion Name <span class="required">*</span></label>
+            <input type="text" id="champion_name" name="champion_name" value="{{ reign.Champion_Name | default('') }}" required>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="date_won">Date Won <span class="required">*</span></label>
+                <input type="date" id="date_won" name="date_won" value="{{ reign.Date_Won | default('') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="date_lost">Date Lost</label>
+                <input type="date" id="date_lost" name="date_lost" value="{{ reign.Date_Lost | default('') }}">
+                <small>Leave blank for an active reign.</small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="defenses">Successful Defenses</label>
+            <input type="number" id="defenses" name="defenses" value="{{ reign.Defenses | default(0) }}" min="0">
+        </div>
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="4">{{ reign.Notes | default('') }}</textarea>
+        </div>
+    </fieldset>
+
+    <div class="action-buttons form-actions">
+        <button type="submit" class="btn btn-primary">{% if form_action == 'create' %}Add Reign{% else %}Update Reign{% endif %}</button>
+        <a href="{{ url_for('belts.history', belt_id=belt.ID) }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

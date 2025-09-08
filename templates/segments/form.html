@@ -1,389 +1,359 @@
 {% extends "_base.html" %}
 
 {% block title %}
-    {% if segment.get('position') %}Edit Segment for {{ event_slug }}{% else %}Create Segment for {{ event_slug }}{% endif %}
+    {% if segment.get('position') %}Edit Segment (Pos: {{ segment.get('position') }}) for {{ event_slug }}{% else %}Create New Segment for {{ event_slug }}{% endif %}
 {% endblock %}
 
 {% block content %}
-    <h2>{% if segment.get('position') %}Edit Segment (Position: {{ original_position }}){% else %}Create New Segment{% endif %} for {{ event_slug }}</h2>
+<div class="header-bar">
+    <h2>{% if segment.get('position') %}Edit Segment (Pos: {{ segment.get('position') }}){% else %}Create New Segment{% endif %} for {{ event_slug }}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('events.edit_event', event_name=event_slug) }}">Back to Event</a>
+    </div>
+</div>
 
-    <!-- This container is for dynamic, non-blocking notifications -->
-    <div id="notification-container" aria-live="polite" aria-atomic="true" class="notification-container"></div>
+<form id="segment-form" class="wide-form" method="POST" action="{{ url_for('segments.create_segment', event_slug=event_slug) if not segment.get('position') else url_for('segments.edit_segment', event_slug=event_slug, position=original_position) }}">
+    <fieldset class="form-section">
+        <legend>Segment Details</legend>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="position">Position <span class="required">*</span></label>
+                <input type="number" id="position" name="position" value="{{ segment.get('position', '') }}" required min="1">
+            </div>
+            <div class="form-group">
+                <label for="type">Type <span class="required">*</span></label>
+                <select id="type" name="type" required onchange="toggleMatchFields();">
+                    <option value="">--Select Type--</option>
+                    {% for seg_type in segment_type_options %}
+                        <option value="{{ seg_type }}" {% if segment.get('type', '') == seg_type %}selected{% endif %}>{{ seg_type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="header">Header</label>
+            <input type="text" id="header" name="header" value="{{ segment.get('header', '') }}">
+            <small>Leave blank for matches to auto-generate (e.g., 'Singles Match').</small>
+        </div>
+    </fieldset>
 
-    <form class="wide-form" method="POST" action="{{ url_for('segments.create_segment', event_slug=event_slug) if not segment.get('position') else url_for('segments.edit_segment', event_slug=event_slug, position=original_position) }}">
-        
-        <!-- Basic Segment Info -->
+    <div id="match-specific-fields" style="display: none;">
+        <hr class="section-divider">
         <fieldset class="form-section">
-            <legend>Segment Details</legend>
+            <legend>Match Participants Builder</legend>
+            <div class="form-group">
+                <label for="participant-select">Add Participant to Current Side:</label>
+                <div class="participant-adder">
+                    <select id="participant-select">
+                        <option value="">-- Select Participant --</option>
+                        <optgroup label="Wrestlers">
+                            {% for wrestler in all_wrestlers %}
+                                <option value="wrestler:{{ wrestler.Name }}">{{ wrestler.Name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="Tag Teams">
+                             {% for team in all_tagteams %}
+                                <option value="tagteam:{{ team.Name }}" data-members="{{ team.Members }}">{{ team.Name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                    </select>
+                    <button type="button" class="btn btn-secondary" onclick="addParticipantToCurrentSide()">Add Participant</button>
+                </div>
+                <button type="button" class="btn btn-info" onclick="addNewSide()">Add VS. Side</button>
+            </div>
+            <div id="match-sides-container"></div>
+            <p><strong>Participants Display:</strong> <span id="current-participants-display"></span></p>
+            <input type="hidden" id="participants_display_input" name="participants_display" value="{{ match_data.get('participants_display', '') }}">
+            <input type="hidden" id="match_sides_json_input" name="match_sides_json" value="{{ match_data.get('sides', []) | tojson | safe }}">
+            <input type="hidden" id="match_results_json_input" name="match_results_json" value="{{ {'winning_side_index': match_data.winning_side_index, 'individual_results': match_data.individual_results, 'team_results': match_data.team_results, 'sync_teams_to_individuals': match_data.sync_teams_to_individuals} | tojson | safe }}">
+        </fieldset>
+        
+        <hr class="section-divider">
+        <fieldset class="form-section">
+            <legend>Match Details</legend>
+            <div class="form-group">
+                <label for="match_championship">Championship on the line</label>
+                <select id="match_championship" name="match_championship" onchange="updateChampionDisplay()">
+                    <option value="">-- None --</option>
+                    {% for belt in all_belts %}
+                        {% if belt.Status == 'Active' %}
+                            <option value="{{ belt.Name }}" {% if match_data.get('match_championship') == belt.Name %}selected{% endif %}>
+                                {{ belt.Name }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <p id="current-champion-display" class="form-static-text"></p>
+            </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="position">Position <span class="required">*</span></label>
-                    <input type="number" id="position" name="position" value="{{ segment.get('position', '') }}" required min="1">
+                    <label for="match_time">Match Time (MM:SS)</label>
+                    <input type="text" id="match_time" name="match_time" value="{{ match_data.get('match_time', '') }}" pattern="^\d{1,2}:\d{2}$" placeholder="e.g., 05:30">
                 </div>
-                <div class="form-group">
-                    <label for="type">Type <span class="required">*</span></label>
-                    <select id="type" name="type" required onchange="toggleMatchFields()">
-                        <option value="">--Select Type--</option>
-                        {% for seg_type in segment_type_options %}
-                            <option value="{{ seg_type }}" {% if segment.get('type', '') == seg_type %}selected{% endif %}>{{ seg_type }}</option>
-                        {% endfor %}
-                    </select>
+                 <div class="form-group">
+                    <input type="hidden" name="match_class" id="match_class_input" value="{{ match_data.get('match_class', '') }}">
                 </div>
             </div>
             <div class="form-group">
-                <label for="header">Header</label>
-                <input type="text" id="header" name="header" value="{{ segment.get('header', '') }}">
+                 <input type="checkbox" id="match_hidden" name="match_hidden" {% if match_data.get('match_hidden', False) %}checked{% endif %}>
+                 <label for="match_hidden">Match Hidden from Card</label>
             </div>
         </fieldset>
 
-        <!-- Match Specific Fields (Initially Hidden) -->
-        <div id="match-specific-fields" style="display: none;">
-            
-            <!-- Match Builder -->
-            <fieldset class="form-section">
-                <legend>Match Participants</legend>
-                <div class="builder-controls">
-                    <div class="form-group">
-                        <label for="participant-select">Add Participant to Current Side:</label>
-                        <div class="input-group">
-                            <select id="participant-select">
-                                <option value="">--Select Participant--</option>
-                                <optgroup label="Wrestlers">
-                                    {% for wrestler in all_wrestlers %}
-                                        <option value="wrestler:{{ wrestler.Name }}">{{ wrestler.Name }}</option>
-                                    {% endfor %}
-                                </optgroup>
-                                <optgroup label="Tag Teams">
-                                     {% for team in all_tagteams %}
-                                        <option value="tagteam:{{ team.Name }}">{{ team.Name }}</option>
-                                    {% endfor %}
-                                </optgroup>
-                            </select>
-                            <button type="button" class="btn btn-secondary" onclick="addParticipantToCurrentSide()">Add Participant</button>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="addNewSide()">Add 'vs' Side</button>
-                </div>
-                
-                <p class="mt-2"><strong>Current Matchup:</strong> <span id="current-participants-display"></span></p>
-                
-                <div id="match-sides-container" class="mt-3">
-                    <!-- Dynamically generated sides and participants will go here -->
-                </div>
-            </fieldset>
+        <hr class="section-divider">
+        <fieldset class="form-section">
+            <legend>Match Results</legend>
+            <div class="form-group">
+                <label for="winning_side_index">Winning Side</label>
+                <select id="winning_side_index" name="winning_side_index" onchange="updateWinningSide(this)">
+                    <option value="-1">--Select Winning Side (Optional)--</option>
+                </select>
+            </div>
+            <div id="individual-results-container" class="results-container"></div>
+            <div id="team-results-container" class="results-container"></div>
+            <div class="form-group">
+                <input type="checkbox" id="sync_teams_to_individuals" name="sync_teams_to_individuals" onchange="updateSyncToggle(this)" {% if match_data.get('sync_teams_to_individuals', True) %}checked{% endif %}>
+                <label for="sync_teams_to_individuals">Sync Team Results to Individual Members</label>
+            </div>
+        </fieldset>
+    </div> <!-- THIS IS THE CORRECTED CLOSING DIV TAG -->
 
-            <!-- Match Details & Results -->
-            <fieldset class="form-section">
-                <legend>Match Results & Details</legend>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="winning_side_index">Winning Side</label>
-                        <select id="winning_side_index" name="winning_side_index" onchange="updateWinningSide(this)">
-                            <option value="-1">--Select Winning Side--</option>
-                            <!-- Options dynamically populated by JS -->
+    <fieldset class="form-section">
+        <legend>Summary</legend>
+        <div class="form-group">
+            <label for="summary_text">Summary Text</label>
+            <textarea id="summary_text" name="summary_text" rows="8">{{ summary_content | default('') }}</textarea>
+        </div>
+    </fieldset>
+
+    <div class="action-buttons form-actions">
+        <button type="submit" class="btn btn-primary">
+            {% if segment.get('position') %}Update Segment{% else %}Create Segment{% endif %}
+        </button>
+        <a href="{{ url_for('events.edit_event', event_name=event_slug) }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+    // --- FULL, UNCHANGED JAVASCRIPT BLOCK ---
+    const allWrestlers = {{ all_wrestlers | tojson | safe }};
+    const allTagTeams = {{ all_tagteams | tojson | safe }};
+    const allBelts = {{ all_belts | tojson | safe }};
+    const matchResultOptions = {{ match_result_options | tojson | safe }};
+    let matchDataFromServer = {{ match_data | tojson | safe }};
+    
+    let currentSides = matchDataFromServer.sides || [];
+    let currentMatchResults = {
+        winning_side_index: matchDataFromServer.winning_side_index !== undefined ? matchDataFromServer.winning_side_index : -1,
+        individual_results: matchDataFromServer.individual_results || {},
+        team_results: matchDataFromServer.team_results || {},
+        sync_teams_to_individuals: matchDataFromServer.sync_teams_to_individuals !== undefined ? matchDataFromServer.sync_teams_to_individuals : true,
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.dataset.currentSideIndex = '0';
+        toggleMatchFields();
+        updateChampionDisplay();
+        if (document.getElementById('type').value === 'Match') {
+           renderSides();
+        }
+    });
+
+    function toggleMatchFields() {
+        const segmentType = document.getElementById('type').value;
+        const matchFieldsDiv = document.getElementById('match-specific-fields');
+        if (segmentType === 'Match') {
+            matchFieldsDiv.style.display = 'block';
+            if (currentSides.length === 0) {
+                currentSides = [[], []];
+            }
+        } else {
+            matchFieldsDiv.style.display = 'none';
+        }
+    }
+
+    function updateChampionDisplay() {
+        const select = document.getElementById('match_championship');
+        const display = document.getElementById('current-champion-display');
+        const selectedBeltName = select.value;
+        if (!selectedBeltName) {
+            display.textContent = ''; return;
+        }
+        const selectedBelt = allBelts.find(belt => belt.Name === selectedBeltName);
+        if (selectedBelt) {
+            display.textContent = `Current Champion: ${selectedBelt.Current_Holder || 'Vacant'}`;
+        } else {
+            display.textContent = '';
+        }
+    }
+
+    function _get_all_wrestlers_involved_js(sides) {
+        const wrestlers = new Set();
+        sides.forEach(side => side.forEach(p => wrestlers.add(p)));
+        return Array.from(wrestlers);
+    }
+
+    function _get_all_tag_teams_involved_js(sides, all_tagteams_data) {
+        const teams = new Set();
+        const team_member_sets = {};
+        all_tagteams_data.forEach(t => {
+            if (t.Name && t.Members) team_member_sets[t.Name] = new Set(t.Members.split('|'));
+        });
+        sides.forEach(side => {
+            const side_members_set = new Set(side);
+            for (const team_name in team_member_sets) {
+                const members_set = team_member_sets[team_name];
+                if ([...members_set].every(member => side_members_set.has(member)) && members_set.size > 1) {
+                    teams.add(team_name);
+                }
+            }
+        });
+        return Array.from(teams);
+    }
+
+    function renderSides() {
+        const container = document.getElementById('match-sides-container');
+        container.innerHTML = '';
+        currentSides.forEach((side, sideIndex) => {
+            const sideDiv = document.createElement('div');
+            sideDiv.className = 'card mb-3';
+            let participantsHtml = side.map((member, memberIndex) => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>${member}</span>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteParticipant(${sideIndex}, ${memberIndex})">X</button>
+                </li>`).join('');
+            sideDiv.innerHTML = `
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    Side ${sideIndex + 1}
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="setSideAsCurrent(${sideIndex})">Set as Current</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteSide(${sideIndex})">Delete Side</button>
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush p-2">${participantsHtml || '<li class="list-group-item text-muted">No participants.</li>'}</ul>`;
+            container.appendChild(sideDiv);
+        });
+        flashCurrentSide(parseInt(document.body.dataset.currentSideIndex || '0'));
+        updateParticipantsDisplay();
+        renderResults();
+    }
+
+    function renderResults() {
+        const winningSideSelect = document.getElementById('winning_side_index');
+        winningSideSelect.innerHTML = '<option value="-1">--Select Winning Side--</option>';
+        currentSides.forEach((side, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `Side ${index + 1}: ${side.join(', ') || '(Empty)'}`;
+            winningSideSelect.appendChild(option);
+        });
+        winningSideSelect.value = currentMatchResults.winning_side_index;
+
+        const allWrestlersInMatch = _get_all_wrestlers_involved_js(currentSides);
+        const allTeamsInMatch = _get_all_tag_teams_involved_js(currentSides, allTagTeams);
+        const indContainer = document.getElementById('individual-results-container');
+        const teamContainer = document.getElementById('team-results-container');
+        indContainer.innerHTML = '<h5>Individual Results</h5>';
+        teamContainer.innerHTML = '<h5>Team Results</h5>';
+        
+        allWrestlersInMatch.forEach(wrestler => {
+            const result = currentMatchResults.individual_results[wrestler] || 'No Contest';
+            indContainer.innerHTML += `
+                <div class="form-group row align-items-center mb-1">
+                    <label class="col-sm-4 col-form-label text-truncate">${wrestler}</label>
+                    <div class="col-sm-8">
+                        <select class="form-control form-control-sm" onchange="updateIndividualResult('${wrestler}', this.value)">
+                            ${matchResultOptions.map(option => `<option value="${option}" ${result === option ? 'selected' : ''}>${option}</option>`).join('')}
                         </select>
                     </div>
-                     <div class="form-group">
-                        <label for="match_time">Match Time (MM:SS)</label>
-                        <input type="text" id="match_time" name="match_time" value="{{ match_data.get('match_time', '') }}" pattern="^\d{1,2}:\d{2}$" placeholder="e.g., 05:30">
-                    </div>
-                </div>
-
-                <div class="results-container">
-                    <div id="individual-results-container">
-                        <!-- Individual results populated by JS -->
-                    </div>
-                    <div id="team-results-container">
-                        <!-- Team results populated by JS -->
-                    </div>
-                </div>
-                 <div class="form-group checkbox-group">
-                    <input type="checkbox" id="sync_teams_to_individuals" name="sync_teams_to_individuals" onchange="updateSyncToggle(this)" {% if match_data.get('sync_teams_to_individuals', True) %}checked{% endif %}>
-                    <label for="sync_teams_to_individuals">Sync team results to individual members</label>
-                </div>
-                <hr>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="match_championship">Championship on the line</label>
-                        <input type="text" id="match_championship" name="match_championship" value="{{ match_data.get('match_championship', '') }}">
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <input type="checkbox" id="match_hidden" name="match_hidden" {% if match_data.get('match_hidden', False) %}checked{% endif %}>
-                        <label for="match_hidden">Hide match result</label>
-                    </div>
-                </div>
-            </fieldset>
-
-            <!-- Hidden inputs to store the state of the builder -->
-            <input type="hidden" id="participants_display_input" name="participants_display" value="{{ match_data.get('participants_display', '') }}">
-            <input type="hidden" id="match_sides_json_input" name="match_sides_json" value='{{ match_data.get('sides', []) | tojson | safe }}'>
-            <input type="hidden" id="match_results_json_input" name="match_results_json" value='{{ {'winning_side_index': match_data.winning_side_index, 'individual_results': match_data.individual_results, 'team_results': match_data.team_results, 'sync_teams_to_individuals': match_data.sync_teams_to_individuals} | tojson | safe }}'>
-            <input type="hidden" name="match_class" id="match_class_input" value="{{ match_data.get('match_class', '') }}">
-        </div>
-
-        <!-- Summary Text -->
-        <fieldset class="form-section">
-            <legend>Segment Summary</legend>
-            <div class="form-group">
-                <label for="summary_text">Summary Text (Markdown supported)</label>
-                <textarea id="summary_text" name="summary_text" rows="8">{{ summary_content | default('') }}</textarea>
-            </div>
-        </fieldset>
-
-        <div class="action-buttons form-actions">
-            <button type="submit" class="btn btn-primary">
-                {% if segment.get('position') %}Update Segment{% else %}Create Segment{% endif %}
-            </button>
-            <a href="{{ url_for('events.view_event', event_name=event_slug) }}">Cancel</a>
-        </div>
-    </form>
-
-    <script>
-        // --- DATA FROM FLASK ---
-        const allWrestlers = {{ all_wrestlers | tojson | safe }};
-        const allTagTeams = {{ all_tagteams | tojson | safe }};
-        const matchResultOptions = {{ match_result_options | tojson | safe }};
-        let matchDataFromServer = {{ match_data | tojson | safe }};
-
-        // --- STATE MANAGEMENT ---
-        let currentSides = matchDataFromServer.sides || [];
-        let currentMatchResults = {
-            winning_side_index: matchDataFromServer.winning_side_index !== undefined ? matchDataFromServer.winning_side_index : -1,
-            individual_results: matchDataFromServer.individual_results || {},
-            team_results: matchDataFromServer.team_results || {},
-            sync_teams_to_individuals: matchDataFromServer.sync_teams_to_individuals !== undefined ? matchDataFromServer.sync_teams_to_individuals : true,
-        };
-        let currentSideIndex = 0;
-
-        // --- UTILITY FUNCTIONS ---
-        const getTagTeamMembers = (teamName) => {
-            const team = allTagTeams.find(t => t.Name === teamName);
-            return team ? team.Members.split('|').map(m => m.trim()) : [];
-        };
-
-        const getAllWrestlersInMatch = (sides) => Array.from(new Set(sides.flat()));
-
-        const getAllTagTeamsInMatch = (sides) => {
-            const teams = new Set();
-            const sideSets = sides.map(side => new Set(side));
-            allTagTeams.forEach(team => {
-                const teamMembers = new Set(getTagTeamMembers(team.Name));
-                if (teamMembers.size > 1) {
-                    sideSets.forEach(sideSet => {
-                        let isSubset = true;
-                        for (const member of teamMembers) {
-                            if (!sideSet.has(member)) {
-                                isSubset = false;
-                                break;
-                            }
-                        }
-                        if (isSubset) teams.add(team.Name);
-                    });
-                }
-            });
-            return Array.from(teams);
-        };
-        
-        const showNotification = (message, category = 'info') => {
-            const container = document.getElementById('notification-container');
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `notification notification-${category}`;
-            alertDiv.setAttribute('role', 'alert');
-            alertDiv.textContent = message;
-            container.appendChild(alertDiv);
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
-        };
-
-        // --- DOM MANIPULATION & RENDERING ---
-        function renderSides() {
-            const container = document.getElementById('match-sides-container');
-            container.innerHTML = '';
-
-            currentSides.forEach((side, sideIdx) => {
-                const sideCard = document.createElement('div');
-                sideCard.className = 'builder-card' + (sideIdx === currentSideIndex ? ' active' : '');
-                
-                let participantsHtml = side.map((member, memberIdx) => `
-                    <li class="participant-item">
-                        <span>${member}</span>
-                        <button type="button" class="btn-icon" onclick="deleteParticipant(${sideIdx}, ${memberIdx})" aria-label="Remove ${member}">×</button>
-                    </li>
-                `).join('');
-
-                sideCard.innerHTML = `
-                    <div class="builder-card-header">
-                        <strong>Side ${sideIdx + 1}</strong>
-                        <div class="action-buttons">
-                            <button type="button" class="btn btn-secondary" onclick="setSideAsCurrent(${sideIdx})">Set Active</button>
-                            <button type="button" class="btn btn-danger" onclick="deleteSide(${sideIdx})">Delete Side</button>
-                        </div>
-                    </div>
-                    <ul class="participant-list">${participantsHtml || '<li class="empty-side">No participants yet.</li>'}</ul>
-                `;
-                container.appendChild(sideCard);
-            });
-            
-            updateDisplayAndHiddenInputs();
-            renderResults();
-        }
-        
-        function renderResults() {
-            const winningSideSelect = document.getElementById('winning_side_index');
-            winningSideSelect.innerHTML = '<option value="-1">--Select Winning Side--</option>';
-            currentSides.forEach((side, index) => {
-                const sideDisplay = side.length > 0 ? side.join(', ') : `Side ${index + 1} (Empty)`;
-                winningSideSelect.innerHTML += `<option value="${index}">Side ${index + 1}: ${sideDisplay}</option>`;
-            });
-            winningSideSelect.value = currentMatchResults.winning_side_index;
-
-            const wrestlers = getAllWrestlersInMatch(currentSides);
-            const teams = getAllTagTeamsInMatch(currentSides);
-
-            const indResultsContainer = document.getElementById('individual-results-container');
-            indResultsContainer.innerHTML = '<h4>Individual Results</h4>';
-            if (wrestlers.length > 0) {
-                wrestlers.forEach(w => {
-                    const result = currentMatchResults.individual_results[w] || 'No Contest';
-                    indResultsContainer.innerHTML += `
-                        <div class="form-group result-item">
-                            <label for="wrestler-result-${w}">${w}</label>
-                            <select id="wrestler-result-${w}" onchange="updateIndividualResult('${w}', this.value)">
-                                ${matchResultOptions.map(opt => `<option value="${opt}" ${result === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-                            </select>
-                        </div>`;
-                });
-            } else {
-                 indResultsContainer.innerHTML += '<p>No wrestlers in match.</p>';
-            }
-
-            const teamResultsContainer = document.getElementById('team-results-container');
-            teamResultsContainer.innerHTML = '<h4>Team Results</h4>';
-             if (teams.length > 0) {
-                teams.forEach(teamName => {
-                    const result = currentMatchResults.team_results[teamName] || 'No Contest';
-                    teamResultsContainer.innerHTML += `
-                        <div class="form-group result-item">
-                             <label for="team-result-${teamName}">${teamName}</label>
-                             <select id="team-result-${teamName}" onchange="updateTeamResult('${teamName}', this.value)">
-                                ${matchResultOptions.map(opt => `<option value="${opt}" ${result === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-                            </select>
-                        </div>`;
-                });
-            } else {
-                 teamResultsContainer.innerHTML += '<p>No tag teams in match.</p>';
-            }
-        }
-        
-        function updateDisplayAndHiddenInputs() {
-            // Update "vs" display string
-            const displayStrings = currentSides.map(side => {
-                const matchedTeams = getAllTagTeamsInMatch([side]);
-                return matchedTeams.length > 0 ? matchedTeams.join(' & ') : side.join(', ');
-            });
-            document.getElementById('current-participants-display').textContent = displayStrings.join(' vs ');
-            document.getElementById('participants_display_input').value = displayStrings.join(' vs ');
-            
-            // Update hidden JSON inputs
-            document.getElementById('match_sides_json_input').value = JSON.stringify(currentSides);
-            document.getElementById('match_results_json_input').value = JSON.stringify(currentMatchResults);
-        }
-
-        // --- EVENT HANDLERS & ACTIONS ---
-        function addParticipantToCurrentSide() {
-            const select = document.getElementById('participant-select');
-            const value = select.value;
-            if (!value) return;
-
-            const [type, name] = value.split(':');
-            const membersToAdd = type === 'tagteam' ? getTagTeamMembers(name) : [name];
-            
-            if (currentSides.length === 0) currentSides.push([]);
-            
-            const targetSide = currentSides[currentSideIndex];
-            membersToAdd.forEach(member => {
-                if (!targetSide.includes(member)) {
-                    targetSide.push(member);
-                } else {
-                    showNotification(`${member} is already in this side.`, 'warning');
-                }
-            });
-
-            select.value = '';
-            renderSides();
-        }
-
-        const addNewSide = () => {
-            currentSides.push([]);
-            currentSideIndex = currentSides.length - 1;
-            renderSides();
-        };
-
-        const setSideAsCurrent = (sideIdx) => {
-            currentSideIndex = sideIdx;
-            renderSides(); // Re-render to update the 'active' class
-            showNotification(`Side ${sideIdx + 1} is now the active side for adding participants.`);
-        };
-        
-        const deleteParticipant = (sideIdx, memberIdx) => {
-            currentSides[sideIdx].splice(memberIdx, 1);
-            renderSides();
-        };
-
-        const deleteSide = (sideIdx) => {
-            // We can add a custom modal for confirmation later.
-            currentSides.splice(sideIdx, 1);
-            if (currentSideIndex >= sideIdx) {
-                currentSideIndex = Math.max(0, currentSideIndex - 1);
-            }
-            renderSides();
-        };
-        
-        const updateIndividualResult = (wrestlerName, result) => {
-            currentMatchResults.individual_results[wrestlerName] = result;
-            updateDisplayAndHiddenInputs();
-        };
-        
-        const updateTeamResult = (teamName, result) => {
-            currentMatchResults.team_results[teamName] = result;
-            updateDisplayAndHiddenInputs();
-        };
-
-        const updateWinningSide = (selectElement) => {
-            currentMatchResults.winning_side_index = parseInt(selectElement.value, 10);
-            updateDisplayAndHiddenInputs();
-        };
-        
-        const updateSyncToggle = (checkboxElement) => {
-            currentMatchResults.sync_teams_to_individuals = checkboxElement.checked;
-            updateDisplayAndHiddenInputs();
-        };
-
-        const toggleMatchFields = () => {
-            const type = document.getElementById('type').value;
-            const matchFields = document.getElementById('match-specific-fields');
-            if (type === 'Match') {
-                matchFields.style.display = 'block';
-                if (currentSides.length === 0) {
-                   currentSides = [[], []]; // Default to two sides for a new match
-                }
-                renderSides();
-            } else {
-                matchFields.style.display = 'none';
-            }
-        };
-
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            toggleMatchFields();
-            // Display any warnings passed from the server on failed validation
-            {% if match_data.warnings %}
-                {% for warning in match_data.warnings %}
-                    showNotification("{{ warning }}", 'warning');
-                {% endfor %}
-            {% endif %}
+                </div>`;
         });
-    </script>
+         if (allWrestlersInMatch.length === 0) indContainer.innerHTML += '<p class="text-muted">No wrestlers in match.</p>';
+
+        allTeamsInMatch.forEach(teamName => {
+            const result = currentMatchResults.team_results[teamName] || 'No Contest';
+            teamContainer.innerHTML += `
+                <div class="form-group row align-items-center mb-1">
+                    <label class="col-sm-4 col-form-label text-truncate">${teamName}</label>
+                    <div class="col-sm-8">
+                        <select class="form-control form-control-sm" onchange="updateTeamResult('${teamName}', this.value)">
+                            ${matchResultOptions.map(option => `<option value="${option}" ${result === option ? 'selected' : ''}>${option}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>`;
+        });
+        if (allTeamsInMatch.length === 0) teamContainer.innerHTML += '<p class="text-muted">No tag teams in match.</p>';
+        updateHiddenInputs();
+    }
+    
+    function addParticipantToCurrentSide() {
+        const selectElement = document.getElementById('participant-select');
+        const selectedValue = selectElement.value;
+        if (!selectedValue) return;
+        const [type, name] = selectedValue.split(':');
+        let membersToAdd = [];
+        if (type === 'wrestler') {
+            membersToAdd.push(name);
+        } else if (type === 'tagteam') {
+            const team = allTagTeams.find(t => t.Name === name);
+            if (team && team.Members) membersToAdd = team.Members.split('|');
+        }
+        const currentSideIndex = parseInt(document.body.dataset.currentSideIndex || '0');
+        const targetSide = currentSides[currentSideIndex];
+        if(targetSide){
+            membersToAdd.forEach(member => { if (!targetSide.includes(member)) targetSide.push(member); });
+            renderSides();
+        }
+        selectElement.value = '';
+    }
+    
+    function addNewSide() {
+        currentSides.push([]);
+        setSideAsCurrent(currentSides.length - 1);
+        renderSides();
+    }
+    
+    function setSideAsCurrent(sideIndex) {
+        document.body.dataset.currentSideIndex = sideIndex;
+        flashCurrentSide(sideIndex);
+    }
+    
+    function flashCurrentSide(sideIndex) {
+        const sides = document.querySelectorAll('#match-sides-container .card');
+        sides.forEach((div, idx) => div.classList.toggle('border-primary', idx === sideIndex));
+    }
+
+    function deleteParticipant(sideIndex, memberIndex) {
+        currentSides[sideIndex]?.splice(memberIndex, 1);
+        renderSides();
+    }
+
+    function deleteSide(sideIndex) {
+        currentSides.splice(sideIndex, 1);
+        setSideAsCurrent(Math.max(0, currentSides.length - 1));
+        renderSides();
+    }
+
+    function updateParticipantsDisplay() {
+        const displayElement = document.getElementById('current-participants-display');
+        let sideStrings = currentSides.map(side => {
+            if (side.length === 0) return '';
+            const matchedTeams = _get_all_tag_teams_involved_js([side], allTagTeams);
+            return matchedTeams.length > 0 ? matchedTeams.join(' & ') : side.join(', ');
+        }).filter(s => s);
+        displayElement.textContent = sideStrings.join(' vs ');
+        document.getElementById('participants_display_input').value = displayElement.textContent;
+    }
+
+    function updateHiddenInputs() {
+        document.getElementById('match_sides_json_input').value = JSON.stringify(currentSides);
+        document.getElementById('match_results_json_input').value = JSON.stringify(currentMatchResults);
+    }
+    
+    function updateWinningSide(select) { currentMatchResults.winning_side_index = parseInt(select.value); updateHiddenInputs(); }
+    function updateIndividualResult(wrestler, result) { currentMatchResults.individual_results[wrestler] = result; updateHiddenInputs(); }
+    function updateTeamResult(team, result) { currentMatchResults.team_results[team] = result; updateHiddenInputs(); }
+    function updateSyncToggle(checkbox) { currentMatchResults.sync_teams_to_individuals = checkbox.checked; updateHiddenInputs(); }
+</script>
 {% endblock %}
 

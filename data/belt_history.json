@@ -1,0 +1,38 @@
+[
+    {
+        "Belt_ID": "aew-world-championship-44d9",
+        "Champion_Name": "Jon Moxley",
+        "Date_Won": "2025-01-01",
+        "Date_Lost": null,
+        "Defenses": 5,
+        "Notes": "Moxley won at Dynamite: New Year's Bash to begin his 4th reign.",
+        "Reign_ID": "a078d193-2b8c-45b7-8862-8c2642da4e78"
+    },
+    {
+        "Reign_ID": "a898186d-f850-4dd9-aa39-03f52b6a828c",
+        "Belt_ID": "tnt-championship-82cb",
+        "Champion_Name": "Daniel Garcia",
+        "Date_Won": "2025-09-03",
+        "Date_Lost": null,
+        "Defenses": 0,
+        "Notes": "Won from "
+    },
+    {
+        "Belt_ID": "tnt-championship-82cb",
+        "Champion_Name": "Daniel Garcia",
+        "Date_Won": "2025-09-02",
+        "Date_Lost": null,
+        "Defenses": 0,
+        "Notes": "Defeated Bryan Keith in a tournament final to win the vacant title.",
+        "Reign_ID": "be1de076-c31e-4d62-b8be-a40a90ac3270"
+    },
+    {
+        "Belt_ID": "aew-world-tag-team-championship-a96e",
+        "Champion_Name": "The Hurt Syndicate",
+        "Date_Won": "2025-09-10",
+        "Date_Lost": null,
+        "Defenses": 0,
+        "Notes": "Defeated FTR at Dynamite 101.",
+        "Reign_ID": "88deff95-88f9-41f2-9737-826b40aa13e7"
+    }
+]

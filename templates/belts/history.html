@@ -1,0 +1,53 @@
+{% extends "_base.html" %}
+
+{% block title %}History: {{ belt.Name }}{% endblock %}
+
+{% block content %}
+<div class="header-bar">
+    <h2>History: {{ belt.Name }}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('belts.add_reign', belt_id=belt.ID) }}" class="btn btn-primary">Add New Reign</a>
+        <a href="{{ url_for('belts.list_belts') }}">Back to Belts List</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Champion</th>
+                <th>Date Won</th>
+                <th>Date Lost</th>
+                <th>Days</th>
+                <th>Defenses</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reign in history %}
+            <tr>
+                <td>{{ reign.Champion_Name }}</td>
+                <td>{{ reign.Date_Won }}</td>
+                <td>{{ reign.Date_Lost or 'Present' }}</td>
+                <td>{{ reign.Days }}</td>
+                <td>{{ reign.Defenses }}</td>
+                <td>{{ reign.Notes }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('belts.edit_reign', reign_id=reign.Reign_ID) }}" class="btn btn-secondary">Edit</a>
+                        <form action="{{ url_for('belts.delete_reign_route', reign_id=reign.Reign_ID) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">No history found for this belt.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

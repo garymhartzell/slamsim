@@ -33,6 +33,7 @@
                 <td>
                     <div class="action-buttons">
                         <a href="{{ url_for('belts.edit_belt', belt_id=belt.ID) }}" class="btn btn-secondary">Edit</a>
+                        <a href="{{ url_for('belts.history', belt_id=belt.ID) }}" class="btn btn-info">History</a>
                         <form action="{{ url_for('belts.delete_belt_route', belt_id=belt.ID) }}" method="POST" class="d-inline">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
@@ -48,3 +49,4 @@
     </table>
 </div>
 {% endblock %}
+

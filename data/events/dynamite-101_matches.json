@@ -1,0 +1,34 @@
+[
+    {
+        "participants_display": "FTR vs The Hurt Syndicate",
+        "sides": [
+            [
+                "Cash Wheeler",
+                "Dax Harwood"
+            ],
+            [
+                "Bobby Lashley",
+                "Shelton Benjamin"
+            ]
+        ],
+        "match_time": "11:53",
+        "match_championship": "AEW World Tag-Team Championship",
+        "match_hidden": false,
+        "match_class": "tag",
+        "winning_side_index": 1,
+        "individual_results": {
+            "Cash Wheeler": "Loss",
+            "Dax Harwood": "Loss",
+            "Bobby Lashley": "Win",
+            "Shelton Benjamin": "Win"
+        },
+        "team_results": {
+            "FTR": "Loss",
+            "The Hurt Syndicate": "Win"
+        },
+        "sync_teams_to_individuals": true,
+        "warnings": [],
+        "match_id": "ee65cca1-2cf4-41a7-943d-81223335182f",
+        "segment_position": 1
+    }
+]

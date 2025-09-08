@@ -1,0 +1,58 @@
+[
+    {
+        "participants_display": "Penelope Ford vs Jamie Hayter",
+        "sides": [
+            [
+                "Penelope Ford"
+            ],
+            [
+                "Jamie Hayter"
+            ]
+        ],
+        "match_time": "10:33",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "singles",
+        "winning_side_index": 1,
+        "individual_results": {
+            "Penelope Ford": "Loss",
+            "Jamie Hayter": "Win"
+        },
+        "team_results": {},
+        "sync_teams_to_individuals": true,
+        "warnings": [],
+        "match_id": "8553d005-421e-41f7-9e07-4d0ffc939e44",
+        "segment_position": 2
+    },
+    {
+        "participants_display": "The Young Bucks vs Darby Allin, Daniel Garcia",
+        "sides": [
+            [
+                "Matthew Jackson",
+                "Nicholas Jackson"
+            ],
+            [
+                "Darby Allin",
+                "Daniel Garcia"
+            ]
+        ],
+        "match_time": "12:52",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "tag",
+        "winning_side_index": 0,
+        "individual_results": {
+            "Matthew Jackson": "Win",
+            "Nicholas Jackson": "Win",
+            "Darby Allin": "Loss",
+            "Daniel Garcia": "Loss"
+        },
+        "team_results": {
+            "The Young Bucks": "Win"
+        },
+        "sync_teams_to_individuals": true,
+        "warnings": [],
+        "match_id": "a4822e78-06a7-418c-93b4-e7a8c4762f91",
+        "segment_position": 3
+    }
+]

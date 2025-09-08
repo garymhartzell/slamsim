@@ -1,8 +1,8 @@
 [
     {
         "Name": "The Young Bucks",
-        "Wins": "0",
-        "Losses": "0",
+        "Wins": "1",
+        "Losses": "1",
         "Draws": "0",
         "Status": "Active",
         "Division": "3",
@@ -20,7 +20,7 @@
     {
         "Name": "FTR",
         "Wins": "0",
-        "Losses": "1",
+        "Losses": "2",
         "Draws": "0",
         "Status": "Active",
         "Division": "3",
@@ -68,12 +68,12 @@
         "Faction": "The Death Riders",
         "Manager": "",
         "Moves": "",
-        "Belt": "AEW World Trios Champions",
+        "Belt": "",
         "Awards": "AEW World Trios Champions"
     },
     {
         "Name": "The Hurt Syndicate",
-        "Wins": "0",
+        "Wins": "1",
         "Losses": "0",
         "Draws": "0",
         "Status": "Active",
@@ -86,7 +86,7 @@
         "Faction": "The Hurt Syndicate",
         "Manager": "MVP",
         "Moves": "",
-        "Belt": "AEW World Tag-Team Champions",
+        "Belt": "",
         "Awards": "AEW World Tag-Team Champions"
     },
     {

@@ -11,9 +11,15 @@
              <a href="{{ url_for('events.list_events') }}">Back to List</a>
         </div>
     </div>
+    
+    {% if event.Finalized %}
+    <div class="notice-bar notice-info">
+        <p><strong>Event Finalized:</strong> This event has been finalized and its records are permanent. It can no longer be edited.</p>
+    </div>
+    {% endif %}
 
     <form class="wide-form" method="POST" action="{{ url_for('events.create_event') if not event.Event_Name else url_for('events.edit_event', event_name=original_name) }}">
-        <fieldset class="form-section">
+        <fieldset class="form-section" {% if event.Finalized %}disabled{% endif %}>
             <legend>Event Details</legend>
             <div class="form-group">
                 <label for="event_name">Event Name <span class="required">*</span></label>
@@ -54,13 +60,15 @@
             </div>
         </fieldset>
          <div class="action-buttons form-actions">
+            {% if not event.Finalized %}
             <button type="submit" class="btn btn-primary">
                 {% if event.Event_Name %}Update Event Details{% else %}Create Event{% endif %}
             </button>
+            {% endif %}
         </div>
     </form>
 
-    {% if event.Event_Name %}
+    {% if event.Event_Name and not event.Finalized %}
     <hr class="section-divider">
     <div class="header-bar">
         <h3>Manage Segments</h3>
@@ -93,6 +101,18 @@
             <p>No segments found for this event. Click "Add New Segment" to get started.</p>
         {% endif %}
     </div>
+    
+    {% if event.Status == 'Past' %}
+    <hr class="section-divider">
+    <div class="finalize-section">
+        <h3>Finalize Event</h3>
+        <p>Finalizing an event is an irreversible action. It will update all wrestler and tag team records and process any championship changes based on the match results. The event and its segments will become read-only.</p>
+        <form action="{{ url_for('events.finalize_event', event_name=event.Event_Name) }}" method="POST">
+             <button type="submit" class="btn btn-success btn-lg">Finalize Event and Update All Records</button>
+        </form>
+    </div>
+    {% endif %}
+
     {% endif %}
 {% endblock %}
 
