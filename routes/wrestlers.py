@@ -9,7 +9,6 @@ STATUS_OPTIONS = ['Active', 'Inactive', 'Injured']
 ALIGNMENT_OPTIONS = ['Hero', 'Babyface', 'Anti-hero', 'Tweener', 'Heel', 'Villain']
 
 def _get_form_data(form):
-    """Helper to extract, sanitize, and format form data."""
     data = {
         "Name": html.escape(form['name'].strip()),
         "Singles_Wins": html.escape(form['singles_wins'].strip()),
@@ -31,13 +30,12 @@ def _get_form_data(form):
         "Faction": html.escape(form.get('faction', '').strip()),
         "Manager": html.escape(form.get('manager', '').strip()),
         "Moves": html.escape(form.get('moves', '').strip()).replace('\n', '|').replace('\r', ''),
-        "Belt": html.escape(form.get('belt', '').strip()), # This remains for now to not break data, but is removed from form
+        "Belt": html.escape(form.get('belt', '').strip()),
         "Awards": html.escape(form.get('awards', '').strip()).replace('\n', '|').replace('\r', ''),
         "Real_Name": html.escape(form.get('real_name', '').strip()),
         "Start_Date": html.escape(form.get('start_date', '').strip()),
         "Salary": html.escape(form.get('salary', '').strip()).replace('\n', '|').replace('\r', '')
     }
-    # We remove belt from the form, so we must preserve its existing value
     if 'name' in form:
         existing_wrestler = get_wrestler_by_name(form['name'])
         if existing_wrestler:
@@ -46,7 +44,7 @@ def _get_form_data(form):
 
 @wrestlers_bp.route('/')
 def list_wrestlers():
-    wrestlers_list = load_wrestlers()
+    wrestlers_list = sorted(load_wrestlers(), key=lambda w: w.get('Name', ''))
     for wrestler in wrestlers_list:
         wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
     return render_template('wrestlers/list.html', wrestlers=wrestlers_list)
@@ -56,7 +54,7 @@ def create_wrestler():
     all_divisions = divisions.get_all_division_ids_and_names()
     if request.method == 'POST':
         wrestler_data = _get_form_data(request.form)
-        wrestler_data['Belt'] = '' # New wrestlers don't have belts
+        wrestler_data['Belt'] = ''
         if not wrestler_data.get('Name'):
             flash('Wrestler Name is required.', 'error')
             return render_template('wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
@@ -76,7 +74,7 @@ def edit_wrestler(wrestler_name):
     all_divisions = divisions.get_all_division_ids_and_names()
     if request.method == 'POST':
         updated_data = _get_form_data(request.form)
-        updated_data['Belt'] = wrestler.get('Belt', '') # Preserve existing belt value
+        updated_data['Belt'] = wrestler.get('Belt', '')
         if not updated_data.get('Name'):
             flash('Wrestler Name is required.', 'error')
             return render_template('wrestlers/form.html', wrestler=wrestler, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)

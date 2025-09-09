@@ -7,8 +7,10 @@
     <ul class="main-menu">
         <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
         <li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag Teams</a></li>
-        <li><a href="{{ url_for('belts.list_belts') }}">Belts</a></li> {# Added Belts link #}
+        <li><a href="{{ url_for('belts.list_belts') }}">Belts</a></li>
         <li><a href="{{ url_for('divisions.list_divisions') }}">Divisions</a></li>
         <li><a href="{{ url_for('events.list_events') }}">Events</a></li>
+        <li><a href="{{ url_for('goodbye') }}">Exit</a></li>
     </ul>
 {% endblock %}
+

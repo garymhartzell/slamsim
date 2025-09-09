@@ -1,242 +1,82 @@
 # SlamSim!
 
-SlamSim! empowers you to craft and oversee your very own wrestling promotion with unparalleled detail and ease. From managing events and rosters to tracking win-loss records and customizing your league's look, SlamSim! has you covered. Generate all your content as secure, static HTML pages, ensuring seamless hosting without the risks or limitations of dynamic sites. Whether you're a wrestling enthusiast or a stats-driven organizer, SlamSim! is your backstage pass to the ultimate booking experience.
+### A Fantasy Wrestling Booking Simulator
 
+SlamSim! is a web-based application designed for fantasy wrestling bookers and fans. It provides a comprehensive suite of tools to create and manage your own wrestling promotion, from the roster to the championship lineages. Book events, define match outcomes, and watch as the application automatically updates win/loss records and title histories.
 
-## Table of Contents
+## Core Features
 
--   [About](#about)
--   [Features](#features)
-    -   [General Features](#general-features)
-    -   [Events](#events)
-    -   [Wrestlers](#wrestlers)
-    -   [Tag-Teams](#tagteams)
-    -   [Divisions and Roster](#divisions-and-roster)
-    -   [News](#news)
--   [Getting Started](#getting-started)
-    -   [Prerequisites](#prerequisites)
-    -   [Installation](#installation)
--   [Usage](#usage)
-   - [Important Note](#important-note)
-   - [Preferences and Content](#preferences-and-content)
-   - [Adding Data](#adding-data)
-   - [Running](#running)
--   [The Future](#the-future)
--   [Contributing](#contributing)
-
-## About
-
-SlamSim! is a fantasy professional wrestling league manager.  There are very few programs that let you manage a wrestling promotion like SlamSim! does.  Additionally, it creates all content as static HTML files, limiting the risk of your site being hacked and reducing the chance of hitting any resource restrictions in a shared hosting environment.
- 
-## Features
-
-
-### General Features
-- Generates static HTML pages to ensure security and seamless hosting.
-- Uses JSON for data-driven content.
-- Fully customizable page headers and footers.
-- Personalize with league name, CSS file, and more.
-
-### Events
-- Create detailed event pages with date, venue, broadcast team, event card, summaries, and match results.
-- Manage past and future events, sorted by date and archived by year.
-
-### Wrestlers
-- Track detailed bios, stats, and accomplishments, including championships, win-loss records, and salaries.
-
-### Tag-Teams
-- Manage teams with names, members, divisions, records, and accomplishments.
-
-### Divisions & Roster
-- Organize wrestlers and teams into divisions for leagues with roster splits.
-- Create a dynamic roster page with links to individual bios.
-
-### News
-- Publish and archive articles with names, dates, and HTML content.
+* **Roster Management:** Create and edit detailed profiles for individual wrestlers and tag teams, including personal stats, gimmick details, and contract information.
+* **Divisions & Stables:** Organize your roster into logical divisions (e.g., Heavyweight, Women's) to manage rankings and storylines.
+* **Championship Tracking:** Create unique championships for your promotion. The system tracks the current holder, status (Active/Vacant), and a complete, detailed reign history for every title.
+* **Event Booking:** Build event cards segment by segment. The powerful Match Builder allows for the creation of complex matches with multiple participants and sides.
+* **Dynamic Results:** Define match results, including winners, losers, and draws for every participant.
+* **Automatic Record Keeping:** The "Event Runner" finalizes past events, automatically updating every wrestler's win/loss record and processing all championship changes based on match outcomes. This makes event results a permanent part of your league's history.
 
 ## Getting Started
 
+Follow these instructions to get a local copy of SlamSim! up and running on your system.
+
 ### Prerequisites
 
--   Python 3.x
--   `pandas` 
--   `slugify`
--   `datetime`
+You will need Python 3 and Pip installed on your system.
 
 ### Installation
 
-1. Install Python.  You can download it from [https://www.python.org/downloads/](https://www.python.org/downloads/).
-
-2.  Clone the repository:
-
+1.  **Clone the repository:**
     ```bash
     git clone [https://github.com/ironmangary/slamsim.git](https://github.com/ironmangary/slamsim.git)
-    ```
-
-3.  Navigate to the project directory:
-
-    ```bash
     cd slamsim
     ```
 
-4. Optionally (but recommended), create a virtual environment for this installation using `venv`.  See [https://docs.python.org/3/library/venv.html](https://docs.python.org/3/library/venv.html) for more information and instructions.
+2.  **Create a virtual environment** (recommended):
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
 
-5.  Install the required packages:
-
+3.  **Install the dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-## Usage
+### Running the Application
 
-### Important Note
+1.  From the project's root directory, run the entry script:
+    ```bash
+    python run.py
+    ```
+2.  The application will start and provide a local URL, typically `http://127.0.0.1:5000/`. Open this URL in your web browser if it is not opened automatically.
 
-SlamSim! is designed to be run via the command line (bash, PowerShell, etc.) in a private environment.  
-**Version 1.0 Alpha Limitations**:
-- No graphical user interface (GUI) for adding data, such as events and wrestlers.
-- No data validation or authentication is included.
-- To share the content generated by SlamSim!, upload the static HTML pages from the `public` directory to your web server.
+## Basic Usage
 
-### Setting Preferences and Adding Content
+SlamSim! is designed to be used in a logical order to build your promotion from the ground up. A typical workflow would be:
 
-All preferences and content are managed using JSON files located in the `data` directory. Follow these steps:
+1.  **Create Divisions:** Start by creating the divisions for your promotion (e.g., Men's Heavyweight, Women's, Tag Team).
+2.  **Create Belts:** Create the championships that will be contested within your divisions.
+3.  **Create Wrestlers & Tag Teams:** Populate your roster with wrestlers and form official tag teams.
+4.  **Create an Event:** Book a new show by creating an event and giving it a name and date.
+5.  **Add Segments:** From the "Edit Event" page, add segments to your event card. Use the Match Builder to create matches and define the participants for each side.
+6.  **Set Results:** In the Match Builder, set the winning side and the results for each individual participant.
+7.  **Finalize the Event:** Once the event date has passed and the results are set, change the event's status to "Past" and click the "Finalize Event" button. This will lock the event and permanently update all statistics and championship histories.
 
-1. **Create JSON Files**  
-   - Use a spreadsheet program to create CSV files for your data.
-   - Convert the CSV files to JSON using the provided script.
+**Note on Deletion:** In this alpha version, deleting entities (wrestlers, events, etc.) is an immediate and irreversible action that does **not** have a confirmation prompt. Please use the delete functions with caution, as deleting an entity can have a permanent impact on historical data and records. Deletion will be removed in a later version.
 
-2. **Run the Conversion Script**
-   - To convert a single CSV file:
-     ```bash
-     python bin/csv-json.py -f prefs.csv
-     ```
-     This generates `data/prefs.json` for use with the software.
+## Project Structure
 
-   - To convert all CSV files in the `data` directory (batch mode):
-     ```bash
-     python bin/csv-json.py -b data
-     ```
+* `run.py`: The main entry point to start the Flask application.
+* `data/`: Contains all of the application's data stored in JSON files.
+* `routes/`: Contains the Flask Blueprints that define the application's URL routes.
+* `src/`: Contains the core application logic and data-handling functions (services).
+* `static/`: Contains the CSS stylesheet.
+* `templates/`: Contains all Jinja2 HTML templates, organized into subdirectories by feature.
 
-3. **Required Data Files and Fields**  
-   The following data files need to be created. Sample CSV and JSON files are available in the `data` directory.
+## License
 
-   - **divisions**: `ID, Name, Status`
-   - **events**: `Name, Subtitle, Summary_File, Status, Date, Venue, Location, Broadcasters`
-   - **matches**: `Event, Number, Header, Participants, Result, Time, Championship, Hidden`
-   - **news**: `Title, Date, Content_File`
-   - **prefs**: `Pref, Value`
-   - **tagteams**: `Name, Wins, Losses, Draws, Status, Division, Location, Weight, Alignment, Music, Members, Faction, Manager, Moves, Belt, Awards`
-   - **wrestlers**: `Name, Singles_Wins, Singles_Losses, Singles_Draws, Tag_Wins, Tag_Losses, Tag_Draws, Status, Division, Nickname, Location, Height, Weight, DOB, Alignment, Music, Team, Faction, Manager, Moves, Belt, Awards, Real_Name, Start_Date, Salary`
+This software is provided free for personal, educational, and non-commercial use. You may use, modify, and distribute the software under the following conditions:
 
-### Adding Data
+-   Credit must be given to the original author.
+-   This software may not be used, in whole or in part, for any commercial purpose without explicit written permission.
+-   All modified versions must retain this license and attribution.
 
-It's recommended to add your data in the following order for optimal organization:
-
-1. **Preferences (`prefs`)**
-   - **League_Name**: Full name of your league (e.g., "World Championship Wrestling"). Appears in page headers.
-   - **League_Short**: Abbreviation (e.g., "WCW"). Not yet used but may be supported in future updates.
-   - **css_file**: Name of the CSS file for page styling. Place the file in the `includes` directory.
-
-2. **Divisions**
-   - Enter an `ID` number and name for your divisions/brands to organize wrestlers and tag-teams.
-
-3. **Wrestlers**
-   - Key Fields:
-     - **Name**: Wrestler's ring name (*required*).
-     - **Status**: 'Active', 'Inactive', or 'Injured' (*required*).
-     - **Division**: For 'Active' wrestlers, enter the `ID` from `divisions.json`.
-     - **Moves**: List multiple moves separated by a pipe (`|`).
-     - **Belt**: Wrestler's current championship, if any.
-     - **Awards**: Accomplishments, separated by a pipe (`|`).
-     - **Salary**: Specify salary per year (e.g., "2025: $500000|2026: $500000").
-
-4. **Tagteams**
-   - Key Fields:
-     - **Name**: Tag-team's name (*required*).
-     - **Status**: 'Active' or 'Inactive' (*required*).
-     - **Division**: For 'Active' wrestlers, enter the `ID` from `divisions.json`.
-     - **Members**: Wrestlers in this team; list multiple members separated by a pipe (`|`).
-     - **Moves**: List multiple moves separated by a pipe (`|`).
-     - **Belt**: Wrestler's current championship, if any.
-     - **Awards**: Accomplishments, separated by a pipe (`|`).
-
-5. ** Events**
-   - Key Fields:
-     - **Name**: Event name (*required*).
-     - **Subtitle**: Event subtitle (i.e. "Grande Slam").
-     - **Summary_File**: The name of the file within includes/events that contains the event HTML summary (*required*).
-     - **Status**: 'Past' or 'Future' (*required*).
-
-6. **Matches**
-   - Key Fields:
-     - **Event**: Event name slug the match is part of (*required*).
-     - **Number**: The match's position on the event card.
-     - **Header**: The match title (i.e. "Main Event", "NWA World Tag-Team Championship Match", "Dark Match").
-     - **Participants**: Wrestlers/tagteams in the match (i.e. "The Midnight Express vs. The Rock'N'Roll Express" or "Dusty Rhoades and The Road Warriors vs. The Four Horsemen").
-     - **Championship**: The belt, if any, being defended.
-     - **Hidden**: Whether this match is hidden on the event card ('y' or '1' will hide it).
-
-7. News
-   - Key Fields:
-     - **Title**: News article title (*required*).
-     - **Date**: Article post date (*required*).
-     - **Content_File**: The filename within 'includes/news' that contains the HTML formatted content (*required*).
-
-### Running
-
-Once you have created the data you want made into your fantasy wrestling web site, go ahead and execute run.py. 
-
-```bash
-python run.py
-```
-
-Any errors will be displayed in the console window.  If there are no errors, your files will all be built, ready to upload to your web server in a directory named 'public'.
-
-You can also choose to only build certain elements, such as 'wrestlers'.  The various page generation scripts are found within the 'bin' directory, named 'gen_*.py'.  For example, to build or rebuild only 'wrestlers', you would run:
-
-```bash
-python bin/gen_wrestlers.py
-```
-
-## The Future
-
-SlamSim! is still in it's infancy.  Here are some possible future features that may be added.
-
-* More prefs
-* Console or graphical UI for adding content
-* AI match writer
-* Automatic tracking of wins/losses/draws
-
-## Contributing
-
-Thank you for considering contributing to **SlamSim!**! Your input, ideas, and contributions are highly appreciated. To make the process smooth and collaborative, please follow the steps below:
-
-1. **Report Bugs or Request Features**  
-   - Check the [Issues](https://github.com/ironmangary/slamsim/issues) section first to see if the topic has already been reported or suggested.  
-   - If it hasn't, open a new issue and describe the problem or feature in detail. Include screenshots or code snippets if applicable.
-
-2. **Submit Code Changes**  
-   - **Fork the Repository**: Create a fork of this project to your GitHub account.
-   - **Clone Your Fork**: Clone your forked repository to your local machine using:  
-     ```bash
-     git clone https://github.com/your-username/SlamSim.git
-     ```
-   - **Create a Branch**: Create a new branch for your changes (e.g., `feature-new-event-type` or `bugfix-division-error`):  
-     ```bash
-     git checkout -b feature-new-event-type
-     ```
-   - **Make Your Changes**: Ensure your changes are well-documented and follow the project's coding style.
-   - **Test Your Changes**: Verify that your code works as intended and does not break existing functionality.
-   - **Push Your Branch**: Push the changes to your forked repository:  
-     ```bash
-     git push origin feature-new-event-type
-     ```
-   - **Open a Pull Request**: Submit a pull request to the main repository. Be sure to include a clear title and description of your changes.
-
-### Development Notes
-- Contributions are currently limited to command-line functionality, as there is no graphical user interface for SlamSim!.
-- Ensure any scripts or changes are compatible with Python 3.x.
-- Follow the project s folder structure and naming conventions.
-
-### Contact
-For questions about contributing or collaborating, feel free to reach out by opening an [Issue](https://github.com/ironmangary/slamsim/issues) or [Discussion](https://github.com/ironmangary/slamsim/discussions) via GITHub.
+For commercial licensing inquiries, please contact the author (gary@hartzell.us).

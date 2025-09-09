@@ -68,13 +68,15 @@
         </div>
     </form>
 
-    {% if event.Event_Name and not event.Finalized %}
+    {% if event.Event_Name %}
     <hr class="section-divider">
     <div class="header-bar">
-        <h3>Manage Segments</h3>
+        <h3>{% if not event.Finalized %}Manage {% endif %}Segments</h3>
+        {% if not event.Finalized %}
         <div class="action-buttons">
             <a href="{{ url_for('segments.create_segment', event_slug=event.Event_Name) }}" class="btn btn-primary">Add New Segment</a>
         </div>
+        {% endif %}
     </div>
     
     <div class="segment-list">
@@ -83,26 +85,31 @@
                 <div class="segment-item">
                     <div class="segment-header">
                         <h4>{{ segment.position }}. {{ segment.type }}{% if segment.header %}: {{ segment.header }}{% endif %}</h4>
+                        {% if not event.Finalized %}
                         <div class="action-buttons">
                             <a href="{{ url_for('segments.edit_segment', event_slug=event.Event_Name, position=segment.position) }}" class="btn btn-secondary">Edit</a>
                             <form action="{{ url_for('segments.delete_segment_route', event_slug=event.Event_Name, position=segment.position) }}" method="POST" class="d-inline">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
+                        {% endif %}
                     </div>
-                     {% if segment.type == 'Match' and segment.match_result %}
-                        <div class="segment-content">
+                     <div class="segment-content">
+                         {% if segment.participants_display %}
+                            <p class="participants-display"><strong>Participants:</strong> {{ segment.participants_display }}</p>
+                         {% endif %}
+                         {% if segment.type == 'Match' and segment.match_result %}
                              <p class="match-result"><strong>Result:</strong> {{ segment.match_result }}</p>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             {% endfor %}
         {% else %}
-            <p>No segments found for this event. Click "Add New Segment" to get started.</p>
+            <p>No segments found for this event. {% if not event.Finalized %}Click "Add New Segment" to get started.{% endif %}</p>
         {% endif %}
     </div>
     
-    {% if event.Status == 'Past' %}
+    {% if event.Status == 'Past' and not event.Finalized %}
     <hr class="section-divider">
     <div class="finalize-section">
         <h3>Finalize Event</h3>

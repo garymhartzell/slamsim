@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SlamSim{% endblock %}</title>
-    {# Assuming a static folder for CSS will be at the project root #}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -12,31 +11,30 @@
         <nav>
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('events.list_events') }}">Events</a></li> {# Added Events link #}
+                <li><a href="{{ url_for('events.list_events') }}">Events</a></li>
                 <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
-				<li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag-Teams</a></li>
+                <li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag-Teams</a></li>
+                <li><a href="{{ url_for('belts.list_belts') }}">Belts</a></li>
                 <li><a href="{{ url_for('prefs.general_prefs') }}">Preferences</a></li>
+                <li><a href="{{ url_for('goodbye') }}">Exit</a></li>
             </ul>
         </nav>
     </header>
-
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <ul class="flashes">
+                <div class="flashes">
                 {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message | safe }}</li> {# messages are safe after sanitization #}
+                    <div class="alert alert-{{ category }}">{{ message | safe }}</div>
                 {% endfor %}
-                </ul>
+                </div>
             {% endif %}
         {% endwith %}
-
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
-
     <footer>
         <p>&copy; 2025 SlamSim</p>
     </footer>
 </body>
 </html>
+

@@ -5,7 +5,7 @@ from routes.wrestlers import wrestlers_bp
 from routes.tagteams import tagteams_bp
 from routes.events import events_bp
 from routes.segments import segments_bp
-from routes.belts import belts_bp # Import the new belts blueprint
+from routes.belts import belts_bp
 
 app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = 'a_very_secret_key_for_flash_messages'
@@ -17,11 +17,16 @@ app.register_blueprint(wrestlers_bp)
 app.register_blueprint(tagteams_bp)
 app.register_blueprint(events_bp)
 app.register_blueprint(segments_bp)
-app.register_blueprint(belts_bp) # Register the new belts blueprint
+app.register_blueprint(belts_bp)
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/goodbye')
+def goodbye():
+    """Renders the goodbye page."""
+    return render_template('goodbye.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

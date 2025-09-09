@@ -1,0 +1,10 @@
+SlamSim! Software License (Non-Commercial Use) Copyright © 2025 Gary Hartzell
+
+This software is provided free for personal, educational, and non-commercial use. You may use, modify, and distribute the software under the following conditions:
+
+- Credit must be given to the original author.
+- This software may not be used, in whole or in part, for any commercial purpose without explicit written permission.
+- All modified versions must retain this license and attribution.
+
+For commercial licensing inquiries, please contact the author (gary@hartzell.us).
+

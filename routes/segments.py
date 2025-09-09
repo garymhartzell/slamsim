@@ -15,7 +15,7 @@ SEGMENT_TYPE_OPTIONS = ["Match", "Promo", "Interview", "In-ring", "Brawl"]
 MATCH_RESULT_OPTIONS = ["Win", "Loss", "Draw", "No Contest"]
 
 def _get_segment_form_data(form):
-    """Extracts segment data from the form."""
+    """Extracts segment data from the form, including new match participant and result data."""
     position_str = form.get('position')
     position = int(position_str) if position_str and position_str.isdigit() else None
     
@@ -74,11 +74,10 @@ def create_segment(event_slug):
         return redirect(url_for('events.list_events'))
 
     sluggified_event_name = _slugify(event_slug)
-    all_wrestlers = load_active_wrestlers()
-    all_tagteams = load_active_tagteams()
+    all_wrestlers = sorted(load_active_wrestlers(), key=lambda w: w['Name'])
+    all_tagteams = sorted(load_active_tagteams(), key=lambda t: t['Name'])
     all_belts = load_belts()
 
-    # THE FIX IS HERE: Create a default structure for match_data
     match_data_for_template = {
         'sides': [], 'participants_display': '', 'match_time': '',
         'match_championship': '', 'match_hidden': False,
@@ -95,7 +94,7 @@ def create_segment(event_slug):
                 match_errors, match_warnings = validate_match_data(match_details['sides'], match_details)
                 errors.extend(match_errors)
                 match_details['warnings'] = match_warnings
-                match_data_for_template.update(match_details) # Update template data with POST data
+                match_data_for_template.update(match_details)
             else:
                 errors.append("Match data is missing for a segment of type 'Match'.")
         
@@ -141,8 +140,8 @@ def edit_segment(event_slug, position):
         flash(f"Segment at position {position} not found.", 'danger')
         return redirect(url_for('events.edit_event', event_name=event_slug))
 
-    all_wrestlers = load_active_wrestlers()
-    all_tagteams = load_active_tagteams()
+    all_wrestlers = sorted(load_active_wrestlers(), key=lambda w: w['Name'])
+    all_tagteams = sorted(load_active_tagteams(), key=lambda t: t['Name'])
     all_belts = load_belts()
     summary_content = load_summary_content(segment.get('summary_file', ''))
     

@@ -13,20 +13,17 @@ STATUS_OPTIONS = ['Future', 'Past', 'Cancelled']
 def _get_form_data(form):
     """Extracts event data from the form."""
     return {
-        'Event_Name': form.get('event_name'),
-        'Subtitle': form.get('subtitle', ''),
-        'Status': form.get('status'),
-        'Date': form.get('date'),
-        'Venue': form.get('venue', ''),
-        'Location': form.get('location', ''),
+        'Event_Name': form.get('event_name'), 'Subtitle': form.get('subtitle', ''),
+        'Status': form.get('status'), 'Date': form.get('date'),
+        'Venue': form.get('venue', ''), 'Location': form.get('location', ''),
         'Broadcasters': form.get('broadcasters', ''),
         'Finalized': form.get('finalized', 'false').lower() == 'true'
     }
 
 @events_bp.route('/')
 def list_events():
-    """Displays a list of all events."""
-    events = load_events()
+    """Displays a list of all events, sorted by most recent."""
+    events = sorted(load_events(), key=lambda e: e.get('Date', '0000-00-00'), reverse=True)
     return render_template('events/list.html', events=events)
 
 @events_bp.route('/create', methods=['GET', 'POST'])
@@ -140,7 +137,7 @@ def finalize_event(event_name):
                         for member_name in team_data['Members'].split('|'):
                             update_wrestler_record(member_name, 'tag', team_result)
             
-            # Update records for singles wrestlers (not part of a recognized team in this match)
+            # Update records for singles wrestlers
             all_wrestlers_in_match = _get_all_wrestlers_involved(match.get('sides', []))
             for wrestler_name in all_wrestlers_in_match:
                  if match.get('match_class') == 'singles':
@@ -164,7 +161,7 @@ def finalize_event(event_name):
 
                     if winner_name and belt.get('Current_Holder') != winner_name:
                         process_championship_change(belt, winner_name, event['Date'])
-                    elif winner_name and belt.get('Current_Holder') == winner_name: # Successful defense
+                    elif winner_name and belt.get('Current_Holder') == winner_name:
                         history = load_history_for_belt(belt['ID'])
                         for reign in history:
                             if reign.get('Champion_Name') == belt['Current_Holder'] and not reign.get('Date_Lost'):

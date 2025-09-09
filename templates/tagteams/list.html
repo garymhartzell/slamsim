@@ -1,51 +1,49 @@
 {% extends "_base.html" %}
 
-{% block title %}Tag Teams List{% endblock %}
+{% block title %}Tag-Teams List{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Tag Teams</h1>
-        <a href="{{ url_for('tagteams.create_tagteam') }}" class="btn btn-primary">Create New Tag Team</a>
+<div class="header-bar">
+    <h2>Tag-Teams</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('tagteams.create_tagteam') }}" class="btn btn-primary">Create New Tag-Team</a>
     </div>
+</div>
 
+<div class="table-container">
     <table>
         <thead>
             <tr>
                 <th>Name</th>
                 <th>Members</th>
                 <th>Status</th>
-                <th>Wins</th>
-                <th>Losses</th>
-                <th>Draws</th>
                 <th>Division</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for tagteam in tagteams %}
-                <tr>
-                    <td>{{ tagteam.Name }}</td>
-                    <td>{{ tagteam.Members.replace('|', ', ') }}</td>
-                    <td>{{ tagteam.Status }}</td>
-                    <td>{{ tagteam.Wins }}</td>
-                    <td>{{ tagteam.Losses }}</td>
-                    <td>{{ tagteam.Draws }}</td>
-                    <td>{{ tagteam.DivisionName }}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('tagteams.view_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-secondary">View</a>
-                            <a href="{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-primary">Edit</a>
-                            <form action="{{ url_for('tagteams.delete_tagteam_route', tagteam_name=tagteam.Name) }}" method="post" style="display:inline;">
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
+            <tr>
+                <td><a href="{{ url_for('tagteams.view_tagteam', tagteam_name=tagteam.Name) }}">{{ tagteam.Name }}</a></td>
+                <td>{{ tagteam.Members.replace('|', ', ') }}</td>
+                <td>{{ tagteam.Status }}</td>
+                <td>{{ tagteam.DivisionName }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-secondary">Edit</a>
+                        <form action="{{ url_for('tagteams.delete_tagteam_route', tagteam_name=tagteam.Name) }}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
             {% else %}
-                <tr>
-                    <td colspan="8">No tag teams found.</td>
-                </tr>
+            <tr>
+                <td colspan="5">No tag-teams found.</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 {% endblock %}
+
