@@ -1,7 +1,8 @@
 [
     {
-        "Title": "Welcome to SlamSim!",
-        "Date": "2025-03-10",
-        "Content_File": "2025-03-10-welcome-to-slamsim.html"
+        "Date": "2025-09-10",
+        "Subject": "Welcome to SlamSim!",
+        "Content": "Go ahead and delete this news item.",
+        "News_ID": "077f9834-ea29-4c1a-8c98-c54f5897b38b"
     }
 ]

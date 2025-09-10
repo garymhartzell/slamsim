@@ -1,0 +1,28 @@
+{% extends "_base.html" %}
+
+{% block title %}News Post: {{ news_post.Subject }}{% endblock %}
+
+{% block content %}
+<div class="header-bar">
+    <h2>{{ news_post.Subject }}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('news.list_news') }}">Back to News List</a>
+    </div>
+</div>
+
+<div class="detail-container">
+    <div class="detail-item">
+        <strong>Date:</strong> {{ news_post.Date }}
+    </div>
+    <div class="detail-item content-body">
+        {{ news_post.RenderedContent | safe }}
+    </div>
+    <div class="action-buttons form-actions mt-3">
+        <a href="{{ url_for('news.edit_news', news_id=news_post.News_ID) }}" class="btn btn-secondary">Edit Post</a>
+        <form action="{{ url_for('news.delete_news_route', news_id=news_post.News_ID) }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-danger">Delete Post</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+```

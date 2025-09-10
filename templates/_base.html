@@ -11,9 +11,11 @@
         <nav>
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('news.list_news') }}">News</a></li>
                 <li><a href="{{ url_for('events.list_events') }}">Events</a></li>
                 <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
                 <li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag-Teams</a></li>
+                <li><a href="{{ url_for('divisions.list_divisions') }}">Divisions</a></li>
                 <li><a href="{{ url_for('belts.list_belts') }}">Belts</a></li>
                 <li><a href="{{ url_for('prefs.general_prefs') }}">Preferences</a></li>
                 <li><a href="{{ url_for('goodbye') }}">Exit</a></li>

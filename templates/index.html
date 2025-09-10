@@ -5,6 +5,7 @@
 {% block content %}
     <h2>Management</h2>
     <ul class="main-menu">
+        <li><a href="{{ url_for('news.list_news') }}">News</a></li>
         <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
         <li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag Teams</a></li>
         <li><a href="{{ url_for('belts.list_belts') }}">Belts</a></li>

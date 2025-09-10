@@ -6,6 +6,7 @@ from routes.tagteams import tagteams_bp
 from routes.events import events_bp
 from routes.segments import segments_bp
 from routes.belts import belts_bp
+from routes.news import news_bp # Import the new news blueprint
 
 app = Flask(__name__, template_folder='../templates')
 app.config['SECRET_KEY'] = 'a_very_secret_key_for_flash_messages'
@@ -18,6 +19,7 @@ app.register_blueprint(tagteams_bp)
 app.register_blueprint(events_bp)
 app.register_blueprint(segments_bp)
 app.register_blueprint(belts_bp)
+app.register_blueprint(news_bp) # Register the new news blueprint
 
 @app.route('/')
 def index():

@@ -1,0 +1,45 @@
+{% extends "_base.html" %}
+
+{% block title %}Manage News{% endblock %}
+
+{% block content %}
+<div class="header-bar">
+    <h2>Manage News</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('news.create_news') }}" class="btn btn-primary">Add New Post</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in news_posts %}
+            <tr>
+                <td>{{ post.Date }}</td>
+                <td>{{ post.Subject }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('news.view_news', news_id=post.News_ID) }}" class="btn btn-info">View</a>
+                        <a href="{{ url_for('news.edit_news', news_id=post.News_ID) }}" class="btn btn-secondary">Edit</a>
+                        <form action="{{ url_for('news.delete_news_route', news_id=post.News_ID) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">No news posts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
