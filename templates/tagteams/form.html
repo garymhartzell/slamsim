@@ -73,19 +73,19 @@
         </fieldset>
 
         <fieldset class="form-section">
-            <legend>Record</legend>
+            <legend>Record (Read-Only)</legend>
             <div class="form-row record">
                 <div class="form-group">
-                    <label for="Wins">Wins</label>
-                    <input type="number" id="Wins" name="Wins" value="{{ tagteam.Wins | default('0') }}" min="0">
+                    <label>Wins</label>
+                    <p class="form-static-text">{{ tagteam.Wins | default('0') }}</p>
                 </div>
                 <div class="form-group">
-                    <label for="Losses">Losses</label>
-                    <input type="number" id="Losses" name="Losses" value="{{ tagteam.Losses | default('0') }}" min="0">
+                    <label>Losses</label>
+                    <p class="form-static-text">{{ tagteam.Losses | default('0') }}</p>
                 </div>
                 <div class="form-group">
-                    <label for="Draws">Draws</label>
-                    <input type="number" id="Draws" name="Draws" value="{{ tagteam.Draws | default('0') }}" min="0">
+                    <label>Draws</label>
+                    <p class="form-static-text">{{ tagteam.Draws | default('0') }}</p>
                 </div>
             </div>
         </fieldset>

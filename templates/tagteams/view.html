@@ -1,58 +1,39 @@
 {% extends "_base.html" %}
 
-{% block title %}View Tag Team: {{ tagteam.Name }}{% endblock %}
+{% block title %}View Tag-Team: {{ tagteam.Name }}{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Tag Team Details: {{ tagteam.Name }}</h2>
-        <div class="action-buttons">
-            <a href="{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-primary">Edit Tag Team</a>
-        </div>
+<div class="header-bar">
+    <h2>Tag-Team Details: {{ tagteam.Name }}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-primary">Edit</a>
+        <a href="{{ url_for('tagteams.list_tagteams') }}">Back to List</a>
     </div>
+</div>
 
+<div class="details-card-grid">
     <div class="details-card">
-        <div class="details-grid">
-            <!-- Left Column -->
-            <div class="details-column">
-                <p><strong>Status:</strong> {{ tagteam.Status }}</p>
-                <p><strong>Division:</strong> {{ tagteam.DivisionName }}</p>
-                <p><strong>Members:</strong> 
-                    {% if tagteam.Members %}
-                        {{ tagteam.Members | join(', ') }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </p>
-                <p><strong>Record (W-L-D):</strong> {{ tagteam.Wins }}-{{ tagteam.Losses }}-{{ tagteam.Draws }}</p>
-                <p><strong>Alignment:</strong> {{ tagteam.Alignment or 'N/A' }}</p>
-                <p><strong>Location:</strong> {{ tagteam.Location or 'N/A' }}</p>
-            </div>
-            <!-- Right Column -->
-            <div class="details-column">
-                <p><strong>Weight:</strong> {{ tagteam.Weight or 'N/A' }}</p>
-                <p><strong>Faction:</strong> {{ tagteam.Faction or 'N/A' }}</p>
-                <p><strong>Manager:</strong> {{ tagteam.Manager or 'N/A' }}</p>
-                <p><strong>Music:</strong> {{ tagteam.Music or 'N/A' }}</p>
-                <p><strong>Belt:</strong> {{ tagteam.Belt or 'N/A' }}</p>
-            </div>
+        <div class="card-header">
+            <h3>{{ tagteam.Name }}</h3>
         </div>
-        <div class="details-full-width">
-             <p><strong>Moves:</strong> 
-                {% if tagteam.Moves %}
-                    {{ tagteam.Moves | join(', ') }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </p>
-            <p><strong>Awards:</strong> 
-                {% if tagteam.Awards %}
-                    {{ tagteam.Awards | join(', ') }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </p>
+        <div class="card-content">
+            <p><strong>Members:</strong> {{ tagteam.Members | replace('|', ', ') }}</p>
+            <p><strong>Status:</strong> {{ tagteam.Status }}</p>
+            <p><strong>Division:</strong> {{ tagteam.DivisionName }}</p>
+            <p><strong>Belt:</strong> {{ tagteam.Belt or 'None' }}</p>
+            <hr>
+            <p><strong>Record:</strong> {{ tagteam.Wins | default('0') }} - {{ tagteam.Losses | default('0') }} - {{ tagteam.Draws | default('0') }} (W-L-D)</p>
         </div>
     </div>
-
-    <a href="{{ url_for('tagteams.list_tagteams') }}" style="margin-top: 1.5rem; display: inline-block;">Back to Tag Teams List</a>
+    <div class="details-card">
+        <div class="card-header"><h3>Details</h3></div>
+        <div class="card-content">
+            <p><strong>Alignment:</strong> {{ tagteam.Alignment }}</p>
+            <p><strong>Location:</strong> {{ tagteam.Location }}</p>
+            <p><strong>Combined Weight:</strong> {{ tagteam.Weight }}</p>
+            <p><strong>Entrance Music:</strong> {{ tagteam.Music }}</p>
+        </div>
+    </div>
+</div>
 {% endblock %}
+

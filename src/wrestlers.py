@@ -24,11 +24,7 @@ def save_wrestlers(wrestlers_list):
 
 def get_wrestler_by_name(name):
     """Retrieves a wrestler by their unique name."""
-    wrestlers = load_wrestlers()
-    for wrestler in wrestlers:
-        if wrestler.get('Name') == name:
-            return wrestler
-    return None
+    return next((w for w in load_wrestlers() if w.get('Name') == name), None)
 
 def add_wrestler(wrestler_data):
     """Adds a new wrestler to the data."""
@@ -42,22 +38,21 @@ def add_wrestler(wrestler_data):
 def update_wrestler(original_name, updated_data):
     """Updates an existing wrestler's data."""
     wrestlers = load_wrestlers()
-    for i, wrestler in enumerate(wrestlers):
-        if wrestler.get('Name') == original_name:
-            if original_name != updated_data.get('Name') and any(w.get('Name') == updated_data.get('Name') for w in wrestlers):
-                return False
-            wrestlers[i] = updated_data
-            save_wrestlers(wrestlers)
-            return True
+    index_to_update = next((i for i, w in enumerate(wrestlers) if w.get('Name') == original_name), -1)
+    if index_to_update != -1:
+        if original_name != updated_data.get('Name') and any(w.get('Name') == updated_data.get('Name') for w in wrestlers):
+            return False
+        wrestlers[index_to_update] = updated_data
+        save_wrestlers(wrestlers)
+        return True
     return False
 
 def delete_wrestler(name):
     """Deletes a wrestler by their unique name."""
     wrestlers = load_wrestlers()
-    original_len = len(wrestlers)
-    wrestlers = [w for w in wrestlers if w.get('Name') != name]
-    if len(wrestlers) < original_len:
-        save_wrestlers(wrestlers)
+    wrestlers_after = [w for w in wrestlers if w.get('Name') != name]
+    if len(wrestlers_after) < len(wrestlers):
+        save_wrestlers(wrestlers_after)
         return True
     return False
 
@@ -69,21 +64,23 @@ def update_wrestler_record(wrestler_name, match_class, result):
         if wrestler['Name'] == wrestler_name:
             wrestler_found = True
             if match_class == 'singles':
-                if result == 'Win':
-                    wrestler['Singles_Wins'] = str(int(wrestler.get('Singles_Wins', 0)) + 1)
-                elif result == 'Loss':
-                    wrestler['Singles_Losses'] = str(int(wrestler.get('Singles_Losses', 0)) + 1)
-                elif result == 'Draw':
-                    wrestler['Singles_Draws'] = str(int(wrestler.get('Singles_Draws', 0)) + 1)
-            elif match_class in ['tag', 'other', 'battle_royal']: # Tag-like matches affect tag record
-                if result == 'Win':
-                    wrestler['Tag_Wins'] = str(int(wrestler.get('Tag_Wins', 0)) + 1)
-                elif result == 'Loss':
-                    wrestler['Tag_Losses'] = str(int(wrestler.get('Tag_Losses', 0)) + 1)
-                elif result == 'Draw':
-                    wrestler['Tag_Draws'] = str(int(wrestler.get('Tag_Draws', 0)) + 1)
+                if result == 'Win': wrestler['Singles_Wins'] = str(int(wrestler.get('Singles_Wins', 0)) + 1)
+                elif result == 'Loss': wrestler['Singles_Losses'] = str(int(wrestler.get('Singles_Losses', 0)) + 1)
+                elif result == 'Draw': wrestler['Singles_Draws'] = str(int(wrestler.get('Singles_Draws', 0)) + 1)
+            elif match_class in ['tag', 'other', 'battle_royal']:
+                if result == 'Win': wrestler['Tag_Wins'] = str(int(wrestler.get('Tag_Wins', 0)) + 1)
+                elif result == 'Loss': wrestler['Tag_Losses'] = str(int(wrestler.get('Tag_Losses', 0)) + 1)
+                elif result == 'Draw': wrestler['Tag_Draws'] = str(int(wrestler.get('Tag_Draws', 0)) + 1)
             break
-    if wrestler_found:
-        save_wrestlers(all_wrestlers)
+    if wrestler_found: save_wrestlers(all_wrestlers)
     return wrestler_found
+
+def update_wrestler_team_affiliation(wrestler_name, team_name):
+    """Sets or clears a wrestler's team affiliation."""
+    all_wrestlers = load_wrestlers()
+    for wrestler in all_wrestlers:
+        if wrestler['Name'] == wrestler_name:
+            wrestler['Team'] = team_name
+            break
+    save_wrestlers(all_wrestlers)
 

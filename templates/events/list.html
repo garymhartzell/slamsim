@@ -3,48 +3,52 @@
 {% block title %}Events List{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Events List</h1>
+<div class="header-bar">
+    <h2>Events</h2>
+    <div class="action-buttons">
         <a href="{{ url_for('events.create_event') }}" class="btn btn-primary">Create New Event</a>
     </div>
+</div>
 
-    {% if events %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Event Name</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Venue</th>
-                    <th>Location</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for event in events %}
-                    <tr>
-                        <td>{{ event.Event_Name }}</td>
-                        <td>{{ event.Date }}</td>
-                        <td>{{ event.Status }}</td>
-                        <td>{{ event.Venue }}</td>
-                        <td>{{ event.Location }}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{{ url_for('events.view_event', event_name=event.Event_Name) }}" class="btn btn-secondary">View</a>
-                                <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-primary">Edit</a>
-                                <form action="{{ url_for('events.delete_event_route', event_name=event.Event_Name) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <div class="empty-state">
-            <p>No events found.</p>
-            <a href="{{ url_for('events.create_event') }}" class="btn btn-primary">Create Your First Event</a>
-        </div>
-    {% endif %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Event Name</th>
+                <th>Status</th>
+                <th>Venue</th>
+                <th>Finalized</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td>{{ event.Date }}</td>
+                <td>{{ event.Event_Name }}</td>
+                <td>{{ event.Status }}</td>
+                <td>{{ event.Venue }}</td>
+                <td>{% if event.Finalized %}Yes{% else %}No{% endif %}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('events.view_event', event_name=event.Event_Name) }}" class="btn btn-info">View</a>
+                        <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-secondary">Edit</a>
+                        {% if not event.Finalized %}
+                        <form action="{{ url_for('events.delete_event_route', event_name=event.Event_Name) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No events found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
+

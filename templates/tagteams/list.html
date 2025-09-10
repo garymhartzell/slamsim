@@ -31,9 +31,11 @@
                 <td>
                     <div class="action-buttons">
                         <a href="{{ url_for('tagteams.edit_tagteam', tagteam_name=tagteam.Name) }}" class="btn btn-secondary">Edit</a>
+                        {% if tagteam.is_deletable %}
                         <form action="{{ url_for('tagteams.delete_tagteam_route', tagteam_name=tagteam.Name) }}" method="post" class="d-inline">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

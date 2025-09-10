@@ -1,38 +1,49 @@
 {% extends "_base.html" %}
 
-{% block title %}Wrestler List{% endblock %}
+{% block title %}Wrestlers List{% endblock %}
 
 {% block content %}
-    <h1>Wrestler List</h1>
-    <p><a href="{{ url_for('wrestlers.create_wrestler') }}">Create New Wrestler</a></p>
+<div class="header-bar">
+    <h2>Wrestlers</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('wrestlers.create_wrestler') }}" class="btn btn-primary">Add New Wrestler</a>
+    </div>
+</div>
 
-    {% if wrestlers %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Division</th>
-                    <th>Alignment</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for wrestler in wrestlers %}
-                <tr>
-                    <td>{{ wrestler.Name }}</td>
-                    <td>{{ wrestler.Status }}</td>
-                    <td>{{ wrestler.DivisionName }}</td>
-                    <td>{{ wrestler.Alignment }}</td>
-                    <td>
-                        <a href="{{ url_for('wrestlers.view_wrestler', wrestler_name=wrestler.Name) }}">View</a> |
-                        <a href="{{ url_for('wrestlers.edit_wrestler', wrestler_name=wrestler.Name) }}">Edit</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No wrestlers found.</p>
-    {% endif %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Division</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for wrestler in wrestlers %}
+            <tr>
+                <td><a href="{{ url_for('wrestlers.view_wrestler', wrestler_name=wrestler.Name) }}">{{ wrestler.Name }}</a></td>
+                <td>{{ wrestler.DivisionName }}</td>
+                <td>{{ wrestler.Status }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('wrestlers.edit_wrestler', wrestler_name=wrestler.Name) }}" class="btn btn-secondary">Edit</a>
+                        {% if wrestler.is_deletable %}
+                        <form action="{{ url_for('wrestlers.delete_wrestler_route', wrestler_name=wrestler.Name) }}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">No wrestlers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
+

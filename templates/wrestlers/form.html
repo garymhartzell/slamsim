@@ -44,35 +44,35 @@
         </fieldset>
 
         <fieldset class="form-section">
-            <legend>Record</legend>
+            <legend>Record (Read-Only)</legend>
             <p>Singles</p>
             <div class="form-row record">
                 <div class="form-group">
-                    <label for="singles_wins">Wins</label>
-                    <input type="number" id="singles_wins" name="singles_wins" value="{{ wrestler.Singles_Wins | default('0') }}" min="0">
+                    <label>Wins</label>
+                    <p class="form-static-text">{{ wrestler.Singles_Wins | default('0') }}</p>
                 </div>
                 <div class="form-group">
-                    <label for="singles_losses">Losses</label>
-                    <input type="number" id="singles_losses" name="singles_losses" value="{{ wrestler.Singles_Losses | default('0') }}" min="0">
+                    <label>Losses</label>
+                    <p class="form-static-text">{{ wrestler.Singles_Losses | default('0') }}</p>
                 </div>
                 <div class="form-group">
-                    <label for="singles_draws">Draws</label>
-                    <input type="number" id="singles_draws" name="singles_draws" value="{{ wrestler.Singles_Draws | default('0') }}" min="0">
+                    <label>Draws</label>
+                    <p class="form-static-text">{{ wrestler.Singles_Draws | default('0') }}</p>
                 </div>
             </div>
             <p>Tag Team</p>
             <div class="form-row record">
                 <div class="form-group">
-                    <label for="tag_wins">Wins</label>
-                    <input type="number" id="tag_wins" name="tag_wins" value="{{ wrestler.Tag_Wins | default('0') }}" min="0">
+                    <label>Wins</label>
+                    <p class="form-static-text">{{ wrestler.Tag_Wins | default('0') }}</p>
                 </div>
                 <div class="form-group">
-                    <label for="tag_losses">Losses</label>
-                    <input type="number" id="tag_losses" name="tag_losses" value="{{ wrestler.Tag_Losses | default('0') }}" min="0">
+                    <label>Losses</label>
+                    <p class="form-static-text">{{ wrestler.Tag_Losses | default('0') }}</p>
                 </div>
                 <div class="form-group">
-                    <label for="tag_draws">Draws</label>
-                    <input type="number" id="tag_draws" name="tag_draws" value="{{ wrestler.Tag_Draws | default('0') }}" min="0">
+                    <label>Draws</label>
+                    <p class="form-static-text">{{ wrestler.Tag_Draws | default('0') }}</p>
                 </div>
             </div>
         </fieldset>
@@ -125,7 +125,7 @@
             <legend>Affiliations</legend>
              <div class="form-group">
                 <label for="team">Team</label>
-                <input type="text" id="team" name="team" value="{{ wrestler.Team | default('') }}">
+                <input type="text" id="team" name="team" value="{{ wrestler.Team | default('') }}" readonly>
             </div>
             <div class="form-group">
                 <label for="faction">Faction</label>

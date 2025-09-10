@@ -3,21 +3,14 @@
 {% block title %}Divisions List{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Divisions</h2>
+<div class="header-bar">
+    <h2>Divisions</h2>
+    <div class="action-buttons">
         <a href="{{ url_for('divisions.create_division') }}" class="btn btn-primary">Add New Division</a>
     </div>
+</div>
 
-    {# Note: The main _base.html already handles flashing messages, so this is redundant unless you want them in a different spot on this specific page. I'll leave it in for now. #}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
+<div class="table-container">
     <table>
         <thead>
             <tr>
@@ -35,10 +28,12 @@
                 <td>{{ division.Status }}</td>
                 <td>
                     <div class="action-buttons">
-                        <a href="{{ url_for('divisions.edit_division', division_id=division.ID) }}" class="btn btn-primary">Edit</a>
-                        <form action="{{ url_for('divisions.delete_division_route', division_id=division.ID) }}" method="POST" style="display:inline;">
+                        <a href="{{ url_for('divisions.edit_division', division_id=division.ID) }}" class="btn btn-secondary">Edit</a>
+                        {% if division.is_deletable %}
+                        <form action="{{ url_for('divisions.delete_division_route', division_id=division.ID) }}" method="POST" class="d-inline">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
@@ -51,3 +46,4 @@
     </table>
 </div>
 {% endblock %}
+

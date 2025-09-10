@@ -3,75 +3,50 @@
 {% block title %}View Wrestler: {{ wrestler.Name }}{% endblock %}
 
 {% block content %}
-    <h1>{{ wrestler.Name }}</h1>
+<div class="header-bar">
+    <h2>Wrestler Details: {{ wrestler.Name }}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('wrestlers.edit_wrestler', wrestler_name=wrestler.Name) }}" class="btn btn-primary">Edit</a>
+        <a href="{{ url_for('wrestlers.list_wrestlers') }}">Back to List</a>
+    </div>
+</div>
 
-    <p><strong>Status:</strong> {{ wrestler.Status }}</p>
-    <p><strong>Division:</strong> {{ wrestler.DivisionName }}</p>
-    <p><strong>Alignment:</strong> {{ wrestler.Alignment }}</p>
+<div class="details-card-grid">
+    <div class="details-card">
+        <div class="card-header">
+            <h3>{{ wrestler.Name }}</h3>
+            {% if wrestler.Nickname %}<p>{{ wrestler.Nickname }}</p>{% endif %}
+        </div>
+        <div class="card-content">
+            <p><strong>Status:</strong> {{ wrestler.Status }}</p>
+            <p><strong>Division:</strong> {{ wrestler.DivisionName }}</p>
+            <p><strong>Belt:</strong> {{ wrestler.Belt or 'None' }}</p>
+            <p><strong>Team:</strong> {{ wrestler.Team or 'None' }}</p>
+            <p><strong>Faction:</strong> {{ wrestler.Faction or 'None' }}</p>
+            <p><strong>Manager:</strong> {{ wrestler.Manager or 'None' }}</p>
+            <hr>
+            <p><strong>Height:</strong> {{ wrestler.Height }}</p>
+            <p><strong>Weight:</strong> {{ wrestler.Weight }}</p>
+            <p><strong>Location:</strong> {{ wrestler.Location }}</p>
+            <p><strong>Date of Birth:</strong> {{ wrestler.DOB }}</p>
+        </div>
+    </div>
 
-    <h2>Statistics</h2>
-    <ul>
-        <li><strong>Singles Record:</strong> {{ wrestler.Singles_Wins }}-{{ wrestler.Singles_Losses }}-{{ wrestler.Singles_Draws }} (W-L-D)</li>
-        <li><strong>Tag Record:</strong> {{ wrestler.Tag_Wins }}-{{ wrestler.Tag_Losses }}-{{ wrestler.Tag_Draws }} (W-L-D)</li>
-    </ul>
-
-    <h2>Biography</h2>
-    <ul>
-        {% if wrestler.Nickname %}<li><strong>Nickname:</strong> {{ wrestler.Nickname }}</li>{% endif %}
-        {% if wrestler.Real_Name %}<li><strong>Real Name:</strong> {{ wrestler.Real_Name }}</li>{% endif %}
-        {% if wrestler.DOB %}<li><strong>Date of Birth:</strong> {{ wrestler.DOB }}</li>{% endif %}
-        {% if wrestler.Location %}<li><strong>Location:</strong> {{ wrestler.Location }}</li>{% endif %}
-        {% if wrestler.Height %}<li><strong>Height:</strong> {{ wrestler.Height }}</li>{% endif %}
-        {% if wrestler.Weight %}<li><strong>Weight:</strong> {{ wrestler.Weight }}</li>{% endif %}
-        {% if wrestler.Start_Date %}<li><strong>Debut Year:</strong> {{ wrestler.Start_Date }}</li>{% endif %}
-        {% if wrestler.Music %}<li><strong>Music:</strong> {{ wrestler.Music }}</li>{% endif %}
-    </ul>
-
-    <h2>Affiliations</h2>
-    <ul>
-        {% if wrestler.Team %}<li><strong>Team:</strong> {{ wrestler.Team }}</li>{% endif %}
-        {% if wrestler.Faction %}<li><strong>Faction:</strong> {{ wrestler.Faction }}</li>{% endif %}
-        {% if wrestler.Manager %}<li><strong>Manager:</strong> {{ wrestler.Manager }}</li>{% endif %}
-    </ul>
-
-    <h2>In-Ring</h2>
-    <ul>
-        {% if wrestler.Moves %}
-            <li><strong>Finishing Moves:</strong>
-                <ul>
-                    {% for move in wrestler.Moves.split('|') %}
-                        {% if move.strip() %}<li>{{ move.strip() }}</li>{% endif %}
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endif %}
-        {% if wrestler.Belt %}<li><strong>Current Belt:</strong> {{ wrestler.Belt }}</li>{% endif %}
-        {% if wrestler.Awards %}
-            <li><strong>Accomplishments:</strong>
-                <ul>
-                    {% for award in wrestler.Awards.split('|') %}
-                        {% if award.strip() %}<li>{{ award.strip() }}</li>{% endif %}
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endif %}
-        {% if wrestler.Salary %}
-            <li><strong>Salary History:</strong>
-                <ul>
-                    {% for salary_entry in wrestler.Salary.split('|') %}
-                        {% if salary_entry.strip() %}<li>{{ salary_entry.strip() }}</li>{% endif %}
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endif %}
-    </ul>
-
-    <p>
-        <a href="{{ url_for('wrestlers.edit_wrestler', wrestler_name=wrestler.Name) }}">Edit Wrestler</a> |
-        <a href="{{ url_for('wrestlers.list_wrestlers') }}">Back to Wrestler List</a>
-    </p>
-
-    <form action="{{ url_for('wrestlers.delete_wrestler_route', wrestler_name=wrestler.Name) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ wrestler.Name }}?');" style="display:inline-block;">
-        <input type="submit" value="Delete Wrestler" style="background-color: red; color: white;">
-    </form>
+    <div class="details-card">
+        <div class="card-header"><h3>Record</h3></div>
+        <div class="card-content">
+            <h4>Singles</h4>
+            <p>{{ wrestler.Singles_Wins | default('0') }} - {{ wrestler.Singles_Losses | default('0') }} - {{ wrestler.Singles_Draws | default('0') }} (W-L-D)</p>
+            <h4>Tag Team</h4>
+            <p>{{ wrestler.Tag_Wins | default('0') }} - {{ wrestler.Tag_Losses | default('0') }} - {{ wrestler.Tag_Draws | default('0') }} (W-L-D)</p>
+            <hr>
+            <h4>Overall</h4>
+            {% set total_wins = (wrestler.Singles_Wins | int) + (wrestler.Tag_Wins | int) %}
+            {% set total_losses = (wrestler.Singles_Losses | int) + (wrestler.Tag_Losses | int) %}
+            {% set total_draws = (wrestler.Singles_Draws | int) + (wrestler.Tag_Draws | int) %}
+            <p>{{ total_wins }} - {{ total_losses }} - {{ total_draws }} (W-L-D)</p>
+        </div>
+    </div>
+</div>
 {% endblock %}
+

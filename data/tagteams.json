@@ -20,20 +20,20 @@
     {
         "Name": "FTR",
         "Wins": "0",
-        "Losses": "2",
+        "Losses": "0",
         "Draws": "0",
         "Status": "Active",
         "Division": "3",
         "Location": "Asheville, North Carolina",
         "Weight": "455 lbs.",
-        "Alignment": "Face",
-        "Music": "&quot;Darkside of TR&quot; by Mikey Rukus",
+        "Alignment": "Heel",
+        "Music": "&#34;Darkside of TR&#34; by Mikey Rukus",
         "Members": "Cash Wheeler|Dax Harwood",
         "Faction": "",
         "Manager": "",
-        "Moves": "Big Rig|Swissblade",
-        "Belt": "",
-        "Awards": "AEW World Tag-Team Champions (2x)"
+        "Moves": "",
+        "Awards": "",
+        "Belt": ""
     },
     {
         "Name": "Rated FTR",
