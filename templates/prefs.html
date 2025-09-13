@@ -3,24 +3,104 @@
 {% block title %}General Preferences{% endblock %}
 
 {% block content %}
+<div class="header-bar">
     <h2>General Preferences</h2>
+</div>
 
-    <form method="POST" action="{{ url_for('prefs.general_prefs') }}">
-        <fieldset class="form-section">
-            <legend>League Settings</legend>
-            <div class="form-group">
-                <label for="league_name">League Name:</label>
-                <input type="text" id="league_name" name="league_name" value="{{ prefs.league_name }}">
-            </div>
-            <div class="form-group">
-                <label for="league_short">League Abbreviation:</label>
-                <input type="text" id="league_short" name="league_short" value="{{ prefs.league_short }}" maxlength="10">
-            </div>
-        </fieldset>
-
-        <div class="action-buttons form-actions">
-            <button type="submit" class="btn btn-primary">Save Preferences</button>
-            <a href="{{ url_for('index') }}">Cancel</a>
+<form class="wide-form" method="POST" action="{{ url_for('prefs.general_prefs') }}">
+    <fieldset class="form-section">
+        <legend>League Identity</legend>
+        <div class="form-group">
+            <label for="league_name">League Name</label>
+            <input type="text" id="league_name" name="league_name" value="{{ prefs.league_name }}" required>
         </div>
-    </form>
+        <div class="form-group">
+            <label for="league_short">League Abbreviation</label>
+            <input type="text" id="league_short" name="league_short" value="{{ prefs.league_short }}" required>
+        </div>
+    </fieldset>
+    <div class="action-buttons form-actions">
+        <button type="submit" class="btn btn-primary">Save Preferences</button>
+    </div>
+</form>
+
+<hr class="section-divider">
+
+<fieldset class="form-section danger-zone">
+    <legend>Danger Zone</legend>
+    
+    <!-- Reset Records Section -->
+    <div class="form-group">
+        <label>Reset All Records</label>
+        <p>This will set the win, loss, and draw records for **every wrestler and tag team** back to zero. This is useful for starting a new season.</p>
+        <button id="reset-button" class="btn btn-danger" onclick="document.getElementById('reset-confirmation').style.display='block'; this.style.display='none';">
+            Reset All Win/Loss Records
+        </button>
+    </div>
+    <div id="reset-confirmation" style="display: none;">
+        <form method="POST" action="{{ url_for('prefs.reset_records') }}">
+            <div class="form-group">
+                <label for="confirmation-reset">To confirm, please type `RESET` in the box below:</label>
+                <input type="text" id="confirmation-reset" name="confirmation" required>
+            </div>
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger">I understand, reset all records</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('reset-confirmation').style.display='none'; document.getElementById('reset-button').style.display='block';">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <hr class="subsection-divider">
+
+    <!-- Clear Temp Files Section -->
+    <div class="form-group">
+        <label>Clear Temporary Files</label>
+        <p>This will delete all generated segment summary files from the `includes/tmp` directory. This is a safe cleanup operation and will not affect your core league data (wrestlers, events, etc.).</p>
+        <button id="clear-button" class="btn btn-warning" onclick="document.getElementById('clear-confirmation').style.display='block'; this.style.display='none';">
+            Clear All Temporary Files
+        </button>
+    </div>
+    <div id="clear-confirmation" style="display: none;">
+        <form method="POST" action="{{ url_for('prefs.clear_temp_files') }}">
+            <div class="form-group">
+                <label for="confirmation-clear">To confirm, please type `CLEAR` in the box below:</label>
+                <input type="text" id="confirmation-clear" name="confirmation" required>
+            </div>
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger">I understand, clear temporary files</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('clear-confirmation').style.display='none'; document.getElementById('clear-button').style.display='block';">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <hr class="subsection-divider">
+
+    <!-- Delete All Data Section -->
+    <div class="form-group">
+        <label>Delete All League Data</label>
+        <p>This is a permanent, irreversible action. It will delete **all wrestlers, teams, belts, history, events, and news posts**. Use this to start a completely fresh league.</p>
+        <button id="delete-button" class="btn btn-danger btn-lg" onclick="document.getElementById('delete-confirmation').style.display='block'; this.style.display='none';">
+            Delete All League Data
+        </button>
+    </div>
+    <div id="delete-confirmation" style="display: none;">
+        <form method="POST" action="{{ url_for('prefs.delete_league') }}">
+            <div class="form-group">
+                <label for="confirmation-delete">To confirm, please type `DELETE` in the box below:</label>
+                <input type="text" id="confirmation-delete" name="confirmation" required>
+            </div>
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger">I understand the consequences, delete everything</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('delete-confirmation').style.display='none'; document.getElementById('delete-button').style.display='block';">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</fieldset>
 {% endblock %}
+

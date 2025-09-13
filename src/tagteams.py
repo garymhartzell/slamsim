@@ -12,7 +12,7 @@ def _get_tagteams_file_path():
 def load_tagteams():
     """Loads tag-team data from the JSON file."""
     filepath = _get_tagteams_file_path()
-    if not os.path.exists(filepath):
+    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
         return []
     with open(filepath, 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -49,7 +49,7 @@ def delete_tagteam(name):
 
 def get_wrestler_names():
     """Returns a list of all wrestler names."""
-    from src.wrestlers import load_wrestlers # Local import to avoid circular dependency
+    from src.wrestlers import load_wrestlers
     return sorted([w['Name'] for w in load_wrestlers()])
 
 def get_active_members_status(member_names):
@@ -78,4 +78,13 @@ def update_tagteam_record(team_name, result):
     if team_found:
         save_tagteams(all_tagteams)
     return team_found
+
+def reset_all_tagteam_records():
+    """Sets all win/loss/draw records for every tag team to 0."""
+    all_tagteams = load_tagteams()
+    for team in all_tagteams:
+        team['Wins'] = '0'
+        team['Losses'] = '0'
+        team['Draws'] = '0'
+    save_tagteams(all_tagteams)
 

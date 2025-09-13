@@ -84,3 +84,15 @@ def update_wrestler_team_affiliation(wrestler_name, team_name):
             break
     save_wrestlers(all_wrestlers)
 
+def reset_all_wrestler_records():
+    """Sets all win/loss/draw records for every wrestler to 0."""
+    all_wrestlers = load_wrestlers()
+    for wrestler in all_wrestlers:
+        wrestler['Singles_Wins'] = '0'
+        wrestler['Singles_Losses'] = '0'
+        wrestler['Singles_Draws'] = '0'
+        wrestler['Tag_Wins'] = '0'
+        wrestler['Tag_Losses'] = '0'
+        wrestler['Tag_Draws'] = '0'
+    save_wrestlers(all_wrestlers)
+
