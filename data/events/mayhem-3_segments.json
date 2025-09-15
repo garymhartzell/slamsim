@@ -1,0 +1,19 @@
+[
+    {
+        "position": 1,
+        "type": "Match",
+        "header": "World Championship",
+        "match_result": "Adrian Waters def. Malcolm Cross by pinfall to become the new WMA World Champion (21:54)",
+        "match_id": "d0aacf87-b33d-4af6-8b47-7066e950309b",
+        "participants_display": "Adrian Waters vs Malcolm Cross",
+        "sides": [
+            [
+                "Adrian Waters"
+            ],
+            [
+                "Malcolm Cross"
+            ]
+        ],
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/mayhem-3/match_world-championship_1.md"
+    }
+]

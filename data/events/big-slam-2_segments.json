@@ -1,0 +1,21 @@
+[
+    {
+        "position": 1,
+        "type": "Match",
+        "header": "Tag-Team Match",
+        "match_id": "ab7614c9-780d-4519-97cf-c9fab70b6dd6",
+        "participants_display": "Alexi Chambers, Andrew Chambers vs Air America",
+        "sides": [
+            [
+                "Alexi Chambers",
+                "Andrew Chambers"
+            ],
+            [
+                "Robert Swanson",
+                "Zach Gordon"
+            ]
+        ],
+        "match_result": "Side 2 (Robert Swanson, Zach Gordon) wins",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-2/match_tag-team-match_1.md"
+    }
+]

@@ -1,0 +1,22 @@
+[
+    {
+        "Event_Name": "Big Slam 1",
+        "Subtitle": "",
+        "Status": "Past",
+        "Date": "2025-01-02",
+        "Venue": "",
+        "Location": "",
+        "Broadcasters": "",
+        "Finalized": true
+    },
+    {
+        "Event_Name": "Big Slam 2",
+        "Subtitle": "",
+        "Status": "Future",
+        "Date": "2025-01-15",
+        "Venue": "",
+        "Location": "",
+        "Broadcasters": "",
+        "Finalized": false
+    }
+]

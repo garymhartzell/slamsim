@@ -113,7 +113,6 @@ def _generate_match_result_string(match_data, all_tagteams_data):
 
     return f"{winning_side_str} def. {losing_side_str} {time_str}".strip()
 
-
 def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_tagteams_data):
     """
     Prepares match data for storage, including classifying the match,
@@ -160,9 +159,11 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
     if "sync_teams_to_individuals" not in prepared_match_data:
         prepared_match_data["sync_teams_to_individuals"] = True
 
-    return prepared_match_data
+    # Ensure the new overall match_result field exists (may be empty at first)
+    if "match_result" not in prepared_match_data:
+        prepared_match_data["match_result"] = ""
 
-# ... (rest of the validation and helper functions remain the same) ...
+    return prepared_match_data
 
 def _sync_team_results_to_individuals(match_results, all_tagteams_data):
     """
@@ -262,7 +263,6 @@ def _validate_result_completeness(match_results, sides, all_wrestlers_in_match, 
 
     return warnings
 
-# ... (File path, slugify, and other load/save functions remain the same) ...
 def _get_project_root():
     """Returns the absolute path to the project root directory."""
     current_dir = os.path.dirname(__file__)
@@ -447,7 +447,7 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
         processed_match_data = _prepare_match_data_for_storage(match_data, all_wrestlers_data, all_tagteams_data)
         processed_match_data = _sync_team_results_to_individuals(processed_match_data, all_tagteams_data)
 
-        # NEW: Auto-generate header if empty
+        # Auto-generate header if empty
         if not segment_data.get('header'):
             match_class = processed_match_data.get('match_class', 'other')
             if match_class == 'singles':
@@ -468,9 +468,9 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
         segment_data['match_id'] = match_id
         segment_data['participants_display'] = processed_match_data['participants_display']
         segment_data['sides'] = processed_match_data['sides']
-        # NEW: Generate and store the match result string
-        segment_data['match_result'] = _generate_match_result_string(processed_match_data, all_tagteams_data)
-        
+        # Store the selected overall match_result (string like "Side 1 (...) wins" or "Draw (...)")
+        segment_data['match_result'] = processed_match_data.get('match_result', "")
+
         full_match_data_to_save = processed_match_data.copy()
         full_match_data_to_save['match_id'] = match_id
         full_match_data_to_save['segment_position'] = segment_data['position']
@@ -529,7 +529,7 @@ def update_segment(event_slug, original_position, updated_data, summary_content,
         processed_match_data = _prepare_match_data_for_storage(match_data, all_wrestlers_data, all_tagteams_data)
         processed_match_data = _sync_team_results_to_individuals(processed_match_data, all_tagteams_data)
 
-        # NEW: Auto-generate header if empty
+        # Auto-generate header if empty
         if not updated_data.get('header'):
             match_class = processed_match_data.get('match_class', 'other')
             if match_class == 'singles':
@@ -548,8 +548,8 @@ def update_segment(event_slug, original_position, updated_data, summary_content,
 
         updated_data['participants_display'] = processed_match_data['participants_display']
         updated_data['sides'] = processed_match_data['sides']
-        # NEW: Generate and store the match result string
-        updated_data['match_result'] = _generate_match_result_string(processed_match_data, all_tagteams_data)
+        # Store the selected overall match_result (string like "Side 1 (...) wins" or "Draw (...)")
+        updated_data['match_result'] = processed_match_data.get('match_result', "")
 
         full_match_data_to_save = processed_match_data.copy()
         full_match_data_to_save['segment_position'] = updated_data['position']
@@ -649,4 +649,3 @@ def delete_all_segments_for_event(event_name):
         os.remove(matches_file_path)
         
     return True
-

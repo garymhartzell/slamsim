@@ -1,0 +1,29 @@
+[
+    {
+        "participants_display": "Garrison vs Riddick",
+        "sides": [
+            [
+                "Garrison"
+            ],
+            [
+                "Riddick"
+            ]
+        ],
+        "match_time": "15:44",
+        "match_championship": "World Championship",
+        "match_outcome": "Side 1 Wins",
+        "victory_method": "Pinfall",
+        "on_card": true,
+        "include_in_results": true,
+        "show_summary": true,
+        "winning_side_index": -1,
+        "individual_results": {
+            "Garrison": "Win",
+            "Riddick": "Loss"
+        },
+        "team_results": {},
+        "sync_teams_to_individuals": true,
+        "match_class": "singles",
+        "match_id": "72f59c15-5694-4535-91c0-04eb15305bf0"
+    }
+]

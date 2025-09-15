@@ -1,0 +1,16 @@
+[
+    {
+        "Name": "World Championship",
+        "Status": "Active",
+        "Holder_Type": "Singles",
+        "Current_Holder": "Garrison",
+        "ID": "world-championship-c6d1"
+    },
+    {
+        "Name": "World Tag-Team Championship",
+        "Status": "Active",
+        "Holder_Type": "Tag-Team",
+        "Current_Holder": "",
+        "ID": "world-tag-team-championship-36f2"
+    }
+]

@@ -12,6 +12,7 @@ import json
 segments_bp = Blueprint('segments', __name__, url_prefix='/events/<string:event_slug>/segments')
 
 SEGMENT_TYPE_OPTIONS = ["Match", "Promo", "Interview", "In-ring", "Brawl"]
+# Used for per-individual and per-team result selection (unchanged)
 MATCH_RESULT_OPTIONS = ["Win", "Loss", "Draw", "No Contest"]
 
 def _get_segment_form_data(form):
@@ -38,6 +39,9 @@ def _get_segment_form_data(form):
         match_results_json = form.get('match_results_json', '{}')
         match_results_data = json.loads(match_results_json)
 
+        # NEW: overall match_result (e.g., "Side 1 (...) wins", "Draw (Time limit)", "No contest")
+        overall_match_result = form.get('match_result', '')
+
         match_details = {
             'participants_display': participants_display,
             'sides': match_sides,
@@ -49,6 +53,7 @@ def _get_segment_form_data(form):
             'individual_results': match_results_data.get('individual_results', {}),
             'team_results': match_results_data.get('team_results', {}),
             'sync_teams_to_individuals': match_results_data.get('sync_teams_to_individuals', True),
+            'match_result': overall_match_result,  # NEW
             'warnings': [],
         }
     
@@ -83,6 +88,7 @@ def create_segment(event_slug):
         'match_championship': '', 'match_hidden': False,
         'match_class': '', 'winning_side_index': -1, 'individual_results': {},
         'team_results': {}, 'sync_teams_to_individuals': True, 'warnings': [],
+        'match_result': '',  # NEW
     }
 
     if request.method == 'POST':
@@ -150,6 +156,9 @@ def edit_segment(event_slug, position):
         full_match = get_match_by_id(sluggified_event_name, segment['match_id'])
         if full_match:
             match_data_for_template = full_match
+            # Ensure match_result exists for template
+            if 'match_result' not in match_data_for_template:
+                match_data_for_template['match_result'] = segment.get('match_result', '')
 
     if request.method == 'POST':
         updated_segment_data, updated_match_details, new_summary_content = _get_segment_form_data(request.form)
@@ -205,4 +214,3 @@ def delete_segment_route(event_slug, position):
     else:
         flash(f"Failed to delete segment at position {position}.", 'danger')
     return redirect(url_for('events.edit_event', event_name=event_slug))
-

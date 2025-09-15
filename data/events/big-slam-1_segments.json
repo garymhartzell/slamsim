@@ -1,0 +1,40 @@
+[
+    {
+        "position": 1,
+        "type": "Promo",
+        "header": "Intro",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-1/promo_intro_1.md"
+    },
+    {
+        "position": 2,
+        "type": "Match",
+        "header": "World Championship Scramble",
+        "match_id": "e8efc908-6411-42f7-b435-956f540cebab",
+        "participants_display": "Adrian Waters vs Apalachi vs Edmund Crowley vs Garrison vs Jack Preston vs Jamey Kingston vs Timothy Myers",
+        "sides": [
+            [
+                "Adrian Waters"
+            ],
+            [
+                "Apalachi"
+            ],
+            [
+                "Edmund Crowley"
+            ],
+            [
+                "Garrison"
+            ],
+            [
+                "Jack Preston"
+            ],
+            [
+                "Jamey Kingston"
+            ],
+            [
+                "Timothy Myers"
+            ]
+        ],
+        "match_result": "Garrison def. Adrian Waters, Apalachi, Edmund Crowley, Jack Preston, Jamey Kingston, Timothy Myers (22:33)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-1/match_world-championship-scramble_2.md"
+    }
+]

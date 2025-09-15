@@ -1,0 +1,34 @@
+[
+    {
+        "participants_display": "Alexi Chambers, Andrew Chambers vs Air America",
+        "sides": [
+            [
+                "Alexi Chambers",
+                "Andrew Chambers"
+            ],
+            [
+                "Robert Swanson",
+                "Zach Gordon"
+            ]
+        ],
+        "match_time": "8:34",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "tag",
+        "winning_side_index": 1,
+        "individual_results": {
+            "Alexi Chambers": "Loss",
+            "Andrew Chambers": "Loss",
+            "Robert Swanson": "Win",
+            "Zach Gordon": "Win"
+        },
+        "team_results": {
+            "Air America": "Win"
+        },
+        "sync_teams_to_individuals": true,
+        "match_result": "Side 2 (Robert Swanson, Zach Gordon) wins",
+        "warnings": [],
+        "match_id": "ab7614c9-780d-4519-97cf-c9fab70b6dd6",
+        "segment_position": 1
+    }
+]
