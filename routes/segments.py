@@ -14,6 +14,7 @@ segments_bp = Blueprint('segments', __name__, url_prefix='/events/<string:event_
 SEGMENT_TYPE_OPTIONS = ["Match", "Promo", "Interview", "In-ring", "Brawl"]
 # Used for per-individual and per-team result selection (unchanged)
 MATCH_RESULT_OPTIONS = ["Win", "Loss", "Draw", "No Contest"]
+WINNER_METHOD_OPTIONS = ["pinfall", "submission", "KO", "referee stoppage", "disqualification", "countout"]
 
 def _get_segment_form_data(form):
     """Extracts segment data from the form, including new match participant and result data."""
@@ -39,8 +40,9 @@ def _get_segment_form_data(form):
         match_results_json = form.get('match_results_json', '{}')
         match_results_data = json.loads(match_results_json)
 
-        # NEW: overall match_result (e.g., "Side 1 (...) wins", "Draw (Time limit)", "No contest")
+        # New fields
         overall_match_result = form.get('match_result', '')
+        winner_method = form.get('winner_method', '')
 
         match_details = {
             'participants_display': participants_display,
@@ -53,7 +55,8 @@ def _get_segment_form_data(form):
             'individual_results': match_results_data.get('individual_results', {}),
             'team_results': match_results_data.get('team_results', {}),
             'sync_teams_to_individuals': match_results_data.get('sync_teams_to_individuals', True),
-            'match_result': overall_match_result,  # NEW
+            'match_result': overall_match_result,   # e.g., "Side 1 (A, B) wins" or "Draw (...)"
+            'winner_method': winner_method,         # e.g., "pinfall"
             'warnings': [],
         }
     
@@ -88,7 +91,7 @@ def create_segment(event_slug):
         'match_championship': '', 'match_hidden': False,
         'match_class': '', 'winning_side_index': -1, 'individual_results': {},
         'team_results': {}, 'sync_teams_to_individuals': True, 'warnings': [],
-        'match_result': '',  # NEW
+        'match_result': '', 'winner_method': '',
     }
 
     if request.method == 'POST':
@@ -110,7 +113,8 @@ def create_segment(event_slug):
             return render_template('segments/form.html', event_slug=event_slug, segment=segment_data,
                                    segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                                    all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
-                                   match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS)
+                                   match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
+                                   winner_method_options=WINNER_METHOD_OPTIONS)
 
         try:
             success, message = add_segment(sluggified_event_name, segment_data, summary_content, match_details)
@@ -125,12 +129,14 @@ def create_segment(event_slug):
         return render_template('segments/form.html', event_slug=event_slug, segment=segment_data,
                                segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                                all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
-                               match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS)
+                               match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
+                               winner_method_options=WINNER_METHOD_OPTIONS)
 
     return render_template('segments/form.html', event_slug=event_slug, segment={},
                            segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content="",
                            all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
-                           match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS)
+                           match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
+                           winner_method_options=WINNER_METHOD_OPTIONS)
 
 @segments_bp.route('/edit/<int:position>', methods=['GET', 'POST'])
 def edit_segment(event_slug, position):
@@ -156,9 +162,9 @@ def edit_segment(event_slug, position):
         full_match = get_match_by_id(sluggified_event_name, segment['match_id'])
         if full_match:
             match_data_for_template = full_match
-            # Ensure match_result exists for template
-            if 'match_result' not in match_data_for_template:
-                match_data_for_template['match_result'] = segment.get('match_result', '')
+            # Ensure fields exist for template
+            match_data_for_template.setdefault('match_result', segment.get('match_result', ''))
+            match_data_for_template.setdefault('winner_method', segment.get('winner_method', ''))
 
     if request.method == 'POST':
         updated_segment_data, updated_match_details, new_summary_content = _get_segment_form_data(request.form)
@@ -178,7 +184,9 @@ def edit_segment(event_slug, position):
             return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
                                    segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=new_summary_content,
                                    original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
-                                   all_belts=all_belts, match_data=updated_match_details or {}, match_result_options=MATCH_RESULT_OPTIONS)
+                                   all_belts=all_belts, match_data=updated_match_details or {},
+                                   match_result_options=MATCH_RESULT_OPTIONS,
+                                   winner_method_options=WINNER_METHOD_OPTIONS)
         try:
             success, message = update_segment(sluggified_event_name, position, updated_segment_data, new_summary_content, updated_match_details)
             if success:
@@ -192,13 +200,16 @@ def edit_segment(event_slug, position):
         return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
                                segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=new_summary_content,
                                original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
-                               all_belts=all_belts, match_data=updated_match_details or {}, match_result_options=MATCH_RESULT_OPTIONS)
+                               all_belts=all_belts, match_data=updated_match_details or {},
+                               match_result_options=MATCH_RESULT_OPTIONS,
+                               winner_method_options=WINNER_METHOD_OPTIONS)
 
     return render_template('segments/form.html', event_slug=event_slug, segment=segment,
                            segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                            original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
                            all_belts=all_belts, match_data=match_data_for_template,
-                           match_result_options=MATCH_RESULT_OPTIONS)
+                           match_result_options=MATCH_RESULT_OPTIONS,
+                           winner_method_options=WINNER_METHOD_OPTIONS)
 
 @segments_bp.route('/delete/<int:position>', methods=['POST'])
 def delete_segment_route(event_slug, position):

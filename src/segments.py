@@ -159,9 +159,12 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
     if "sync_teams_to_individuals" not in prepared_match_data:
         prepared_match_data["sync_teams_to_individuals"] = True
 
-    # Ensure the new overall match_result field exists (may be empty at first)
+    # NEW: Ensure overall match result and winner method fields exist
     if "match_result" not in prepared_match_data:
         prepared_match_data["match_result"] = ""
+
+    if "winner_method" not in prepared_match_data:
+        prepared_match_data["winner_method"] = ""
 
     return prepared_match_data
 

@@ -104,20 +104,28 @@
         <fieldset class="form-section">
             <legend>Match Results</legend>
 
-            <!-- NEW: Overall match result selection -->
+            <!-- Overall match result -->
             <div class="form-group">
                 <label for="match_result_overall">Overall Match Result</label>
                 <select id="match_result_overall" name="match_result" class="form-control"></select>
                 <small class="text-muted">Choose the overall outcome. We’ll generate the display string later.</small>
             </div>
 
-            <div class="form-group mt-3">
-                <label for="winning_side_index">Winning Side</label>
-                <select id="winning_side_index" name="winning_side_index" onchange="updateWinningSide(this)" class="form-control">
-                    <option value="-1">--Select Winning Side (Optional)--</option>
+            <!-- Winner method (only shown if match_result is a win) -->
+            <div class="form-group" id="winner-method-group" style="display: none;">
+                <label for="winner_method">Winning Method</label>
+                <select id="winner_method" name="winner_method" class="form-control">
+                    <option value="">-- Select Method --</option>
+                    {% for method in winner_method_options %}
+                        <option value="{{ method }}" {% if match_data.get('winner_method','') == method %}selected{% endif %}>{{ method|capitalize }}</option>
+                    {% endfor %}
                 </select>
+                <small class="text-muted">Only required if the match has a winner.</small>
             </div>
 
+            <!-- Note: The explicit "Winning Side" dropdown has been removed.
+                 winning_side_index is now derived from the overall result. -->
+            
             <div id="individual-results-container" class="results-container mt-3"></div>
             <div id="team-results-container" class="results-container"></div>
             <div class="form-group mt-2">
@@ -150,6 +158,7 @@
     const allBelts = {{ all_belts | tojson | safe }};
     // Used for per-individual/team result dropdowns
     const matchResultOptions = {{ match_result_options | tojson | safe }};
+    const winnerMethodOptions = {{ winner_method_options | tojson | safe }};
     let matchDataFromServer = {{ match_data | tojson | safe }};
     
     let currentSides = matchDataFromServer.sides || [];
@@ -159,8 +168,9 @@
         team_results: matchDataFromServer.team_results || {},
         sync_teams_to_individuals: matchDataFromServer.sync_teams_to_individuals !== undefined ? matchDataFromServer.sync_teams_to_individuals : true,
     };
-    // NEW: overall match result string (stored separately)
+    // Overall result string + winner method
     let overallMatchResult = matchDataFromServer.match_result || "";
+    let winnerMethod = matchDataFromServer.winner_method || "";
 
     document.addEventListener('DOMContentLoaded', () => {
         document.body.dataset.currentSideIndex = '0';
@@ -251,18 +261,7 @@
     }
 
     function renderResults() {
-        // Winning side dropdown
-        const winningSideSelect = document.getElementById('winning_side_index');
-        winningSideSelect.innerHTML = '<option value="-1">--Select Winning Side--</option>';
-        currentSides.forEach((side, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = `Side ${index + 1}: ${side.join(', ') || '(Empty)'}`;
-            winningSideSelect.appendChild(option);
-        });
-        winningSideSelect.value = currentMatchResults.winning_side_index;
-
-        // NEW: Overall match_result dropdown
+        // Overall match_result dropdown
         const overallSelect = document.getElementById('match_result_overall');
         const overallOptions = [];
 
@@ -282,6 +281,12 @@
 
         // Populate select
         overallSelect.innerHTML = '';
+        // Default blank
+        const blank = document.createElement('option');
+        blank.value = '';
+        blank.textContent = '-- Select Overall Result --';
+        overallSelect.appendChild(blank);
+
         overallOptions.forEach(opt => {
             const o = document.createElement('option');
             o.value = opt;
@@ -293,17 +298,22 @@
         if (overallMatchResult && overallOptions.includes(overallMatchResult)) {
             overallSelect.value = overallMatchResult;
         } else {
-            // Default to blank option if nothing selected yet
-            const blank = document.createElement('option');
-            blank.value = '';
-            blank.textContent = '-- Select Overall Result --';
-            blank.selected = true;
-            overallSelect.insertBefore(blank, overallSelect.firstChild);
+            overallSelect.value = '';
         }
 
         overallSelect.addEventListener('change', (e) => {
             overallMatchResult = e.target.value;
+            deriveWinningSideFromOverall();
+            toggleWinnerMethodVisibility();
+            updateHiddenInputs();
         });
+
+        // Winner method visibility + prefill
+        toggleWinnerMethodVisibility();
+        const winnerMethodSelect = document.getElementById('winner_method');
+        if (winnerMethod && winnerMethodOptions.includes(winnerMethod)) {
+            winnerMethodSelect.value = winnerMethod;
+        }
 
         // Individual / Team results
         const allWrestlersInMatch = _get_all_wrestlers_involved_js(currentSides);
@@ -341,9 +351,35 @@
         });
         if (allTeamsInMatch.length === 0) teamContainer.innerHTML += '<p class="text-muted">No tag teams in match.</p>';
 
+        // Derive winning side initially (on load)
+        deriveWinningSideFromOverall();
         updateHiddenInputs();
     }
-    
+
+    function deriveWinningSideFromOverall() {
+        // If overall result is "Side N (...) wins", set winning_side_index = N-1; else -1
+        const m = /^Side\s+(\d+)\s*\(/i.exec(overallMatchResult || '');
+        if (m) {
+            const n = parseInt(m[1], 10);
+            if (!isNaN(n) && n >= 1 && n <= currentSides.length) {
+                currentMatchResults.winning_side_index = n - 1;
+                return;
+            }
+        }
+        currentMatchResults.winning_side_index = -1;
+    }
+
+    function toggleWinnerMethodVisibility() {
+        const group = document.getElementById('winner-method-group');
+        if (overallMatchResult && overallMatchResult.toLowerCase().includes('wins')) {
+            group.style.display = 'block';
+        } else {
+            group.style.display = 'none';
+            document.getElementById('winner_method').value = '';
+            winnerMethod = '';
+        }
+    }
+
     function addParticipantToCurrentSide() {
         const selectElement = document.getElementById('participant-select');
         const selectedValue = selectElement.value;
@@ -404,12 +440,17 @@
     }
 
     function updateHiddenInputs() {
+        // Keep winner_method synced
+        const wmSelect = document.getElementById('winner_method');
+        winnerMethod = wmSelect ? wmSelect.value : '';
+        // Persist current results + derived winning side
         document.getElementById('match_sides_json_input').value = JSON.stringify(currentSides);
         document.getElementById('match_results_json_input').value = JSON.stringify(currentMatchResults);
-        // Ensure the overall result select has a name attribute to submit; no hidden input needed.
+        // overallMatchResult and winnerMethod are posted via named fields:
+        //   name="match_result" on #match_result_overall
+        //   name="winner_method" on #winner_method
     }
     
-    function updateWinningSide(select) { currentMatchResults.winning_side_index = parseInt(select.value); updateHiddenInputs(); }
     function updateIndividualResult(wrestler, result) { currentMatchResults.individual_results[wrestler] = result; updateHiddenInputs(); }
     function updateTeamResult(team, result) { currentMatchResults.team_results[team] = result; updateHiddenInputs(); }
     function updateSyncToggle(checkbox) { currentMatchResults.sync_teams_to_individuals = checkbox.checked; updateHiddenInputs(); }

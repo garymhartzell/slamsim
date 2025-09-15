@@ -27,8 +27,76 @@
         },
         "sync_teams_to_individuals": true,
         "match_result": "Side 2 (Robert Swanson, Zach Gordon) wins",
+        "winner_method": "disqualification",
         "warnings": [],
-        "match_id": "ab7614c9-780d-4519-97cf-c9fab70b6dd6",
-        "segment_position": 1
+        "segment_position": 1,
+        "match_id": "ab7614c9-780d-4519-97cf-c9fab70b6dd6"
+    },
+    {
+        "participants_display": "California Connection vs Hot Shots vs Las Chicas Viciosas",
+        "sides": [
+            [
+                "Amber Sloane",
+                "Tammy Terrel"
+            ],
+            [
+                "Abigail James",
+                "Danielle Marks"
+            ],
+            [
+                "Elena Sanchez",
+                "Rita Gomez"
+            ]
+        ],
+        "match_time": "12:12",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "tag",
+        "winning_side_index": 2,
+        "individual_results": {
+            "Abigail James": "No Contest",
+            "Amber Sloane": "Loss",
+            "Danielle Marks": "No Contest",
+            "Elena Sanchez": "Win",
+            "Rita Gomez": "Win",
+            "Tammy Terrel": "Loss"
+        },
+        "team_results": {
+            "California Connection": "Loss",
+            "Hot Shots": "No Contest",
+            "Las Chicas Viciosas": "Win"
+        },
+        "sync_teams_to_individuals": true,
+        "match_result": "Side 3 (Elena Sanchez, Rita Gomez) wins",
+        "winner_method": "pinfall",
+        "warnings": [],
+        "segment_position": 2,
+        "match_id": "d6d4b1a0-7239-4fe3-b998-2cd4328b08d7"
+    },
+    {
+        "participants_display": "Alexander Midas vs Bobby Biceps",
+        "sides": [
+            [
+                "Alexander Midas"
+            ],
+            [
+                "Bobby Biceps"
+            ]
+        ],
+        "match_time": "9:11",
+        "match_championship": "",
+        "match_hidden": false,
+        "match_class": "singles",
+        "winning_side_index": -1,
+        "individual_results": {
+            "Alexander Midas": "Draw",
+            "Bobby Biceps": "Draw"
+        },
+        "team_results": {},
+        "sync_teams_to_individuals": true,
+        "match_result": "Draw (Double disqualification)",
+        "warnings": [],
+        "match_id": "57415e20-7bd6-4ede-96ab-3c48ae208481",
+        "segment_position": 3
     }
 ]
