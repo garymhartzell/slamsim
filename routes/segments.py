@@ -165,6 +165,7 @@ def edit_segment(event_slug, position):
         if full_match:
             match_data_for_template = full_match
             # Ensure fields exist for template
+            match_data_for_template.setdefault('match_championship', '') # Ensure match_championship is a string
             match_data_for_template.setdefault('match_result', segment.get('match_result', ''))
             match_data_for_template.setdefault('winner_method', segment.get('winner_method', ''))
             match_data_for_template.setdefault('match_result_display', segment.get('match_result_display', '')) # New field
