@@ -544,12 +544,14 @@
             if (sides.length > 0) {
                 const participantDisplayForDraw = sides.map(side => _generateSideDisplayStringJS(side, allTagTeams)).filter(s => s).join(" vs ");
                 if (matchResultOverall) {
-                    displayParts.push(`${participantDisplayForDraw} ${matchResultOverall.toLowerCase()}`);
+                    // For draws/no contests, format as "ended in a [result]"
+                    displayParts.push(`${participantDisplayForDraw} ended in a ${matchResultOverall.toLowerCase()}`);
                 } else {
                     displayParts.push(participantDisplayForDraw); // Fallback if overall result is empty
                 }
             } else if (matchResultOverall) {
-                displayParts.push(matchResultOverall); // Fallback if no sides but overall result exists
+                // If no sides but overall result exists (e.g., "No contest" without participants)
+                displayParts.push(`Ended in a ${matchResultOverall.toLowerCase()}`);
             }
         }
 
