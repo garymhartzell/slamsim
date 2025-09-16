@@ -1,0 +1,44 @@
+[
+    {
+        "position": 1,
+        "type": "Promo",
+        "header": "Intro",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-3/promo_intro_1.md"
+    },
+    {
+        "position": 2,
+        "type": "Match",
+        "header": "Singles Match",
+        "match_id": "f189b67a-ea8f-4f9b-a574-ac5a8d15c3f1",
+        "participants_display": "Adrian Waters vs Rick Walker",
+        "sides": [
+            [
+                "Adrian Waters"
+            ],
+            [
+                "Rick Walker"
+            ]
+        ],
+        "match_result": "Side 2 (Rick Walker) wins",
+        "match_result_display": "Rick Walker def. Adrian Waters by disqualification (11:18)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-3/match_singles-match_2.md"
+    },
+    {
+        "position": 3,
+        "type": "Match",
+        "header": "Singles Match",
+        "match_id": "70c1b667-6420-4c6c-962a-253a9380db1a",
+        "participants_display": "Jessica James vs Heather Kent",
+        "sides": [
+            [
+                "Jessica James"
+            ],
+            [
+                "Heather Kent"
+            ]
+        ],
+        "match_result": "Side 1 (Jessica James) wins",
+        "match_result_display": "Jessica James def. Heather Kent by pinfall (13:12)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-3/match_singles-match_3.md"
+    }
+]

@@ -110,7 +110,7 @@
     {
         "Name": "California Connection",
         "Wins": "0",
-        "Losses": "0",
+        "Losses": "1",
         "Draws": "0",
         "Status": "Active",
         "Division": "4",
@@ -199,7 +199,7 @@
     },
     {
         "Name": "Las Chicas Viciosas",
-        "Wins": "0",
+        "Wins": "1",
         "Losses": "0",
         "Draws": "0",
         "Status": "Active",
@@ -325,7 +325,7 @@
     },
     {
         "Name": "Air America",
-        "Wins": "0",
+        "Wins": "1",
         "Losses": "0",
         "Draws": "0",
         "Status": "Active",

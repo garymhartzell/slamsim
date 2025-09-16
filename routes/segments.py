@@ -50,7 +50,6 @@ def _get_segment_form_data(form):
             'sides': match_sides,
             'match_time': form.get('match_time', ''),
             'match_championship': form.get('match_championship', ''),
-            'match_hidden': form.get('match_hidden') == 'on',
             'match_class': form.get('match_class', ''),
             'winning_side_index': match_results_data.get('winning_side_index', -1),
             'individual_results': match_results_data.get('individual_results', {}),
@@ -58,7 +57,8 @@ def _get_segment_form_data(form):
             'sync_teams_to_individuals': match_results_data.get('sync_teams_to_individuals', True),
             'match_result': overall_match_result,   # e.g., "Side 1 (A, B) wins" or "Draw (...)"
             'winner_method': winner_method,         # e.g., "pinfall"
-            'match_result_display': match_result_display, # New field
+            'match_result_display': match_result_display,
+            'match_visibility': json.loads(form.get('match_visibility_json', '{}')), # New field
             'warnings': [],
         }
     
@@ -90,10 +90,15 @@ def create_segment(event_slug):
 
     match_data_for_template = {
         'sides': [], 'participants_display': '', 'match_time': '',
-        'match_championship': '', 'match_hidden': False,
+        'match_championship': '',
         'match_class': '', 'winning_side_index': -1, 'individual_results': {},
         'team_results': {}, 'sync_teams_to_individuals': True, 'warnings': [],
-        'match_result': '', 'winner_method': '', 'match_result_display': '', # New field
+        'match_result': '', 'winner_method': '', 'match_result_display': '',
+        'match_visibility': { # New field
+            'hide_from_card': False,
+            'hide_summary': False,
+            'hide_result': False,
+        }
     }
 
     if request.method == 'POST':
@@ -163,12 +168,22 @@ def edit_segment(event_slug, position):
     if segment.get('type') == 'Match' and segment.get('match_id'):
         full_match = get_match_by_id(sluggified_event_name, segment['match_id'])
         if full_match:
+            # Ensure fields exist for template, including new match_visibility
+            full_match.setdefault('match_championship', '')
+            full_match.setdefault('match_result', segment.get('match_result', ''))
+            full_match.setdefault('winner_method', segment.get('winner_method', ''))
+            full_match.setdefault('match_result_display', segment.get('match_result_display', ''))
+            full_match.setdefault('match_visibility', {
+                'hide_from_card': False,
+                'hide_summary': False,
+                'hide_result': False,
+            })
+            # Ensure all sub-keys are present if match_visibility exists but is incomplete
+            full_match['match_visibility'].setdefault('hide_from_card', False)
+            full_match['match_visibility'].setdefault('hide_summary', False)
+            full_match['match_visibility'].setdefault('hide_result', False)
+
             match_data_for_template = full_match
-            # Ensure fields exist for template
-            match_data_for_template.setdefault('match_championship', '') # Ensure match_championship is a string
-            match_data_for_template.setdefault('match_result', segment.get('match_result', ''))
-            match_data_for_template.setdefault('winner_method', segment.get('winner_method', ''))
-            match_data_for_template.setdefault('match_result_display', segment.get('match_result_display', '')) # New field
 
     if request.method == 'POST':
         updated_segment_data, updated_match_details, new_summary_content = _get_segment_form_data(request.form)

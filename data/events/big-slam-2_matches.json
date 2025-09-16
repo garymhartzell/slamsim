@@ -28,6 +28,7 @@
         "sync_teams_to_individuals": true,
         "match_result": "Side 2 (Robert Swanson, Zach Gordon) wins",
         "winner_method": "disqualification",
+        "match_result_display": "Air America (Robert Swanson, Zach Gordon) def. Alexi Chambers, Andrew Chambers by disqualification (8:34)",
         "warnings": [],
         "segment_position": 1,
         "match_id": "ab7614c9-780d-4519-97cf-c9fab70b6dd6"
@@ -69,6 +70,7 @@
         "sync_teams_to_individuals": true,
         "match_result": "Side 3 (Elena Sanchez, Rita Gomez) wins",
         "winner_method": "pinfall",
+        "match_result_display": "Las Chicas Viciosas (Elena Sanchez, Rita Gomez) def. California Connection (Amber Sloane, Tammy Terrel), Hot Shots (Abigail James, Danielle Marks) by pinfall (12:12)",
         "warnings": [],
         "segment_position": 2,
         "match_id": "d6d4b1a0-7239-4fe3-b998-2cd4328b08d7"
@@ -95,8 +97,38 @@
         "team_results": {},
         "sync_teams_to_individuals": true,
         "match_result": "Draw (Double disqualification)",
+        "winner_method": "",
+        "match_result_display": "Alexander Midas vs Bobby Biceps ended in a draw (double disqualification) (9:11)",
         "warnings": [],
-        "match_id": "57415e20-7bd6-4ede-96ab-3c48ae208481",
-        "segment_position": 3
+        "segment_position": 3,
+        "match_id": "57415e20-7bd6-4ede-96ab-3c48ae208481"
+    },
+    {
+        "participants_display": "Garrison vs Timothy Myers",
+        "sides": [
+            [
+                "Garrison"
+            ],
+            [
+                "Timothy Myers"
+            ]
+        ],
+        "match_time": "29:43",
+        "match_championship": "World Championship",
+        "match_hidden": false,
+        "match_class": "singles",
+        "winning_side_index": 1,
+        "individual_results": {
+            "Garrison": "Loss",
+            "Timothy Myers": "Win"
+        },
+        "team_results": {},
+        "sync_teams_to_individuals": true,
+        "match_result": "Side 2 (Timothy Myers) wins",
+        "winner_method": "pinfall",
+        "match_result_display": "Timothy Myers def. Garrison by pinfall to win the World Championship (29:43)",
+        "warnings": [],
+        "match_id": "2ac4634c-0c7a-403a-80b1-b0fe5e73252a",
+        "segment_position": 5
     }
 ]

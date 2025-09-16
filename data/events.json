@@ -12,8 +12,18 @@
     {
         "Event_Name": "Big Slam 2",
         "Subtitle": "",
-        "Status": "Future",
+        "Status": "Past",
         "Date": "2025-01-15",
+        "Venue": "",
+        "Location": "",
+        "Broadcasters": "",
+        "Finalized": true
+    },
+    {
+        "Event_Name": "Big Slam 3",
+        "Subtitle": "",
+        "Status": "Future",
+        "Date": "2025-01-22",
         "Venue": "",
         "Location": "",
         "Broadcasters": "",

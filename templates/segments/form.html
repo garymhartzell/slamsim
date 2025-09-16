@@ -95,9 +95,18 @@
                 </div>
             </div>
             <div class="form-group">
-                 <input type="checkbox" id="match_hidden" name="match_hidden" {% if match_data.get('match_hidden', False) %}checked{% endif %}>
-                 <label for="match_hidden">Match Hidden from Card</label>
+                <input type="checkbox" id="hide_from_card" name="hide_from_card_checkbox" {% if match_data.get('match_visibility', {}).get('hide_from_card', False) %}checked{% endif %}>
+                <label for="hide_from_card">Match hidden from card</label>
             </div>
+            <div class="form-group">
+                <input type="checkbox" id="hide_summary" name="hide_summary_checkbox" {% if match_data.get('match_visibility', {}).get('hide_summary', False) %}checked{% endif %}>
+                <label for="hide_summary">Match summary hidden from event summary</label>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" id="hide_result" name="hide_result_checkbox" {% if match_data.get('match_visibility', {}).get('hide_result', False) %}checked{% endif %}>
+                <label for="hide_result">Match result hidden from card</label>
+            </div>
+            <input type="hidden" id="match_visibility_json_input" name="match_visibility_json" value="{{ match_data.get('match_visibility', {}) | tojson | safe }}">
         </fieldset>
 
         <hr class="section-divider">
@@ -455,6 +464,14 @@
         // overallMatchResult and winnerMethod are posted via named fields:
         //   name="match_result" on #match_result_overall
         //   name="winner_method" on #winner_method
+
+        // New: Update match_visibility_json
+        const matchVisibility = {
+            hide_from_card: document.getElementById('hide_from_card').checked,
+            hide_summary: document.getElementById('hide_summary').checked,
+            hide_result: document.getElementById('hide_result').checked
+        };
+        document.getElementById('match_visibility_json_input').value = JSON.stringify(matchVisibility);
     }
     
     function updateIndividualResult(wrestler, result) { currentMatchResults.individual_results[wrestler] = result; updateHiddenInputs(); }

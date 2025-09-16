@@ -36,8 +36,8 @@
                         <h4>{{ segment.position }}. {{ segment.type }}{% if segment.header %}: {{ segment.header }}{% endif %}</h4>
                     </div>
                     <div class="segment-content">
-                         {% if segment.type == 'Match' and segment.match_result %}
-                            <p class="match-result"><strong>Result:</strong> {{ segment.match_result }}</p>
+                         {% if segment.type == 'Match' and segment.match_result_display %}
+                            <p class="match-result"><strong>Result:</strong> {{ segment.match_result_display }}</p>
                         {% endif %}
                         {% if segment.summary_content %}
                             <div class="summary-content">

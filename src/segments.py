@@ -240,6 +240,20 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
     if "match_result_display" not in prepared_match_data:
         prepared_match_data["match_result_display"] = ""
 
+    # NEW: Ensure match_visibility fields exist with defaults
+    if "match_visibility" not in prepared_match_data:
+        prepared_match_data["match_visibility"] = {
+            'hide_from_card': False,
+            'hide_summary': False,
+            'hide_result': False,
+        }
+    else:
+        # Ensure all sub-keys are present if match_visibility exists but is incomplete
+        prepared_match_data["match_visibility"].setdefault('hide_from_card', False)
+        prepared_match_data["match_visibility"].setdefault('hide_summary', False)
+        prepared_match_data["match_visibility"].setdefault('hide_result', False)
+
+
     return prepared_match_data
 
 def _sync_team_results_to_individuals(match_results, all_tagteams_data):
@@ -564,7 +578,8 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
         segment_data.pop('participants_display', None)
         segment_data.pop('sides', None)
         segment_data.pop('match_result', None)
-        segment_data.pop('match_result_display', None) # Clear this too
+        segment_data.pop('match_result_display', None)
+        segment_data.pop('match_visibility', None) # Clear this too
 
     # Generate summary file path (must be done after header is set)
     segment_data['summary_file'] = _get_summary_file_path(
@@ -658,7 +673,8 @@ def update_segment(event_slug, original_position, updated_data, summary_content,
         updated_data.pop('participants_display', None)
         updated_data.pop('sides', None)
         updated_data.pop('match_result', None)
-        updated_data.pop('match_result_display', None) # Clear this too
+        updated_data.pop('match_result_display', None)
+        updated_data.pop('match_visibility', None) # Clear this too
 
     segments[segment_index] = updated_data
     new_summary_file_path = _get_summary_file_path(

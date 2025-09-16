@@ -15,6 +15,7 @@
             ]
         ],
         "match_result": "Side 2 (Robert Swanson, Zach Gordon) wins",
+        "match_result_display": "Air America (Robert Swanson, Zach Gordon) def. Alexi Chambers, Andrew Chambers by disqualification (8:34)",
         "match_id": "ab7614c9-780d-4519-97cf-c9fab70b6dd6",
         "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-2/match_tag-team-match_1.md"
     },
@@ -38,6 +39,7 @@
             ]
         ],
         "match_result": "Side 3 (Elena Sanchez, Rita Gomez) wins",
+        "match_result_display": "Las Chicas Viciosas (Elena Sanchez, Rita Gomez) def. California Connection (Amber Sloane, Tammy Terrel), Hot Shots (Abigail James, Danielle Marks) by pinfall (12:12)",
         "match_id": "d6d4b1a0-7239-4fe3-b998-2cd4328b08d7",
         "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-2/match_tag-team-match_2.md"
     },
@@ -45,7 +47,6 @@
         "position": 3,
         "type": "Match",
         "header": "Singles Match",
-        "match_id": "57415e20-7bd6-4ede-96ab-3c48ae208481",
         "participants_display": "Alexander Midas vs Bobby Biceps",
         "sides": [
             [
@@ -56,6 +57,32 @@
             ]
         ],
         "match_result": "Draw (Double disqualification)",
+        "match_result_display": "Alexander Midas vs Bobby Biceps ended in a draw (double disqualification) (9:11)",
+        "match_id": "57415e20-7bd6-4ede-96ab-3c48ae208481",
         "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-2/match_singles-match_3.md"
+    },
+    {
+        "position": 4,
+        "type": "Interview",
+        "header": "The Rebel",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-2/interview_the-rebel_4.md"
+    },
+    {
+        "position": 5,
+        "type": "Match",
+        "header": "World Championship",
+        "match_id": "2ac4634c-0c7a-403a-80b1-b0fe5e73252a",
+        "participants_display": "Garrison vs Timothy Myers",
+        "sides": [
+            [
+                "Garrison"
+            ],
+            [
+                "Timothy Myers"
+            ]
+        ],
+        "match_result": "Side 2 (Timothy Myers) wins",
+        "match_result_display": "Timothy Myers def. Garrison by pinfall to win the World Championship (29:43)",
+        "summary_file": "/home/gary/github/slamsim/includes/tmp/big-slam-2/match_world-championship_5.md"
     }
 ]
