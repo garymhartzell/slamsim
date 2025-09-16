@@ -43,6 +43,7 @@ def _get_segment_form_data(form):
         # New fields
         overall_match_result = form.get('match_result', '')
         winner_method = form.get('winner_method', '')
+        match_result_display = form.get('match_result_display', '') # New field
 
         match_details = {
             'participants_display': participants_display,
@@ -57,6 +58,7 @@ def _get_segment_form_data(form):
             'sync_teams_to_individuals': match_results_data.get('sync_teams_to_individuals', True),
             'match_result': overall_match_result,   # e.g., "Side 1 (A, B) wins" or "Draw (...)"
             'winner_method': winner_method,         # e.g., "pinfall"
+            'match_result_display': match_result_display, # New field
             'warnings': [],
         }
     
@@ -91,7 +93,7 @@ def create_segment(event_slug):
         'match_championship': '', 'match_hidden': False,
         'match_class': '', 'winning_side_index': -1, 'individual_results': {},
         'team_results': {}, 'sync_teams_to_individuals': True, 'warnings': [],
-        'match_result': '', 'winner_method': '',
+        'match_result': '', 'winner_method': '', 'match_result_display': '', # New field
     }
 
     if request.method == 'POST':
@@ -165,6 +167,7 @@ def edit_segment(event_slug, position):
             # Ensure fields exist for template
             match_data_for_template.setdefault('match_result', segment.get('match_result', ''))
             match_data_for_template.setdefault('winner_method', segment.get('winner_method', ''))
+            match_data_for_template.setdefault('match_result_display', segment.get('match_result_display', '')) # New field
 
     if request.method == 'POST':
         updated_segment_data, updated_match_details, new_summary_content = _get_segment_form_data(request.form)

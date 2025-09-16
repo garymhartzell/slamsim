@@ -126,6 +126,12 @@
             <!-- Note: The explicit "Winning Side" dropdown has been removed.
                  winning_side_index is now derived from the overall result. -->
             
+            <div class="form-group mt-3">
+                <label for="match_result_display">Match Result Display String</label>
+                <textarea id="match_result_display" name="match_result_display" class="form-control" rows="3">{{ match_data.get('match_result_display', '') }}</textarea>
+                <small class="text-muted">This string is auto-generated but can be manually edited.</small>
+            </div>
+
             <div id="individual-results-container" class="results-container mt-3"></div>
             <div id="team-results-container" class="results-container"></div>
             <div class="form-group mt-2">
@@ -454,5 +460,171 @@
     function updateIndividualResult(wrestler, result) { currentMatchResults.individual_results[wrestler] = result; updateHiddenInputs(); }
     function updateTeamResult(team, result) { currentMatchResults.team_results[team] = result; updateHiddenInputs(); }
     function updateSyncToggle(checkbox) { currentMatchResults.sync_teams_to_individuals = checkbox.checked; updateHiddenInputs(); }
+
+    // JS version of _generate_side_display_string
+    function _generateSideDisplayStringJS(side, allTagTeamsData) {
+        const sideSet = new Set(side);
+        const containedTeams = allTagTeamsData.filter(team => {
+            const members = team.Members ? team.Members.split('|') : [];
+            return members.length > 1 && members.every(member => sideSet.has(member));
+        });
+        
+        const wrestlersInTeams = new Set();
+        containedTeams.forEach(team => {
+            (team.Members ? team.Members.split('|') : []).forEach(member => wrestlersInTeams.add(member));
+        });
+            
+        const independentWrestlers = side.filter(w => !wrestlersInTeams.has(w));
+        
+        const parts = [];
+        containedTeams.forEach(team => {
+            const membersStr = team.Members ? team.Members.split('|').join(', ') : '';
+            parts.push(`${team.Name} (${membersStr})`);
+        });
+        
+        parts.push(...independentWrestlers);
+        
+        return parts.join(", ");
+    }
+
+    // JS version of generate_match_result_display_string
+    function generateMatchResultDisplayStringJS() {
+        const sides = currentSides;
+        const winningSideIndex = currentMatchResults.winning_side_index;
+        const matchResultOverall = overallMatchResult;
+        const currentWinnerMethod = winnerMethod; // Use the current winnerMethod from JS state
+        const matchChampionship = document.getElementById('match_championship').value;
+        const matchTime = document.getElementById('match_time').value;
+
+        const displayParts = [];
+        
+        if (winningSideIndex !== -1 && winningSideIndex >= 0 && winningSideIndex < sides.length) {
+            // It's a win/loss scenario
+            const winningSideParticipants = sides[winningSideIndex];
+            const losingSidesParticipants = sides.filter((_, i) => i !== winningSideIndex);
+
+            const winnerStr = _generateSideDisplayStringJS(winningSideParticipants, allTagTeams);
+            const loserStr = losingSidesParticipants.map(side => _generateSideDisplayStringJS(side, allTagTeams)).filter(s => s).join(", ");
+
+            displayParts.push(`${winnerStr} def. ${loserStr}`);
+
+            if (currentWinnerMethod) {
+                displayParts.push(`by ${currentWinnerMethod}`);
+            }
+
+            if (matchChampionship) {
+                const belt = allBelts.find(b => b.Name === matchChampionship);
+                if (belt) {
+                    const currentHolder = belt.Current_Holder;
+                    let isRetain = false;
+                    if (currentHolder) {
+                        if (belt.Holder_Type === 'Tag-Team') {
+                            const winningSideMembers = new Set(winningSideParticipants);
+                            const teamMembers = new Set(allTagTeams.find(t => t.Name === currentHolder)?.Members?.split('|') || []);
+                            if (teamMembers.size > 0 && [...teamMembers].every(member => winningSideMembers.has(member))) {
+                                isRetain = true;
+                            }
+                        } else { // Singles
+                            if (winningSideParticipants.includes(currentHolder)) {
+                                isRetain = true;
+                            }
+                        }
+                    }
+                    
+                    if (isRetain) {
+                        displayParts.push(`to retain the ${matchChampionship}`);
+                    } else {
+                        displayParts.push(`to win the ${matchChampionship}`);
+                    }
+                }
+            }
+
+        } else {
+            // It's a draw or no contest
+            if (sides.length > 0) {
+                const participantDisplayForDraw = sides.map(side => _generateSideDisplayStringJS(side, allTagTeams)).filter(s => s).join(" vs ");
+                if (matchResultOverall) {
+                    displayParts.push(`${participantDisplayForDraw} ${matchResultOverall.toLowerCase()}`);
+                } else {
+                    displayParts.push(participantDisplayForDraw); // Fallback if overall result is empty
+                }
+            } else if (matchResultOverall) {
+                displayParts.push(matchResultOverall); // Fallback if no sides but overall result exists
+            }
+        }
+
+        let finalString = displayParts.join(" ");
+
+        if (matchTime) {
+            finalString += ` (${matchTime})`;
+        }
+        return finalString;
+    }
+
+    function generateAndSetMatchResultDisplay() {
+        matchResultDisplay = generateMatchResultDisplayStringJS();
+        document.getElementById('match_result_display').value = matchResultDisplay;
+    }
+
+    // Modify renderSides to call generateAndSetMatchResultDisplay
+    const originalRenderSides = renderSides;
+    renderSides = function() {
+        originalRenderSides();
+        generateAndSetMatchResultDisplay();
+    };
+
+    // Modify updateChampionDisplay to call generateAndSetMatchResultDisplay
+    const originalUpdateChampionDisplay = updateChampionDisplay;
+    updateChampionDisplay = function() {
+        originalUpdateChampionDisplay();
+        generateAndSetMatchResultDisplay();
+    };
+
+    // Add event listener for match_time
+    document.addEventListener('input', (event) => {
+        if (event.target.id === 'match_time') {
+            generateAndSetMatchResultDisplay();
+        }
+    });
+
+    // Modify toggleWinnerMethodVisibility to update winnerMethod and call generateAndSetMatchResultDisplay
+    const originalToggleWinnerMethodVisibility = toggleWinnerMethodVisibility;
+    toggleWinnerMethodVisibility = function() {
+        originalToggleWinnerMethodVisibility();
+        // If hidden, winnerMethod is cleared, so we need to regenerate.
+        // If shown, the select value might have changed, so we need to regenerate.
+        winnerMethod = document.getElementById('winner_method').value; // Ensure winnerMethod is updated
+        generateAndSetMatchResultDisplay();
+    };
+
+    // Add event listener for winner_method select
+    document.addEventListener('change', (event) => {
+        if (event.target.id === 'winner_method') {
+            winnerMethod = event.target.value;
+            generateAndSetMatchResultDisplay();
+        }
+    });
+
+    // Update `renderResults` to include `generateAndSetMatchResultDisplay` call
+    const originalRenderResults = renderResults;
+    renderResults = function() {
+        originalRenderResults(); // This will set up the overallSelect listener
+        
+        // Re-attach or ensure the overallSelect listener calls generateAndSetMatchResultDisplay
+        const overallSelect = document.getElementById('match_result_overall');
+        overallSelect.removeEventListener('change', handleOverallResultChange); // Remove old if exists
+        overallSelect.addEventListener('change', handleOverallResultChange);
+
+        // Initial call for winner method visibility and display string
+        toggleWinnerMethodVisibility();
+        generateAndSetMatchResultDisplay();
+    };
+
+    function handleOverallResultChange(e) {
+        overallMatchResult = e.target.value;
+        deriveWinningSideFromOverall();
+        toggleWinnerMethodVisibility(); // This now calls generateAndSetMatchResultDisplay
+        updateHiddenInputs();
+    }
 </script>
 {% endblock %}

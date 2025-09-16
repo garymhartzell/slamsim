@@ -7,6 +7,7 @@ import uuid
 from .prefs import load_preferences
 from .wrestlers import load_wrestlers
 from .tagteams import load_tagteams
+from .belts import load_belts # Added for championship logic
 
 # Base directories
 DATA_DIR = 'data'
@@ -113,6 +114,74 @@ def _generate_match_result_string(match_data, all_tagteams_data):
 
     return f"{winning_side_str} def. {losing_side_str} {time_str}".strip()
 
+def generate_match_result_display_string(match_data, all_tagteams_data, all_belts_data):
+    """
+    Generates a human-readable display string for a match result.
+    """
+    sides = match_data.get('sides', [])
+    winning_side_index = match_data.get('winning_side_index', -1)
+    match_result_overall = match_data.get('match_result', '') # e.g., "Side 1 (...) wins", "Draw (Time limit)"
+    winner_method = match_data.get('winner_method', '')
+    match_championship = match_data.get('match_championship', '')
+    match_time = match_data.get('match_time', '')
+
+    display_parts = []
+    
+    def _get_side_display(side_participants):
+        return _generate_side_display_string(side_participants, all_tagteams_data)
+
+    if winning_side_index != -1 and 0 <= winning_side_index < len(sides):
+        # It's a win/loss scenario
+        winning_side_participants = sides[winning_side_index]
+        losing_sides_participants = [side for i, side in enumerate(sides) if i != winning_side_index]
+
+        winner_str = _get_side_display(winning_side_participants)
+        loser_str = ", ".join([_get_side_display(side) for side in losing_sides_participants if side])
+
+        display_parts.append(f"{winner_str} def. {loser_str}")
+
+        if winner_method:
+            display_parts.append(f"by {winner_method}")
+
+        if match_championship:
+            belt = next((b for b in all_belts_data if b.get('Name') == match_championship), None)
+            if belt:
+                current_holder = belt.get('Current_Holder')
+                is_retain = False
+                if current_holder:
+                    if belt.get('Holder_Type') == 'Tag-Team':
+                        winning_side_members = set(winning_side_participants)
+                        team_members = set(next((t['Members'].split('|') for t in all_tagteams_data if t['Name'] == current_holder), []))
+                        if team_members and team_members.issubset(winning_side_members):
+                            is_retain = True
+                    else: # Singles
+                        if current_holder in winning_side_participants:
+                            is_retain = True
+                
+                if is_retain:
+                    display_parts.append(f"to retain the {match_championship}")
+                else:
+                    display_parts.append(f"to win the {match_championship}")
+
+    else:
+        # It's a draw or no contest
+        if sides:
+            participant_display_for_draw = " vs ".join([_get_side_display(side) for side in sides])
+            # The overall_match_result already contains the "ended in a ..." part for draws/no contests
+            if match_result_overall:
+                display_parts.append(f"{participant_display_for_draw} {match_result_overall.lower()}")
+            else:
+                display_parts.append(participant_display_for_draw) # Fallback if overall result is empty
+        elif match_result_overall:
+            display_parts.append(match_result_overall) # Fallback if no sides but overall result exists
+
+    final_string = " ".join(display_parts)
+
+    if match_time:
+        final_string += f" ({match_time})"
+
+    return final_string
+
 def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_tagteams_data):
     """
     Prepares match data for storage, including classifying the match,
@@ -165,6 +234,9 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
 
     if "winner_method" not in prepared_match_data:
         prepared_match_data["winner_method"] = ""
+
+    if "match_result_display" not in prepared_match_data:
+        prepared_match_data["match_result_display"] = ""
 
     return prepared_match_data
 
@@ -467,16 +539,21 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
             raise ValueError(f"Match data validation failed: {', '.join(errors)}")
         processed_match_data['warnings'] = warnings if warnings else []
 
+        # Generate the match_result_display string
+        all_belts_data = load_belts() # Load belts here for the display string generation
+        generated_display_string = generate_match_result_display_string(processed_match_data, all_tagteams_data, all_belts_data)
+        
         match_id = str(uuid.uuid4())
         segment_data['match_id'] = match_id
         segment_data['participants_display'] = processed_match_data['participants_display']
         segment_data['sides'] = processed_match_data['sides']
-        # Store the selected overall match_result (string like "Side 1 (...) wins" or "Draw (...)")
         segment_data['match_result'] = processed_match_data.get('match_result', "")
+        segment_data['match_result_display'] = generated_display_string # Store the generated string
 
         full_match_data_to_save = processed_match_data.copy()
         full_match_data_to_save['match_id'] = match_id
         full_match_data_to_save['segment_position'] = segment_data['position']
+        full_match_data_to_save['match_result_display'] = generated_display_string # Also store in full match data
         
         _add_match(event_slug, full_match_data_to_save)
     else:
@@ -485,6 +562,7 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
         segment_data.pop('participants_display', None)
         segment_data.pop('sides', None)
         segment_data.pop('match_result', None)
+        segment_data.pop('match_result_display', None) # Clear this too
 
     # Generate summary file path (must be done after header is set)
     segment_data['summary_file'] = _get_summary_file_path(
@@ -549,13 +627,18 @@ def update_segment(event_slug, original_position, updated_data, summary_content,
             raise ValueError(f"Match data validation failed: {', '.join(errors)}")
         processed_match_data['warnings'] = warnings if warnings else []
 
+        # Generate the match_result_display string
+        all_belts_data = load_belts() # Load belts here for the display string generation
+        generated_display_string = generate_match_result_display_string(processed_match_data, all_tagteams_data, all_belts_data)
+
         updated_data['participants_display'] = processed_match_data['participants_display']
         updated_data['sides'] = processed_match_data['sides']
-        # Store the selected overall match_result (string like "Side 1 (...) wins" or "Draw (...)")
         updated_data['match_result'] = processed_match_data.get('match_result', "")
+        updated_data['match_result_display'] = generated_display_string # Store the generated string
 
         full_match_data_to_save = processed_match_data.copy()
         full_match_data_to_save['segment_position'] = updated_data['position']
+        full_match_data_to_save['match_result_display'] = generated_display_string # Also store in full match data
 
         if old_match_id:
             updated_data['match_id'] = old_match_id
@@ -573,6 +656,7 @@ def update_segment(event_slug, original_position, updated_data, summary_content,
         updated_data.pop('participants_display', None)
         updated_data.pop('sides', None)
         updated_data.pop('match_result', None)
+        updated_data.pop('match_result_display', None) # Clear this too
 
     segments[segment_index] = updated_data
     new_summary_file_path = _get_summary_file_path(
