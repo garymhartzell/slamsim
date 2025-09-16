@@ -169,11 +169,13 @@ def generate_match_result_display_string(match_data, all_tagteams_data, all_belt
             participant_display_for_draw = " vs ".join([_get_side_display(side) for side in sides])
             # The overall_match_result already contains the "ended in a ..." part for draws/no contests
             if match_result_overall:
-                display_parts.append(f"{participant_display_for_draw} {match_result_overall.lower()}")
+                # For draws/no contests, format as "ended in a [result]"
+                display_parts.append(f"{participant_display_for_draw} ended in a {match_result_overall.lower()}")
             else:
                 display_parts.append(participant_display_for_draw) # Fallback if overall result is empty
         elif match_result_overall:
-            display_parts.append(match_result_overall) # Fallback if no sides but overall result exists
+            # If no sides but overall result exists (e.g., "No contest" without participants)
+            display_parts.append(f"Ended in a {match_result_overall.lower()}")
 
     final_string = " ".join(display_parts)
 
