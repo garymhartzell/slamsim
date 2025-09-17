@@ -22,7 +22,7 @@ def list_divisions():
     all_divisions = load_divisions()
     for division in all_divisions:
         division['is_deletable'] = not is_division_in_use(division['ID'])
-    return render_template('divisions/list.html', divisions=all_divisions)
+    return render_template('booker/divisions/list.html', divisions=all_divisions)
 
 @divisions_bp.route('/create', methods=['GET', 'POST'])
 def create_division():
@@ -38,7 +38,7 @@ def create_division():
                 return redirect(url_for('divisions.list_divisions'))
             else:
                 flash(message, 'danger')
-    return render_template('divisions/form.html', division={}, status_options=STATUS_OPTIONS, form_action='create')
+    return render_template('booker/divisions/form.html', division={}, status_options=STATUS_OPTIONS, form_action='create')
 
 @divisions_bp.route('/edit/<string:division_id>', methods=['GET', 'POST'])
 def edit_division(division_id):
@@ -63,7 +63,7 @@ def edit_division(division_id):
                 else:
                     flash(message, 'danger')
     
-    return render_template('divisions/form.html', division=division_to_edit, status_options=STATUS_OPTIONS, form_action='edit')
+    return render_template('booker/divisions/form.html', division=division_to_edit, status_options=STATUS_OPTIONS, form_action='edit')
 
 
 @divisions_bp.route('/view/<string:division_id>')
@@ -73,7 +73,7 @@ def view_division(division_id):
     if not division_data:
         flash('Division not found.', 'danger')
         return redirect(url_for('divisions.list_divisions'))
-    return render_template('divisions/view.html', division=division_data)
+    return render_template('booker/divisions/view.html', division=division_data)
 
 
 @divisions_bp.route('/delete/<string:division_id>', methods=['POST'])

@@ -32,7 +32,7 @@ def list_belts():
     all_belts = load_belts()
     for belt in all_belts:
         belt['is_deletable'] = not bool(load_history_for_belt(belt['ID']))
-    return render_template('belts/list.html', belts=all_belts)
+    return render_template('booker/belts/list.html', belts=all_belts)
 
 @belts_bp.route('/create', methods=['GET', 'POST'])
 def create_belt():
@@ -48,8 +48,8 @@ def create_belt():
                 flash(message, 'success')
                 return redirect(url_for('belts.list_belts'))
             else: flash(message, 'danger')
-        return render_template('belts/form.html', belt=belt_data, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='create')
-    return render_template('belts/form.html', belt={}, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='create')
+        return render_template('booker/belts/form.html', belt=belt_data, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='create')
+    return render_template('booker/belts/form.html', belt={}, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='create')
 
 @belts_bp.route('/edit/<string:belt_id>', methods=['GET', 'POST'])
 def edit_belt(belt_id):
@@ -69,8 +69,8 @@ def edit_belt(belt_id):
                 flash(message, 'success')
                 return redirect(url_for('belts.list_belts'))
             else: flash(message, 'danger')
-        return render_template('belts/form.html', belt=updated_data, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='edit')
-    return render_template('belts/form.html', belt=belt_to_edit, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='edit')
+        return render_template('booker/belts/form.html', belt=updated_data, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='edit')
+    return render_template('booker/belts/form.html', belt=belt_to_edit, status_options=STATUS_OPTIONS, holder_type_options=HOLDER_TYPE_OPTIONS, wrestlers=wrestlers, tagteams=tagteams, form_action='edit')
 
 @belts_bp.route('/delete/<string:belt_id>', methods=['POST'])
 def delete_belt_route(belt_id):
@@ -95,7 +95,7 @@ def history(belt_id):
             date_lost = datetime.strptime(reign['Date_Lost'], "%Y-%m-%d").date() if reign.get('Date_Lost') else today
             reign['Days'] = (date_lost - date_won).days
         except (ValueError, TypeError): reign['Days'] = 'Error'
-    return render_template('belts/history.html', belt=belt, history=history)
+    return render_template('booker/belts/history.html', belt=belt, history=history)
 
 def _get_reign_form_data(form):
     return {
@@ -115,7 +115,7 @@ def add_reign(belt_id):
         success, message = add_reign_to_history(reign_data)
         flash(message, 'success' if success else 'danger')
         if success: return redirect(url_for('belts.history', belt_id=belt_id))
-    return render_template('belts/reign_form.html', belt=belt, reign={}, form_action='create')
+    return render_template('booker/belts/reign_form.html', belt=belt, reign={}, form_action='create')
 
 @belts_bp.route('/history/edit_reign/<string:reign_id>', methods=['GET', 'POST'])
 def edit_reign(reign_id):
@@ -133,7 +133,7 @@ def edit_reign(reign_id):
         success, message = update_reign_in_history(reign_id, updated_data)
         flash(message, 'success' if success else 'danger')
         if success: return redirect(url_for('belts.history', belt_id=belt['ID']))
-    return render_template('belts/reign_form.html', belt=belt, reign=reign, form_action='edit')
+    return render_template('booker/belts/reign_form.html', belt=belt, reign=reign, form_action='edit')
 
 @belts_bp.route('/history/delete_reign/<string:reign_id>', methods=['POST'])
 def delete_reign_route(reign_id):

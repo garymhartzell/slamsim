@@ -32,7 +32,7 @@ def list_wrestlers():
     for wrestler in wrestlers_list:
         wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
         wrestler['is_deletable'] = is_wrestler_deletable(wrestler)
-    return render_template('wrestlers/list.html', wrestlers=wrestlers_list)
+    return render_template('booker/wrestlers/list.html', wrestlers=wrestlers_list)
 
 @wrestlers_bp.route('/create', methods=['GET', 'POST'])
 def create_wrestler():
@@ -48,8 +48,8 @@ def create_wrestler():
             flash(f'Wrestler "{wrestler_data["Name"]}" created successfully!', 'success')
             return redirect(url_for('wrestlers.list_wrestlers'))
         else: flash(f'Wrestler with the name "{wrestler_data["Name"]}" already exists.', 'error')
-        return render_template('wrestlers/form.html', wrestler=wrestler_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
-    return render_template('wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
+        return render_template('booker/wrestlers/form.html', wrestler=wrestler_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
+    return render_template('booker/wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
 
 @wrestlers_bp.route('/edit/<string:wrestler_name>', methods=['GET', 'POST'])
 def edit_wrestler(wrestler_name):
@@ -69,13 +69,13 @@ def edit_wrestler(wrestler_name):
             flash(f'Wrestler "{updated_data["Name"]}" updated successfully!', 'success')
             return redirect(url_for('wrestlers.list_wrestlers'))
         else: flash(f'Failed to update wrestler "{wrestler_name}". New name might already exist.', 'error')
-        return render_template('wrestlers/form.html', wrestler=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
+        return render_template('booker/wrestlers/form.html', wrestler=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
 
     wrestler_display = wrestler.copy()
     wrestler_display['Moves'] = wrestler_display.get('Moves', '').replace('|', '\n')
     wrestler_display['Awards'] = wrestler_display.get('Awards', '').replace('|', '\n')
     wrestler_display['Salary'] = wrestler_display.get('Salary', '').replace('|', '\n')
-    return render_template('wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
+    return render_template('booker/wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
 
 @wrestlers_bp.route('/view/<string:wrestler_name>')
 def view_wrestler(wrestler_name):
@@ -84,7 +84,7 @@ def view_wrestler(wrestler_name):
         flash(f'Wrestler "{wrestler_name}" not found.', 'error')
         return redirect(url_for('wrestlers.list_wrestlers'))
     wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
-    return render_template('wrestlers/view.html', wrestler=wrestler)
+    return render_template('booker/wrestlers/view.html', wrestler=wrestler)
 
 @wrestlers_bp.route('/delete/<string:wrestler_name>', methods=['POST'])
 def delete_wrestler_route(wrestler_name):

@@ -51,7 +51,7 @@ def general_prefs():
         # For now, assuming 'includes' is directly accessible via static.
         league_logo_url = url_for('static', filename=f'{INCLUDES_DIR}/{LEAGUE_LOGO_FILENAME}')
 
-    return render_template('prefs.html', prefs=prefs, league_logo_url=league_logo_url)
+    return render_template('booker/prefs.html', prefs=prefs, league_logo_url=league_logo_url)
 
 @prefs_bp.route('/reset-records', methods=['POST'])
 def reset_records():

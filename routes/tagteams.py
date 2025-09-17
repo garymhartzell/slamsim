@@ -52,7 +52,7 @@ def list_tagteams():
     for team in tagteams_list:
         team['DivisionName'] = divisions.get_division_name_by_id(team.get('Division', ''))
         team['is_deletable'] = is_tagteam_deletable(team)
-    return render_template('tagteams/list.html', tagteams=tagteams_list)
+    return render_template('booker/tagteams/list.html', tagteams=tagteams_list)
 
 @tagteams_bp.route('/create', methods=['GET', 'POST'])
 def create_tagteam():
@@ -75,8 +75,8 @@ def create_tagteam():
                 if member_name: update_wrestler_team_affiliation(member_name, tagteam_data['Name'])
             flash(f"Tag-team '{tagteam_data['Name']}' created successfully!", 'success')
             return redirect(url_for('tagteams.list_tagteams'))
-        return render_template('tagteams/form.html', tagteam=tagteam_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=False)
-    return render_template('tagteams/form.html', tagteam={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=False)
+        return render_template('booker/tagteams/form.html', tagteam=tagteam_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=False)
+    return render_template('booker/tagteams/form.html', tagteam={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=False)
 
 @tagteams_bp.route('/edit/<string:tagteam_name>', methods=['GET', 'POST'])
 def edit_tagteam(tagteam_name):
@@ -119,14 +119,14 @@ def edit_tagteam(tagteam_name):
 
             flash(f"Tag-team '{updated_data['Name']}' updated successfully!", 'success')
             return redirect(url_for('tagteams.list_tagteams'))
-        return render_template('tagteams/form.html', tagteam=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=True)
+        return render_template('booker/tagteams/form.html', tagteam=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=True)
     
     # Pre-fill form for GET request
     members_list = tagteam.get('Members', '').split('|')
     tagteam['Member1'] = members_list[0] if len(members_list) > 0 else ''
     tagteam['Member2'] = members_list[1] if len(members_list) > 1 else ''
     tagteam['Member3'] = members_list[2] if len(members_list) > 2 else ''
-    return render_template('tagteams/form.html', tagteam=tagteam, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=True)
+    return render_template('booker/tagteams/form.html', tagteam=tagteam, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=True)
 
 @tagteams_bp.route('/view/<string:tagteam_name>')
 def view_tagteam(tagteam_name):
@@ -136,7 +136,7 @@ def view_tagteam(tagteam_name):
         flash('Tag-team not found!', 'danger')
         return redirect(url_for('tagteams.list_tagteams'))
     tagteam['DivisionName'] = divisions.get_division_name_by_id(tagteam.get('Division', ''))
-    return render_template('tagteams/view.html', tagteam=tagteam)
+    return render_template('booker/tagteams/view.html', tagteam=tagteam)
 
 @tagteams_bp.route('/delete/<string:tagteam_name>', methods=['POST'])
 def delete_tagteam_route(tagteam_name):

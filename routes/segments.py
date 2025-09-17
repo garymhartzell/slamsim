@@ -117,7 +117,7 @@ def create_segment(event_slug):
         if errors:
             for error in errors:
                 flash(error, 'danger')
-            return render_template('segments/form.html', event_slug=event_slug, segment=segment_data,
+            return render_template('booker/segments/form.html', event_slug=event_slug, segment=segment_data,
                                    segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                                    all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
                                    match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
@@ -133,13 +133,13 @@ def create_segment(event_slug):
         except ValueError as e:
             flash(str(e), 'danger')
 
-        return render_template('segments/form.html', event_slug=event_slug, segment=segment_data,
+        return render_template('booker/segments/form.html', event_slug=event_slug, segment=segment_data,
                                segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                                all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
                                match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
                                winner_method_options=WINNER_METHOD_OPTIONS)
 
-    return render_template('segments/form.html', event_slug=event_slug, segment={},
+    return render_template('booker/segments/form.html', event_slug=event_slug, segment={},
                            segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content="",
                            all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
                            match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
@@ -200,7 +200,7 @@ def edit_segment(event_slug, position):
         if errors:
             for error in errors:
                 flash(error, 'danger')
-            return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
+            return render_template('booker/segments/form.html', event_slug=event_slug, segment=updated_segment_data,
                                    segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=new_summary_content,
                                    original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
                                    all_belts=all_belts, match_data=updated_match_details or {},
@@ -216,14 +216,14 @@ def edit_segment(event_slug, position):
         except ValueError as e:
             flash(str(e), 'danger')
         
-        return render_template('segments/form.html', event_slug=event_slug, segment=updated_segment_data,
+        return render_template('booker/segments/form.html', event_slug=event_slug, segment=updated_segment_data,
                                segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=new_summary_content,
                                original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
                                all_belts=all_belts, match_data=updated_match_details or {},
                                match_result_options=MATCH_RESULT_OPTIONS,
                                winner_method_options=WINNER_METHOD_OPTIONS)
 
-    return render_template('segments/form.html', event_slug=event_slug, segment=segment,
+    return render_template('booker/segments/form.html', event_slug=event_slug, segment=segment,
                            segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                            original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
                            all_belts=all_belts, match_data=match_data_for_template,

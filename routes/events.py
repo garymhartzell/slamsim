@@ -22,7 +22,7 @@ def _get_form_data(form):
 @events_bp.route('/')
 def list_events():
     events = sorted(load_events(), key=lambda e: e.get('Date', '0000-00-00'), reverse=True)
-    return render_template('events/list.html', events=events)
+    return render_template('booker/events/list.html', events=events)
 
 @events_bp.route('/create', methods=['GET', 'POST'])
 def create_event():
@@ -30,19 +30,19 @@ def create_event():
         event_data = _get_form_data(request.form)
         if not all([event_data['Event_Name'], event_data['Status'], event_data['Date']]):
             flash('Event Name, Status, and Date are required.', 'danger')
-            return render_template('events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[])
+            return render_template('booker/events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[])
         try:
             datetime.strptime(event_data['Date'], '%Y-%m-%d')
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return render_template('events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[])
+            return render_template('booker/events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[])
         if add_event(event_data):
             flash(f"Event '{event_data['Event_Name']}' created successfully! You can now add segments.", 'success')
             return redirect(url_for('events.edit_event', event_name=event_data['Event_Name']))
         else:
             flash(f"Event with name '{event_data['Event_Name']}' already exists.", 'danger')
-            return render_template('events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[])
-    return render_template('events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[])
+            return render_template('booker/events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[])
+    return render_template('booker/events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[])
 
 @events_bp.route('/edit/<string:event_name>', methods=['GET', 'POST'])
 def edit_event(event_name):
@@ -57,19 +57,19 @@ def edit_event(event_name):
         updated_data['Finalized'] = event.get('Finalized', False)
         if not all([updated_data['Event_Name'], updated_data['Status'], updated_data['Date']]):
             flash('Event Name, Status, and Date are required.', 'danger')
-            return render_template('events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+            return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
         try:
             datetime.strptime(updated_data['Date'], '%Y-%m-%d')
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return render_template('events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
         if update_event(event_name, updated_data):
             flash(f"Event '{updated_data['Event_Name']}' updated successfully!", 'success')
             return redirect(url_for('events.edit_event', event_name=updated_data['Event_Name']))
         else:
             flash(f"Failed to update event. New name might conflict.", 'danger')
-            return render_template('events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
-    return render_template('events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+    return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
 
 @events_bp.route('/view/<string:event_name>')
 def view_event(event_name):
@@ -82,7 +82,7 @@ def view_event(event_name):
         if segment.get('summary_file'):
             segment['summary_content'] = load_summary_content(segment['summary_file'])
     segments.sort(key=lambda s: s.get('position', 0))
-    return render_template('events/view.html', event=event, segments=segments)
+    return render_template('booker/events/view.html', event=event, segments=segments)
 
 @events_bp.route('/delete/<string:event_name>', methods=['POST'])
 def delete_event_route(event_name):
