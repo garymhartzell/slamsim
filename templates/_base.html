@@ -8,20 +8,150 @@
 </head>
 <body>
     <header>
-        <nav>
+        <nav class="main-nav">
             <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('news.list_news') }}">News</a></li>
-                <li><a href="{{ url_for('events.list_events') }}">Events</a></li>
-                <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
-                <li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag-Teams</a></li>
-                <li><a href="{{ url_for('divisions.list_divisions') }}">Divisions</a></li>
-                <li><a href="{{ url_for('belts.list_belts') }}">Belts</a></li>
-                <li><a href="{{ url_for('prefs.general_prefs') }}">Preferences</a></li>
+                <li class="dropdown">
+                    <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Booker Mode</button>
+                    <div class="dropdown-content" id="bookerDropdown">
+                        <a href="{{ url_for('index') }}">Booker Dashboard</a>
+                        <a href="{{ url_for('events.list_events') }}">Events & Segments</a>
+                        <a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a>
+                        <a href="{{ url_for('tagteams.list_tagteams') }}">Tag-Teams</a>
+                        <a href="{{ url_for('divisions.list_divisions') }}">Divisions</a>
+                        <a href="{{ url_for('belts.list_belts') }}">Belts</a>
+                        <a href="{{ url_for('news.list_news') }}">News</a>
+                        <a href="{{ url_for('prefs.general_prefs') }}">Preferences</a>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Fan Mode</button>
+                    <div class="dropdown-content" id="fanDropdown">
+                        <a href="#">League Home (Coming Soon)</a>
+                        {# Add more fan-facing pages here later #}
+                    </div>
+                </li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
                 <li><a href="{{ url_for('goodbye') }}">Exit</a></li>
             </ul>
         </nav>
     </header>
+    <style>
+        /* Basic Dropdown Styles - Can be moved to style.css */
+        .main-nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+        }
+
+        .main-nav li {
+            float: left;
+        }
+
+        .main-nav li a, .dropbtn {
+            display: inline-block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            background-color: #333; /* Ensure button has same background as nav */
+            border: none; /* Remove default button border */
+            cursor: pointer;
+        }
+
+        .main-nav li a:hover, .dropbtn:hover,
+        .main-nav li a:focus, .dropbtn:focus { /* Add focus for keyboard nav */
+            background-color: #555;
+            color: white;
+            outline: none; /* Remove default focus outline as we're providing our own */
+        }
+
+        .main-nav li.dropdown {
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content.show { /* Use .show class for visibility */
+            display: block;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+        .dropdown-content a:hover, .dropdown-content a:focus { /* Add focus for keyboard nav */
+            background-color: #f1f1f1;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownButtons = document.querySelectorAll('.dropbtn');
+
+            dropdownButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const dropdownContent = this.nextElementSibling;
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-content.show').forEach(openDropdown => {
+                        if (openDropdown !== dropdownContent) {
+                            openDropdown.classList.remove('show');
+                            openDropdown.previousElementSibling.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+
+                    // Toggle current dropdown
+                    dropdownContent.classList.toggle('show');
+                    this.setAttribute('aria-expanded', String(!isExpanded));
+                });
+
+                // Keyboard navigation for dropdown items
+                button.nextElementSibling.querySelectorAll('a').forEach(item => {
+                    item.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            const parentDropdownContent = this.closest('.dropdown-content');
+                            parentDropdownContent.classList.remove('show');
+                            parentDropdownContent.previousElementSibling.setAttribute('aria-expanded', 'false');
+                            parentDropdownContent.previousElementSibling.focus(); // Return focus to the button
+                        }
+                    });
+                });
+            });
+
+            // Close the dropdown if the user clicks outside of it
+            window.addEventListener('click', function(event) {
+                if (!event.target.matches('.dropbtn')) {
+                    document.querySelectorAll('.dropdown-content.show').forEach(openDropdown => {
+                        openDropdown.classList.remove('show');
+                        openDropdown.previousElementSibling.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
+            // Close dropdowns when Escape key is pressed anywhere
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.dropdown-content.show').forEach(openDropdown => {
+                        openDropdown.classList.remove('show');
+                        openDropdown.previousElementSibling.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+        });
+    </script>
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
