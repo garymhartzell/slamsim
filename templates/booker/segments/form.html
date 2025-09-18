@@ -14,7 +14,7 @@
 
 <form id="segment-form" class="wide-form" method="POST" action="{{ url_for('segments.create_segment', event_slug=event_slug) if not segment.get('position') else url_for('segments.edit_segment', event_slug=event_slug, position=original_position) }}">
     <fieldset class="form-section">
-        <legend>Segment Details</legend>
+        <legend</h3>Segment Details</h3></legend>
         <div class="form-row">
             <div class="form-group">
                 <label for="position">Position <span class="required">*</span></label>
@@ -40,7 +40,7 @@
     <div id="match-specific-fields" style="display: none;">
         <hr class="section-divider">
         <fieldset class="form-section">
-            <legend>Match Participants Builder</legend>
+            <legend><h3>Match Participants Builder</h3></legend>
             <div class="form-group">
                 <label for="participant-select">Add Participant to Current Side:</label>
                 <div class="participant-adder">
@@ -62,7 +62,7 @@
                 <button type="button" class="btn btn-info" onclick="addNewSide()">Add VS. Side</button>
             </div>
             <div id="match-sides-container"></div>
-            <p><strong>Participants Display:</strong> <span id="current-participants-display"></span></p>
+            <p><h4>Participants Display:</h4> <span id="current-participants-display"></span></p>
             <input type="hidden" id="participants_display_input" name="participants_display" value="{{ match_data.get('participants_display', '') }}">
             <input type="hidden" id="match_sides_json_input" name="match_sides_json" value="{{ match_data.get('sides', []) | tojson | safe }}">
             <input type="hidden" id="match_results_json_input" name="match_results_json" value="{{ {'winning_side_index': match_data.winning_side_index, 'individual_results': match_data.individual_results, 'team_results': match_data.team_results, 'sync_teams_to_individuals': match_data.sync_teams_to_individuals} | tojson | safe }}">
@@ -70,7 +70,7 @@
         
         <hr class="section-divider">
         <fieldset class="form-section">
-            <legend>Match Details</legend>
+            <legend><h3>Match Details</h3></legend>
             <div class="form-group">
                 <label for="match_championship">Championship on the line</label>
                 <select id="match_championship" name="match_championship" onchange="updateChampionDisplay()">
@@ -111,7 +111,7 @@
 
         <hr class="section-divider">
         <fieldset class="form-section">
-            <legend>Match Results</legend>
+            <legend><h3>Match Results</h3></legend>
 
             <!-- Overall match result -->
             <div class="form-group">
@@ -151,7 +151,7 @@
     </div>
 
     <fieldset class="form-section">
-        <legend>Summary</legend>
+        <legend><h3>Summary</h3></legend>
         <div class="form-group">
             <label for="summary_text">Summary Text</label>
             <textarea id="summary_text" name="summary_text" rows="8">{{ summary_content | default('') }}</textarea>
@@ -335,8 +335,8 @@
         const allTeamsInMatch = _get_all_tag_teams_involved_js(currentSides, allTagTeams);
         const indContainer = document.getElementById('individual-results-container');
         const teamContainer = document.getElementById('team-results-container');
-        indContainer.innerHTML = '<h5>Individual Results</h5>';
-        teamContainer.innerHTML = '<h5>Team Results</h5>';
+        indContainer.innerHTML = '<h4>Individual Results</h4>';
+        teamContainer.innerHTML = '<h4>Team Results</h4>';
         
         allWrestlersInMatch.forEach(wrestler => {
             const result = currentMatchResults.individual_results[wrestler] || 'No Contest';

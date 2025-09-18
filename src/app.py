@@ -36,7 +36,7 @@ def index():
 @app.route('/about')
 def about():
     """Renders the about page."""
-    return render_template('booker/about.html')
+    return render_template('about.html')
 
 @app.route('/goodbye')
 def goodbye():
