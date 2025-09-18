@@ -38,7 +38,11 @@ tmp/
 config.ini
 secrets.json
 .aider*
+.env
 
-# Temporary
-bin_old/
+# Test Data
+includes/tmp/*
+!includes/.gitkeep
+data/*
+!data/.gitkeep
 
