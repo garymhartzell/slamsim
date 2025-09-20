@@ -23,14 +23,15 @@ def roster():
     active_tagteams = [tt for tt in all_tagteams if tt.get('Status') == 'Active']
 
     # Prepare a dictionary to hold roster data, grouped by division
-    # Sort divisions by name for consistent display
-    sorted_divisions = sorted(all_divisions, key=lambda d: d.get('Name', ''))
+    # Sort divisions by Display_Position for consistent display
+    sorted_divisions = sorted(all_divisions, key=lambda d: d.get('Display_Position', 0))
     
     roster_by_division = {}
     for division in sorted_divisions:
         division_id = division.get('ID')
         division_name = division.get('Name')
-        roster_by_division[division_name] = {'wrestlers': [], 'tagteams': []}
+        # Store the division type as well for template logic
+        roster_by_division[division_name] = {'wrestlers': [], 'tagteams': [], 'type': division.get('Holder_Type')}
 
         # Add wrestlers to their division
         for wrestler in active_wrestlers:
@@ -42,10 +43,18 @@ def roster():
             if tagteam.get('Division') == division_id:
                 roster_by_division[division_name]['tagteams'].append(tagteam)
 
+    # Filter out divisions that have no active wrestlers or tagteams
+    # This needs to be done after sorting and grouping
+    filtered_roster_by_division = {
+        div_name: data for div_name, data in roster_by_division.items()
+        if data['wrestlers'] or data['tagteams']
+    }
+
     # Sorting logic
     sort_order = prefs.get('fan_mode_roster_sort_order', 'Alphabetical')
 
-    for division_name, data in roster_by_division.items():
+    # Apply sorting to the filtered data
+    for division_name, data in filtered_roster_by_division.items():
         # Sort wrestlers
         if sort_order == 'Alphabetical':
             data['wrestlers'].sort(key=lambda w: w.get('Name', ''))
@@ -77,11 +86,5 @@ def roster():
                     return (-1.0, tagteam.get('Name', ''))
                 return (wins / total_matches, tagteam.get('Name', ''))
             data['tagteams'].sort(key=get_tagteam_win_percentage_key, reverse=True)
-
-    # Filter out divisions that have no active wrestlers or tagteams
-    filtered_roster_by_division = {
-        div_name: data for div_name, data in roster_by_division.items()
-        if data['wrestlers'] or data['tagteams']
-    }
 
     return render_template('fan/roster.html', roster_data=filtered_roster_by_division, prefs=prefs)
