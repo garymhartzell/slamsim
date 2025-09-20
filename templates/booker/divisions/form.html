@@ -6,14 +6,20 @@
     <h2>{% if form_action == 'create' %}Create New Division{% else %}Edit Division: {{ division.Name }}{% endif %}</h2>
 
     <form method="POST" action="{% if form_action == 'create' %}{{ url_for('divisions.create_division') }}{% else %}{{ url_for('divisions.edit_division', division_id=division.ID) }}{% endif %}">
+        {% if form_action == 'edit' %}
         <div class="form-group">
-            <label for="division_id">ID</label>
-            <input type="text" id="division_id" name="division_id" value="{{ division.ID | default('') }}" {% if form_action == 'edit' %}readonly{% endif %} required>
-            {% if form_action == 'edit' %}<small>ID cannot be changed after creation.</small>{% endif %}
+            <label>ID</label>
+            <p class="form-static-text">{{ division.ID }}</p>
+            <input type="hidden" name="division_id" value="{{ division.ID }}">
         </div>
+        {% endif %}
         <div class="form-group">
             <label for="name">Name</label>
             <input type="text" id="name" name="name" value="{{ division.Name | default('') }}" required>
+        </div>
+        <div class="form-group">
+            <label for="display_position">Display Position</label>
+            <input type="number" id="display_position" name="display_position" value="{{ division.Display_Position | default(0) }}" required min="0">
         </div>
         <div class="form-group">
             <label for="division_type">Division Type</label>

@@ -1,8 +1,10 @@
+import uuid
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.divisions import (
     load_divisions, add_division, get_division_by_id, 
     update_division, delete_division, is_division_in_use, get_all_division_ids_and_names
 )
+from src.segments import _slugify
 
 divisions_bp = Blueprint('divisions', __name__, url_prefix='/divisions')
 
@@ -12,9 +14,9 @@ DIVISION_TYPE_OPTIONS = ['Singles', 'Tag-Team']
 def _get_form_data(form):
     """Extracts division data from the form."""
     return {
-        'ID': form.get('division_id', '').strip(),
         'Name': form.get('name', '').strip(),
-        'Holder_Type': form.get('division_type', '').strip(), # Changed from 'division_type' to 'Holder_Type' to match convention
+        'Holder_Type': form.get('division_type', '').strip(),
+        'Display_Position': int(form.get('display_position', 0)),
         'Status': form.get('status', '').strip()
     }
 
@@ -22,6 +24,7 @@ def _get_form_data(form):
 def list_divisions():
     """Lists all divisions and checks if they are deletable."""
     all_divisions = load_divisions()
+    all_divisions.sort(key=lambda d: d.get('Display_Position', 0)) # Sort by Display_Position
     for division in all_divisions:
         division['is_deletable'] = not is_division_in_use(division) # Pass the full division dictionary
     return render_template('booker/divisions/list.html', divisions=all_divisions)
@@ -31,7 +34,12 @@ def create_division():
     """Creates a new division."""
     if request.method == 'POST':
         division_data = _get_form_data(request.form)
-        if not all(division_data.values()):
+        # Auto-generate ID
+        base_id = _slugify(division_data['Name'])
+        unique_suffix = str(uuid.uuid4())[:4]
+        division_data['ID'] = f"{base_id}-{unique_suffix}"
+
+        if not all(division_data.values()): # Check if all values are present after ID generation
             flash('All fields are required.', 'danger')
         else:
             success, message = add_division(division_data)
@@ -52,18 +60,18 @@ def edit_division(division_id):
 
     if request.method == 'POST':
         updated_data = _get_form_data(request.form)
+        # The ID is passed via a hidden field in the form for edits
+        updated_data['ID'] = request.form.get('division_id') 
+
         if not all(updated_data.values()):
             flash('All fields are required.', 'danger')
         else:
-            if updated_data['ID'] != division_id:
-                flash('Division ID cannot be changed.', 'danger')
+            success, message = update_division(division_id, updated_data)
+            if success:
+                flash(message, 'success')
+                return redirect(url_for('divisions.list_divisions'))
             else:
-                success, message = update_division(division_id, updated_data)
-                if success:
-                    flash(message, 'success')
-                    return redirect(url_for('divisions.list_divisions'))
-                else:
-                    flash(message, 'danger')
+                flash(message, 'danger')
     
     return render_template('booker/divisions/form.html', division=division_to_edit, status_options=STATUS_OPTIONS, division_type_options=DIVISION_TYPE_OPTIONS, form_action='edit')
 

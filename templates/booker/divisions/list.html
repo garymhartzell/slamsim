@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Position</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
@@ -25,6 +26,7 @@
             {% for division in divisions %}
             <tr>
                 <td>{{ division.ID }}</td>
+                <td>{{ division.Display_Position }}</td>
                 <td><a href="{{ url_for('divisions.view_division', division_id=division.ID) }}">{{ division.Name }}</a></td>
                 <td>{{ division.Holder_Type }}</td>
                 <td>{{ division.Status }}</td>
@@ -41,7 +43,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="5">No divisions found.</td>
+                <td colspan="6">No divisions found.</td>
             </tr>
             {% endfor %}
         </tbody>
