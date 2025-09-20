@@ -16,6 +16,15 @@
             <input type="text" id="name" name="name" value="{{ division.Name | default('') }}" required>
         </div>
         <div class="form-group">
+            <label for="division_type">Division Type</label>
+            <select id="division_type" name="division_type" required>
+                <option value="" disabled {% if not division.Holder_Type %}selected{% endif %}>-- Select Type --</option>
+                {% for type_option in division_type_options %}
+                    <option value="{{ type_option }}" {% if division.Holder_Type == type_option %}selected{% endif %}>{{ type_option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
             <label for="status">Status</label>
             <select id="status" name="status" required>
                 {% for status in status_options %}

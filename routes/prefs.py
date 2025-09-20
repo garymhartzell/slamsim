@@ -13,8 +13,35 @@ def general_prefs():
     if request.method == 'POST':
         league_name = request.form.get('league_name', '').strip()
         league_short = request.form.get('league_short', '').strip()
+        fan_mode_show_logo = 'fan_mode_show_logo' in request.form # Checkbox returns 'on' if checked, else not in form
+        fan_mode_header_name_display = request.form.get('fan_mode_header_name_display', 'Full Name')
+        fan_mode_show_records = 'fan_mode_show_records' in request.form
+        fan_mode_roster_sort_order = request.form.get('fan_mode_roster_sort_order', 'Alphabetical')
+        fan_mode_show_future_events = 'fan_mode_show_future_events' in request.form
+        fan_mode_show_non_match_headers = 'fan_mode_show_non_match_headers' in request.form
+        fan_mode_show_quick_results = 'fan_mode_show_quick_results' in request.form
+        fan_mode_home_show_champions = 'fan_mode_home_show_champions' in request.form
+        fan_mode_home_show_news = request.form.get('fan_mode_home_show_news', 'Show Links Only')
+        fan_mode_home_number_news = int(request.form.get('fan_mode_home_number_news', 5))
+        fan_mode_home_show_recent_events = 'fan_mode_home_show_recent_events' in request.form
+        fan_mode_home_number_events = int(request.form.get('fan_mode_home_number_events', 5))
         
-        updated_prefs = {"league_name": league_name, "league_short": league_short}
+        updated_prefs = {
+            "league_name": league_name,
+            "league_short": league_short,
+            "fan_mode_show_logo": fan_mode_show_logo,
+            "fan_mode_header_name_display": fan_mode_header_name_display,
+            "fan_mode_show_records": fan_mode_show_records,
+            "fan_mode_roster_sort_order": fan_mode_roster_sort_order,
+            "fan_mode_show_future_events": fan_mode_show_future_events,
+            "fan_mode_show_non_match_headers": fan_mode_show_non_match_headers,
+            "fan_mode_show_quick_results": fan_mode_show_quick_results,
+            "fan_mode_home_show_champions": fan_mode_home_show_champions,
+            "fan_mode_home_show_news": fan_mode_home_show_news,
+            "fan_mode_home_number_news": fan_mode_home_number_news,
+            "fan_mode_home_show_recent_events": fan_mode_home_show_recent_events,
+            "fan_mode_home_number_events": fan_mode_home_number_events
+        }
         save_preferences(updated_prefs)
 
         # Handle logo upload

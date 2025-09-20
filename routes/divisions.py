@@ -7,12 +7,14 @@ from src.divisions import (
 divisions_bp = Blueprint('divisions', __name__, url_prefix='/divisions')
 
 STATUS_OPTIONS = ['Active', 'Inactive']
+DIVISION_TYPE_OPTIONS = ['Singles', 'Tag-Team']
 
 def _get_form_data(form):
     """Extracts division data from the form."""
     return {
         'ID': form.get('division_id', '').strip(),
         'Name': form.get('name', '').strip(),
+        'Holder_Type': form.get('division_type', '').strip(), # Changed from 'division_type' to 'Holder_Type' to match convention
         'Status': form.get('status', '').strip()
     }
 
@@ -21,7 +23,7 @@ def list_divisions():
     """Lists all divisions and checks if they are deletable."""
     all_divisions = load_divisions()
     for division in all_divisions:
-        division['is_deletable'] = not is_division_in_use(division['ID'])
+        division['is_deletable'] = not is_division_in_use(division) # Pass the full division dictionary
     return render_template('booker/divisions/list.html', divisions=all_divisions)
 
 @divisions_bp.route('/create', methods=['GET', 'POST'])
@@ -38,7 +40,7 @@ def create_division():
                 return redirect(url_for('divisions.list_divisions'))
             else:
                 flash(message, 'danger')
-    return render_template('booker/divisions/form.html', division={}, status_options=STATUS_OPTIONS, form_action='create')
+    return render_template('booker/divisions/form.html', division={}, status_options=STATUS_OPTIONS, division_type_options=DIVISION_TYPE_OPTIONS, form_action='create')
 
 @divisions_bp.route('/edit/<string:division_id>', methods=['GET', 'POST'])
 def edit_division(division_id):
@@ -63,7 +65,7 @@ def edit_division(division_id):
                 else:
                     flash(message, 'danger')
     
-    return render_template('booker/divisions/form.html', division=division_to_edit, status_options=STATUS_OPTIONS, form_action='edit')
+    return render_template('booker/divisions/form.html', division=division_to_edit, status_options=STATUS_OPTIONS, division_type_options=DIVISION_TYPE_OPTIONS, form_action='edit')
 
 
 @divisions_bp.route('/view/<string:division_id>')

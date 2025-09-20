@@ -16,6 +16,7 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
+                <th>Type</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -25,6 +26,7 @@
             <tr>
                 <td>{{ division.ID }}</td>
                 <td><a href="{{ url_for('divisions.view_division', division_id=division.ID) }}">{{ division.Name }}</a></td>
+                <td>{{ division.Holder_Type }}</td>
                 <td>{{ division.Status }}</td>
                 <td>
                     <div class="action-buttons">
@@ -39,7 +41,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="4">No divisions found.</td>
+                <td colspan="5">No divisions found.</td>
             </tr>
             {% endfor %}
         </tbody>

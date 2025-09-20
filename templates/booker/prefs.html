@@ -9,7 +9,7 @@
 
 <form class="wide-form" method="POST" action="{{ url_for('prefs.general_prefs') }}" enctype="multipart/form-data">
     <fieldset class="form-section">
-        <legend>League Identity</legend>
+        <legend><h3>League Identity</h3></legend>
         <div class="form-group">
             <label for="league_name">League Name</label>
             <input type="text" id="league_name" name="league_name" value="{{ prefs.league_name }}" required>
@@ -21,7 +21,7 @@
     </fieldset>
 
     <fieldset class="form-section">
-        <legend>League Branding</legend>
+        <legend><h3>League Branding</h3></legend>
         <div class="form-group">
             <label for="league_logo">League Logo (PNG, JPG, GIF)</label>
             <input type="file" id="league_logo" name="league_logo" accept="image/png, image/jpeg, image/gif">
@@ -37,6 +37,89 @@
         </div>
     </fieldset>
 
+    <fieldset class="form-section">
+        <legend><h3>Fan Mode Preferences</h3></legend>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_show_logo" name="fan_mode_show_logo" {% if prefs.fan_mode_show_logo %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_show_logo">Show League Logo in Header</label>
+            <small class="form-text text-muted">Display the uploaded league logo in the Fan Mode header.</small>
+        </div>
+        <div class="form-group">
+            <label for="fan_mode_header_name_display">League Name Display</label>
+            <select class="form-control" id="fan_mode_header_name_display" name="fan_mode_header_name_display">
+                <option value="Full Name" {% if prefs.fan_mode_header_name_display == "Full Name" %}selected{% endif %}>Full Name</option>
+                <option value="Abbreviation" {% if prefs.fan_mode_header_name_display == "Abbreviation" %}selected{% endif %}>Abbreviation</option>
+            </select>
+            <small class="form-text text-muted">Choose how the league name appears in the Fan Mode header.</small>
+        </div>
+
+        <hr class="subsection-divider">
+
+        <legend><h4>Roster & Events Presentation</h4></legend>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_show_records" name="fan_mode_show_records" {% if prefs.fan_mode_show_records %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_show_records">Show Win/Loss Records</label>
+            <small class="form-text text-muted">Display wrestler and tag team win/loss records on roster pages.</small>
+        </div>
+        <div class="form-group">
+            <label for="fan_mode_roster_sort_order">Roster Sort Order</label>
+            <select class="form-control" id="fan_mode_roster_sort_order" name="fan_mode_roster_sort_order">
+                <option value="Alphabetical" {% if prefs.fan_mode_roster_sort_order == "Alphabetical" %}selected{% endif %}>Alphabetical</option>
+                <option value="Total Wins" {% if prefs.fan_mode_roster_sort_order == "Total Wins" %}selected{% endif %}>Total Wins</option>
+                <option value="Win Percentage" {% if prefs.fan_mode_roster_sort_order == "Win Percentage" %}selected{% endif %}>Win Percentage</option>
+            </select>
+            <small class="form-text text-muted">How wrestlers and tag teams are sorted on their respective roster pages.</small>
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_show_future_events" name="fan_mode_show_future_events" {% if prefs.fan_mode_show_future_events %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_show_future_events">Show Upcoming Events</label>
+            <small class="form-text text-muted">Display events with 'Future' status in Fan Mode.</small>
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_show_non_match_headers" name="fan_mode_show_non_match_headers" {% if prefs.fan_mode_show_non_match_headers %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_show_non_match_headers">Show Non-Match Segment Headers</label>
+            <small class="form-text text-muted">Display headers for segments like Promos, Interviews, etc., on event pages.</small>
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_show_quick_results" name="fan_mode_show_quick_results" {% if prefs.fan_mode_show_quick_results %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_show_quick_results">Display Quick Results Section</label>
+            <small class="form-text text-muted">Show a quick results summary at the bottom of past event pages.</small>
+        </div>
+
+        <hr class="subsection-divider">
+
+        <legend><h4>Homepage Layout</h4></legend>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_home_show_champions" name="fan_mode_home_show_champions" {% if prefs.fan_mode_home_show_champions %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_home_show_champions">Show Current Champions on Homepage</label>
+            <small class="form-text text-muted">Display a list of current champions on the Fan Mode homepage.</small>
+        </div>
+        <div class="form-group">
+            <label for="fan_mode_home_show_news">News Display Style on Homepage</label>
+            <select class="form-control" id="fan_mode_home_show_news" name="fan_mode_home_show_news">
+                <option value="Off" {% if prefs.fan_mode_home_show_news == "Off" %}selected{% endif %}>Off</option>
+                <option value="Show Links Only" {% if prefs.fan_mode_home_show_news == "Show Links Only" %}selected{% endif %}>Show Links Only</option>
+                <option value="Show Full Posts" {% if prefs.fan_mode_home_show_news == "Show Full Posts" %}selected{% endif %}>Show Full Posts</option>
+            </select>
+            <small class="form-text text-muted">Control how news posts are displayed on the Fan Mode homepage.</small>
+        </div>
+        <div class="form-group">
+            <label for="fan_mode_home_number_news">Number of News Items to Show</label>
+            <input type="number" class="form-control" id="fan_mode_home_number_news" name="fan_mode_home_number_news" value="{{ prefs.fan_mode_home_number_news }}" min="1" max="10">
+            <small class="form-text text-muted">Maximum number of news items to display on the homepage.</small>
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_home_show_recent_events" name="fan_mode_home_show_recent_events" {% if prefs.fan_mode_home_show_recent_events %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_home_show_recent_events">Show Recent Events on Homepage</label>
+            <small class="form-text text-muted">Display a list of recently concluded events on the Fan Mode homepage.</small>
+        </div>
+        <div class="form-group">
+            <label for="fan_mode_home_number_events">Number of Recent Events to Show</label>
+            <input type="number" class="form-control" id="fan_mode_home_number_events" name="fan_mode_home_number_events" value="{{ prefs.fan_mode_home_number_events }}" min="1" max="10">
+            <small class="form-text text-muted">Maximum number of recent events to display on the homepage.</small>
+        </div>
+    </fieldset>
+
     <div class="action-buttons form-actions">
         <button type="submit" class="btn btn-primary">Save Preferences</button>
     </div>
@@ -45,7 +128,7 @@
 <hr class="section-divider">
 
 <fieldset class="form-section danger-zone">
-    <legend>Danger Zone</legend>
+    <legend><h3>Danger Zone</h3></legend>
     
     <!-- Reset Records Section -->
     <div class="form-group">

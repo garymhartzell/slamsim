@@ -41,8 +41,7 @@ secrets.json
 .env
 
 # Test Data
-includes/tmp/*
-!includes/.gitkeep
-data/*
+includes/tmp/
+data/
 !data/.gitkeep
 

@@ -66,12 +66,20 @@ def get_all_division_ids_and_names():
     """Returns a list of dictionaries with 'ID' and 'Name' for all active divisions."""
     return [{'ID': d['ID'], 'Name': d['Name']} for d in load_divisions() if d.get('Status') == 'Active']
 
-def is_division_in_use(division_id):
-    """Checks if any wrestler or tag team is currently assigned to this division."""
-    all_wrestlers = load_wrestlers()
-    if any(w.get('Division') == division_id for w in all_wrestlers):
-        return True
+def is_division_in_use(division_data):
+    """
+    Checks if any wrestler or tag team is currently assigned to this division,
+    based on its Holder_Type.
+    """
+    division_id = division_data.get('ID')
+    holder_type = division_data.get('Holder_Type')
 
-    all_tagteams = load_tagteams()
-    return any(t.get('Division') == division_id for t in all_tagteams)
+    if holder_type == 'Singles':
+        all_wrestlers = load_wrestlers()
+        return any(w.get('Division') == division_id for w in all_wrestlers)
+    elif holder_type == 'Tag-Team':
+        all_tagteams = load_tagteams()
+        return any(t.get('Division') == division_id for t in all_tagteams)
+    
+    return False # Should not happen if Holder_Type is always set
 
