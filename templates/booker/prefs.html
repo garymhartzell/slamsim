@@ -61,6 +61,16 @@
             <label class="form-check-label" for="fan_mode_show_records">Show Win/Loss Records</label>
             <small class="form-text text-muted">Display wrestler and tag team win/loss records on roster pages.</small>
         </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_show_profile_records" name="fan_mode_show_profile_records" {% if prefs.fan_mode_show_profile_records %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_show_profile_records">Show 'Records' Section on Profile Pages</label>
+            <small class="form-text text-muted">Display the win/loss records section on individual wrestler and tag team profile pages.</small>
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="fan_mode_show_contract_info" name="fan_mode_show_contract_info" {% if prefs.fan_mode_show_contract_info %}checked{% endif %}>
+            <label class="form-check-label" for="fan_mode_show_contract_info">Show 'Contract Info' Section on Profile Pages</label>
+            <small class="form-text text-muted">Display contract details (e.g., signing date, expiration) on individual wrestler and tag team profile pages.</small>
+        </div>
         <div class="form-group">
             <label for="fan_mode_roster_sort_order">Roster Sort Order</label>
             <select class="form-control" id="fan_mode_roster_sort_order" name="fan_mode_roster_sort_order">
