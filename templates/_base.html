@@ -10,7 +10,7 @@
     <header>
         <nav class="main-nav">
             <ul>
-			<li><a href="{{ url_for('index') }}">Index</a></li>
+                <li><a href="{{ url_for('index') }}">Index</a></li>
                 <li class="dropdown">
                     <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Booker Mode</button>
                     <div class="dropdown-content" id="bookerDropdown">
@@ -35,6 +35,9 @@
                 <li><a href="{{ url_for('goodbye') }}">Exit</a></li>
             </ul>
         </nav>
+
+        {% block secondary_header %}{% endblock %}
+
     </header>
     <style>
         /* Basic Dropdown Styles - Can be moved to style.css */

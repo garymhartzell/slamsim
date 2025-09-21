@@ -1,10 +1,10 @@
-{% extends "_base.html" %}
+{% extends "booker/_booker_base.html" %}
 
-{% block title %}SlamSim! Main Menu{% endblock %}
+{% block title %}SlamSim! Booker Dashboard{% endblock %}
 
 {% block content %}
-    <h2>Management</h2>
-    <ul class="main-menu">
+    <h2>Booker Dashboard</h2>
+    <ul class="booker-menu">
         <li><a href="{{ url_for('news.list_news') }}">News</a></li>
         <li><a href="{{ url_for('wrestlers.list_wrestlers') }}">Wrestlers</a></li>
         <li><a href="{{ url_for('tagteams.list_tagteams') }}">Tag Teams</a></li>

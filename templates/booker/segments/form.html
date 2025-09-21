@@ -1,4 +1,4 @@
-{% extends "_base.html" %}
+{% extends "booker/_booker_base.html" %}
 
 {% block title %}
     {% if segment.get('position') %}Edit Segment (Pos: {{ segment.get('position') }}) for {{ event_slug }}{% else %}Create New Segment for {{ event_slug }}{% endif %}

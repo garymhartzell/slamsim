@@ -1,0 +1,24 @@
+{% extends "_base.html" %}
+
+{% block secondary_header %}
+<div class="fan-header">
+    {% if prefs.fan_mode_show_logo and prefs.fan_mode_logo_url %}
+    <div class="logo-container">
+        <img src="{{ prefs.fan_mode_logo_url }}" alt="{{ prefs.league_name }} logo">
+    </div>
+    {% endif %}
+    
+    <div class="league-name-container">
+        {% if prefs.fan_mode_header_name_display == 'Full Name' %}
+        <h1>{{ prefs.league_name }}</h1>
+        {% else %}
+        <h1>{{ prefs.league_short }}</h1>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+    {# All Fan Mode pages will inject their specific content into this block #}
+    {% block fan_content %}{% endblock %}
+{% endblock %}
