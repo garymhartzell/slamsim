@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, flash, redirect, url_for
 from src.prefs import load_preferences
-from src.wrestlers import load_wrestlers
-from src.tagteams import load_tagteams
+from src.wrestlers import load_wrestlers, get_wrestler_by_name
+from src.tagteams import load_tagteams, get_tagteam_by_name
 from src.divisions import load_divisions
 
 fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
@@ -10,6 +10,44 @@ fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
 def home():
     """Renders the fan home page."""
     return render_template('fan/home.html')
+
+@fan_bp.route('/wrestler/<string:wrestler_name>')
+def view_wrestler(wrestler_name):
+    """Renders the fan view page for a specific wrestler."""
+    prefs = load_preferences()
+    wrestler = get_wrestler_by_name(wrestler_name)
+
+    if not wrestler:
+        flash(f"Wrestler '{wrestler_name}' not found.", 'danger')
+        return redirect(url_for('fan.roster'))
+
+    # Calculate total record
+    singles_wins = int(wrestler.get('Singles_Wins', 0))
+    singles_losses = int(wrestler.get('Singles_Losses', 0))
+    singles_draws = int(wrestler.get('Singles_Draws', 0))
+    tag_wins = int(wrestler.get('Tag_Wins', 0))
+    tag_losses = int(wrestler.get('Tag_Losses', 0))
+    tag_draws = int(wrestler.get('Tag_Draws', 0))
+
+    total_record = {
+        'wins': singles_wins + tag_wins,
+        'losses': singles_losses + tag_losses,
+        'draws': singles_draws + tag_draws
+    }
+
+    return render_template('fan/wrestler.html', wrestler=wrestler, prefs=prefs, total_record=total_record)
+
+@fan_bp.route('/tagteam/<string:tagteam_name>')
+def view_tagteam(tagteam_name):
+    """Renders the fan view page for a specific tag team."""
+    prefs = load_preferences()
+    tagteam = get_tagteam_by_name(tagteam_name)
+
+    if not tagteam:
+        flash(f"Tag Team '{tagteam_name}' not found.", 'danger')
+        return redirect(url_for('fan.roster'))
+
+    return render_template('fan/tagteam.html', tagteam=tagteam, prefs=prefs)
 
 @fan_bp.route('/roster')
 def roster():

@@ -27,7 +27,8 @@
                 <li class="dropdown">
                     <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Fan Mode</button>
                     <div class="dropdown-content" id="fanDropdown">
-                        <a href="#">League Home (Coming Soon)</a>
+                        <a href="{{ url_for('fan.home') }}">League Home (Coming Soon)</a>
+                        <a href="{{ url_for('fan.roster') }}">Roster</a>
                         {# Add more fan-facing pages here later #}
                     </div>
                 </li>

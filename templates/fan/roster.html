@@ -26,11 +26,13 @@
                                         {% for wrestler in data.wrestlers %}
                                             <tr>
                                                 <td>
-                                                    {{ wrestler.Name }}
-                                                    {% if prefs.fan_mode_show_records %}
-                                                        ({{ wrestler.Singles_Wins | default(0) }}-{{ wrestler.Singles_Losses | default(0) }}-{{ wrestler.Singles_Draws | default(0) }})
-                                                    {% endif %}
-                                                    {% if wrestler.Belt %}({{ wrestler.Belt }}){% endif %}
+                                                    <a href="{{ url_for('fan.view_wrestler', wrestler_name=wrestler.Name) }}">
+                                                        {{ wrestler.Name }}
+                                                        {% if prefs.fan_mode_show_records %}
+                                                            ({{ wrestler.Singles_Wins | default(0) }}-{{ wrestler.Singles_Losses | default(0) }}-{{ wrestler.Singles_Draws | default(0) }})
+                                                        {% endif %}
+                                                        {% if wrestler.Belt %}({{ wrestler.Belt }}){% endif %}
+                                                    </a>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -53,11 +55,13 @@
                                         {% for team in data.tagteams %}
                                             <tr>
                                                 <td>
-                                                    {{ team.Name }}
-                                                    {% if prefs.fan_mode_show_records %}
-                                                        ({{ team.Wins | default(0) }}-{{ team.Losses | default(0) }}-{{ team.Draws | default(0) }})
-                                                    {% endif %}
-                                                    {% if team.Belt %}({{ team.Belt }}){% endif %}
+                                                    <a href="{{ url_for('fan.view_tagteam', tagteam_name=team.Name) }}">
+                                                        {{ team.Name }}
+                                                        {% if prefs.fan_mode_show_records %}
+                                                            ({{ team.Wins | default(0) }}-{{ team.Losses | default(0) }}-{{ team.Draws | default(0) }})
+                                                        {% endif %}
+                                                        {% if team.Belt %}({{ team.Belt }}){% endif %}
+                                                    </a>
                                                 </td>
                                             </tr>
                                         {% endfor %}

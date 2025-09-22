@@ -1,0 +1,88 @@
+{% extends "fan/_fan_base.html" %}
+
+{% block title %}{{ tagteam.Name }}{% endblock %}
+
+{% block fan_content %}
+<div class="header-bar">
+    <h2>{{ tagteam.Name }}</h2>
+    <div class="action-buttons">
+        <a href="{{ url_for('fan.roster') }}">Back to Roster</a>
+    </div>
+</div>
+
+{% if tagteam.Belt %}
+<div class="champion-banner">
+    <h3>Current {{ tagteam.Belt }}</h3>
+</div>
+{% endif %}
+
+<div class="details-card-grid">
+    <div class="details-card">
+        <div class="card-header"><h3>Team Members</h3></div>
+        <div class="card-content">
+            {% if tagteam.Members %}
+            <ul>
+                {% for member in tagteam.Members.split('|') %}
+                    <li>{{ member }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if prefs.fan_mode_show_profile_records %}
+    <div class="details-card">
+        <div class="card-header"><h3>Record</h3></div>
+        <div class="card-content">
+            <p>{{ tagteam.Wins | default('0') }}-{{ tagteam.Losses | default('0') }}-{{ tagteam.Draws | default('0') }} (W-L-D)</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="details-card">
+        <div class="card-header"><h3>Profile</h3></div>
+        <div class="card-content">
+            <p><strong>Location:</strong> {{ tagteam.Location or 'Parts Unknown' }}</p>
+            {% if tagteam.Weight %}<p><strong>Combined Weight:</strong> {{ tagteam.Weight }}</p>{% endif %}
+            <p><strong>Alignment:</strong> {{ tagteam.Alignment }}</p>
+            {% if tagteam.Music %}<p><strong>Entrance Music:</strong> {{ tagteam.Music }}</p>{% endif %}
+        </div>
+    </div>
+
+    {% if tagteam.Manager or tagteam.Faction %}
+    <div class="details-card">
+        <div class="card-header"><h3>Affiliations</h3></div>
+        <div class="card-content">
+            {% if tagteam.Manager %}<p><strong>Manager:</strong> {{ tagteam.Manager }}</p>{% endif %}
+            {% if tagteam.Faction %}<p><strong>Faction:</strong> {{ tagteam.Faction }}</p>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tagteam.Moves %}
+    <div class="details-card full-width">
+        <div class="card-header"><h3>Signature Moves</h3></div>
+        <div class="card-content">
+            <ul>
+                {% for move in tagteam.Moves.split('|') %}
+                    <li>{{ move }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tagteam.Awards %}
+    <div class="details-card full-width">
+        <div class="card-header"><h3>Accomplishments</h3></div>
+        <div class="card-content">
+            <ul>
+                {% for award in tagteam.Awards.split('|') %}
+                    <li>{{ award }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
