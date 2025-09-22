@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from src.events import load_events, get_event_by_name, add_event, update_event, delete_event
+from src.events import load_events, get_event_by_name, add_event, update_event, delete_event, save_event_summary
 from src.segments import load_segments, get_match_by_id, _get_all_wrestlers_involved, _get_all_tag_teams_involved, _slugify, delete_all_segments_for_event, load_summary_content
 from src.wrestlers import update_wrestler_record
 from src.tagteams import load_tagteams, update_tagteam_record, get_tagteam_by_name
 from src.belts import get_belt_by_name, process_championship_change, update_reign_in_history, load_history_for_belt
+from src.prefs import load_preferences
 from datetime import datetime
 
 events_bp = Blueprint('events', __name__, url_prefix='/events')
@@ -145,6 +146,32 @@ def finalize_event(event_name):
                                 reign['Defenses'] = reign.get('Defenses', 0) + 1
                                 update_reign_in_history(reign['Reign_ID'], reign)
                                 break
+    
+    # Generate consolidated event summary
+    prefs = load_preferences()
+    summary_parts = []
+    
+    for segment in segments:
+        # Load match data if it's a match to check visibility settings
+        match = None
+        if segment.get('type') == 'Match' and segment.get('match_id'):
+            match = get_match_by_id(_slugify(event_name), segment['match_id'])
+            # Skip if match summary is hidden
+            if match and match.get('match_visibility', {}).get('hide_summary'):
+                continue # Skip this segment entirely from the summary
+
+        summary_content = load_summary_content(segment.get('summary_file'))
+        if segment.get('type') == 'Match':
+            summary_parts.append(f"### {segment['header']}\n#### {segment['participants_display']}\n\n{summary_content}")
+        elif prefs.get('fan_mode_show_non_match_headers'):
+            summary_parts.append(f"### {segment['header']}\n\n{summary_content}")
+        else:
+            summary_parts.append(summary_content)
+            
+    final_summary = "\n\n---\n\n".join(summary_parts)
+    summary_file_path = save_event_summary(_slugify(event_name), final_summary)
+    event['event_summary_file'] = summary_file_path
+
     event['Finalized'] = True
     update_event(event_name, event)
     flash(f"Event '{event_name}' has been finalized and records updated!", 'success')

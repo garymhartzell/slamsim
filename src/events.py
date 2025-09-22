@@ -61,6 +61,24 @@ def update_event(original_name, updated_data):
             return True
     return False # Event not found
 
+def save_event_summary(event_slug, content):
+    """Saves the consolidated event summary to a Markdown file."""
+    current_dir = os.path.dirname(__file__)
+    project_root = os.path.abspath(os.path.join(current_dir, os.pardir))
+    
+    # The directory for event-specific data files (e.g., segments, matches, summaries)
+    event_data_dir = os.path.join(project_root, 'data', 'events')
+    os.makedirs(event_data_dir, exist_ok=True)
+    
+    filename = f'{event_slug}_summary.md'
+    file_path = os.path.join(event_data_dir, filename)
+    
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+        
+    # Return the relative path from the project root
+    return os.path.join('data', 'events', filename)
+
 def delete_event(event_name):
     """Deletes an event by its name."""
     events = load_events()
