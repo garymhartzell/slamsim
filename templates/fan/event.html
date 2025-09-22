@@ -1,0 +1,64 @@
+{% extends "fan/_fan_base.html" %}
+
+{% block title %}{{ event.Event_Name }}{% endblock %}
+
+{% block fan_content %}
+<div class="header-bar">
+    <h2>
+        {{ event.Event_Name }}{% if event.Subtitle %}: {{ event.Subtitle }}{% endif %}
+    </h2>
+    <div class="action-buttons">
+        {# We will add a "Back to Events List" link here later #}
+    </div>
+</div>
+
+<div class="details-card-grid">
+    <div class="details-card full-width">
+        <div class="card-header"><h3>Event Details</h3></div>
+        <div class="card-content">
+            <p><strong>Date:</strong> {{ event.Date }}</p>
+            <p><strong>Location:</strong> {{ event.Venue }} in {{ event.Location }}</p>
+            {% if event.Broadcasters %}<p><strong>Broadcasters:</strong> {{ event.Broadcasters }}</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="details-card full-width">
+        <div class="card-header"><h3>Event Card</h3></div>
+        <div class="card-content">
+            <ul class="event-card-list">
+                {% for segment in segments %}
+                    {# Only show matches on the card if they are meant to be shown #}
+                    {% if segment.type == 'Match' and segment.on_card %}
+                        <li><strong>{{ segment.header }}:</strong> {{ segment.participants_display }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    {% if event_summary_content %}
+    <div class="details-card full-width">
+        <div class="card-header"><h3>Summary</h3></div>
+        <div class="card-content content-body">
+            {{ event_summary_content | markdown | safe }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if prefs.fan_mode_show_quick_results %}
+    <div class="details-card full-width">
+        <div class="card-header"><h3>Quick Results</h3></div>
+        <div class="card-content">
+            <ul class="quick-results-list">
+                {% for segment in segments %}
+                    {# Only show match results if they are meant to be included #}
+                    {% if segment.type == 'Match' and segment.include_in_results %}
+                        <li>{{ segment.match_result_display }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

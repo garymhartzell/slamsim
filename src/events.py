@@ -39,6 +39,14 @@ def get_event_by_name(event_name):
             return event
     return None
 
+def get_event_by_slug(event_slug):
+    """Retrieves a single event by its slugified name."""
+    events = load_events()
+    for event in events:
+        if _slugify(event.get('Event_Name', '')) == event_slug:
+            return event
+    return None
+
 def add_event(event_data):
     """Adds a new event to the list."""
     events = load_events()
@@ -60,6 +68,20 @@ def update_event(original_name, updated_data):
             save_events(events)
             return True
     return False # Event not found
+
+def load_event_summary_content(relative_summary_path):
+    """Loads the content of a consolidated event summary file."""
+    if not relative_summary_path:
+        return ""
+    
+    current_dir = os.path.dirname(__file__)
+    project_root = os.path.abspath(os.path.join(current_dir, os.pardir))
+    file_path = os.path.join(project_root, relative_summary_path)
+
+    if not os.path.exists(file_path):
+        return ""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return f.read()
 
 def save_event_summary(event_slug, content):
     """Saves the consolidated event summary to a Markdown file."""

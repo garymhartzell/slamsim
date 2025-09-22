@@ -3,6 +3,8 @@ from src.prefs import load_preferences
 from src.wrestlers import load_wrestlers, get_wrestler_by_name
 from src.tagteams import load_tagteams, get_tagteam_by_name
 from src.divisions import load_divisions
+from src.events import get_event_by_name, load_event_summary_content, get_event_by_slug
+from src.segments import load_segments, get_match_by_id, _slugify # Import _slugify for event_slug
 
 fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
 
@@ -48,6 +50,47 @@ def view_tagteam(tagteam_name):
         return redirect(url_for('fan.roster'))
 
     return render_template('fan/tagteam.html', tagteam=tagteam, prefs=prefs)
+
+@fan_bp.route('/event/<string:event_slug>')
+def view_event(event_slug):
+    """Renders the fan view page for a specific event."""
+    prefs = load_preferences()
+    event = get_event_by_slug(event_slug) # Use the new function to find by slug
+
+    if not event:
+        flash(f"Event '{event_slug}' not found.", 'danger')
+        return redirect(url_for('fan.home')) # Redirect to fan home if event not found
+
+    segments = load_segments(_slugify(event_slug))
+    segments.sort(key=lambda s: s.get('position', 9999)) # Sort segments by position
+
+    # Iterate through segments to merge match visibility data
+    for segment in segments:
+        if segment.get('type') == 'Match' and segment.get('match_id'):
+            match_data = get_match_by_id(_slugify(event_slug), segment['match_id'])
+            if match_data and 'match_visibility' in match_data:
+                # Merge visibility flags into the segment dictionary
+                segment['on_card'] = not match_data['match_visibility'].get('hide_from_card', False)
+                segment['include_in_results'] = not match_data['match_visibility'].get('hide_result', False)
+                # Note: hide_summary is handled in the finalize_event process, not directly here for display logic
+            else:
+                # Default to visible if match data or visibility info is missing
+                segment['on_card'] = True
+                segment['include_in_results'] = True
+        else:
+            # Non-match segments are always considered "on card" and "in results" for display purposes
+            segment['on_card'] = True
+            segment['include_in_results'] = True
+
+    event_summary_content = load_event_summary_content(event.get('event_summary_file'))
+
+    return render_template(
+        'fan/event.html',
+        event=event,
+        segments=segments,
+        prefs=prefs,
+        event_summary_content=event_summary_content
+    )
 
 @fan_bp.route('/roster')
 def roster():

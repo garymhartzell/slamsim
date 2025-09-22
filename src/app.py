@@ -1,4 +1,5 @@
 import os
+import markdown
 from flask import Flask, render_template, url_for
 from routes.divisions import divisions_bp
 from routes.prefs import prefs_bp
@@ -28,6 +29,11 @@ app.register_blueprint(belts_bp)
 app.register_blueprint(news_bp)
 app.register_blueprint(booker_bp) # Register the booker blueprint
 app.register_blueprint(fan_bp)     # Register the fan blueprint
+
+# Register a custom Jinja2 filter for markdown
+@app.template_filter('markdown')
+def markdown_filter(text):
+    return markdown.markdown(text)
 
 @app.route('/')
 def index():
