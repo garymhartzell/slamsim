@@ -9,6 +9,12 @@ from werkzeug.utils import escape
 
 tagteams_bp = Blueprint('tagteams', __name__, url_prefix='/tagteams')
 
+def _sort_key_ignore_the(name):
+    """Returns a sort key that ignores a leading 'The '."""
+    if name.lower().startswith('the '):
+        return name[4:]
+    return name
+
 STATUS_OPTIONS = ['Active', 'Inactive']
 ALIGNMENT_OPTIONS = ['Babyface', 'Tweener', 'Heel']
 
@@ -48,7 +54,7 @@ def _get_form_data(form):
 @tagteams_bp.route('/')
 def list_tagteams():
     """Displays a list of all tag-teams, sorted alphabetically, with deletable check."""
-    tagteams_list = sorted(load_tagteams(), key=lambda t: t.get('Name', ''))
+    tagteams_list = sorted(load_tagteams(), key=lambda t: _sort_key_ignore_the(t.get('Name', '')))
     for team in tagteams_list:
         team['DivisionName'] = divisions.get_division_name_by_id(team.get('Division', ''))
         team['is_deletable'] = is_tagteam_deletable(team)

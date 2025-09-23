@@ -9,6 +9,12 @@ from src.segments import load_segments, get_match_by_id, _slugify # Import _slug
 
 fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
 
+def _sort_key_ignore_the(name):
+    """Returns a sort key that ignores a leading 'The '."""
+    if name.lower().startswith('the '):
+        return name[4:]
+    return name
+
 @fan_bp.route('/home')
 def home():
     """Renders the fan home page."""
@@ -155,7 +161,7 @@ def roster():
 
         # Sort tag teams
         if sort_order == 'Alphabetical':
-            data['tagteams'].sort(key=lambda tt: tt.get('Name', ''))
+            data['tagteams'].sort(key=lambda tt: _sort_key_ignore_the(tt.get('Name', '')))
         elif sort_order == 'Total Wins':
             data['tagteams'].sort(key=lambda tt: int(tt.get('Wins', 0)), reverse=True)
         elif sort_order == 'Win Percentage':
@@ -165,8 +171,8 @@ def roster():
                 total_matches = wins + losses
                 # If less than 5 matches or 0-0 record, sort alphabetically at the bottom
                 if total_matches < 5 or (wins == 0 and losses == 0):
-                    return (-1.0, tagteam.get('Name', ''))
-                return (wins / total_matches, tagteam.get('Name', ''))
+                    return (-1.0, _sort_key_ignore_the(tagteam.get('Name', '')))
+                return (wins / total_matches, _sort_key_ignore_the(tagteam.get('Name', '')))
             data['tagteams'].sort(key=get_tagteam_win_percentage_key, reverse=True)
 
     return render_template('fan/roster.html', roster_data=filtered_roster_by_division, prefs=prefs)

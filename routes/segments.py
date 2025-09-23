@@ -11,6 +11,12 @@ import json
 
 segments_bp = Blueprint('segments', __name__, url_prefix='/events/<string:event_slug>/segments')
 
+def _sort_key_ignore_the(name):
+    """Returns a sort key that ignores a leading 'The '."""
+    if name.lower().startswith('the '):
+        return name[4:]
+    return name
+
 SEGMENT_TYPE_OPTIONS = ["Match", "Promo", "Interview", "In-ring", "Brawl"]
 # Used for per-individual and per-team result selection (unchanged)
 MATCH_RESULT_OPTIONS = ["Win", "Loss", "Draw", "No Contest"]
@@ -85,7 +91,7 @@ def create_segment(event_slug):
 
     sluggified_event_name = _slugify(event_slug)
     all_wrestlers = sorted(load_active_wrestlers(), key=lambda w: w['Name'])
-    all_tagteams = sorted(load_active_tagteams(), key=lambda t: t['Name'])
+    all_tagteams = sorted(load_active_tagteams(), key=lambda t: _sort_key_ignore_the(t['Name']))
     all_belts = load_belts()
 
     match_data_for_template = {
@@ -160,7 +166,7 @@ def edit_segment(event_slug, position):
         return redirect(url_for('events.edit_event', event_name=event_slug))
 
     all_wrestlers = sorted(load_active_wrestlers(), key=lambda w: w['Name'])
-    all_tagteams = sorted(load_active_tagteams(), key=lambda t: t['Name'])
+    all_tagteams = sorted(load_active_tagteams(), key=lambda t: _sort_key_ignore_the(t['Name']))
     all_belts = load_belts()
     summary_content = load_summary_content(segment.get('summary_file', ''))
     

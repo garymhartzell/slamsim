@@ -274,8 +274,7 @@ def _sync_team_results_to_individuals(match_results, all_tagteams_data):
     for team_name, result in team_results.items():
         if team_name in team_members_map:
             for member in team_members_map[team_name]:
-                if individual_results.get(member) in ["No Contest", None]:
-                    individual_results[member] = result
+                individual_results[member] = result
     
     match_results["individual_results"] = individual_results
     return match_results
