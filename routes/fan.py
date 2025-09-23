@@ -1,9 +1,10 @@
+import datetime
 from flask import Blueprint, render_template, flash, redirect, url_for
 from src.prefs import load_preferences
 from src.wrestlers import load_wrestlers, get_wrestler_by_name
 from src.tagteams import load_tagteams, get_tagteam_by_name
 from src.divisions import load_divisions
-from src.events import get_event_by_name, load_event_summary_content, get_event_by_slug
+from src.events import load_events, get_event_by_name, load_event_summary_content, get_event_by_slug
 from src.segments import load_segments, get_match_by_id, _slugify # Import _slugify for event_slug
 
 fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
@@ -169,3 +170,65 @@ def roster():
             data['tagteams'].sort(key=get_tagteam_win_percentage_key, reverse=True)
 
     return render_template('fan/roster.html', roster_data=filtered_roster_by_division, prefs=prefs)
+
+@fan_bp.route('/events')
+def events_list():
+    """Renders the fan mode events index page."""
+    prefs = load_preferences()
+    all_events = load_events()
+
+    upcoming_events = []
+    if prefs.get('fan_mode_show_future_events'):
+        for event in all_events:
+            if event.get('Status') == 'Future':
+                upcoming_events.append(event)
+        # Sort upcoming events by date ascending
+        upcoming_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '9999-12-31'), '%Y-%m-%d'))
+
+    finalized_events = []
+    for event in all_events:
+        if event.get('Finalized') == True:
+            finalized_events.append(event)
+    # Sort finalized events by date descending (newest first)
+    finalized_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
+
+    # Get unique years from finalized events for archive links
+    years = sorted(list(set(datetime.datetime.strptime(e.get('Date'), '%Y-%m-%d').year for e in finalized_events if e.get('Date'))), reverse=True)
+
+    return render_template(
+        'fan/events_list.html',
+        prefs=prefs,
+        upcoming_events=upcoming_events,
+        finalized_events=finalized_events,
+        years=years,
+        _slugify=_slugify # Pass _slugify to the template
+    )
+
+@fan_bp.route('/events/<int:year>')
+def archive_by_year(year):
+    """Renders the fan mode events archive page for a specific year."""
+    prefs = load_preferences() # Load preferences here
+    all_events = load_events()
+    archive_events = []
+
+    for event in all_events:
+        event_date_str = event.get('Date')
+        if event.get('Finalized') == True and event_date_str:
+            try:
+                event_year = datetime.datetime.strptime(event_date_str, '%Y-%m-%d').year
+                if event_year == year:
+                    archive_events.append(event)
+            except ValueError:
+                # Handle cases where date might be malformed, skip such events
+                continue
+    
+    # Sort archive events by date descending (newest first)
+    archive_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
+
+    return render_template(
+        'fan/events_archive.html',
+        year=year,
+        events=archive_events,
+        prefs=prefs, # Pass prefs to the template
+        _slugify=_slugify # Pass _slugify to the template
+    )

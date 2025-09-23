@@ -1,0 +1,30 @@
+{% extends 'fan/_fan_base.html' %}
+
+{% block title %}Event Results for {{ year }} - {{ prefs.league_name }}{% endblock %}
+
+{% block fan_content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Event Results for {{ year }}</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Archived Events</h2>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for event in events %}
+            <li class="list-group-item">
+                <a href="{{ url_for('fan.view_event', event_slug=_slugify(event.Event_Name)) }}">
+                    {{ event.Event_Name }} - {{ event.Date }}
+                </a>
+            </li>
+            {% else %}
+            <li class="list-group-item">No finalized events found for {{ year }}.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('fan.events_list') }}" class="btn btn-secondary">Back to All Events</a>
+    </div>
+</div>
+{% endblock %}
