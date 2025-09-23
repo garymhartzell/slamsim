@@ -4,6 +4,24 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
+## v1.0 Alpha 3 - Introducing Fan Mode (2025-09-23)
+
+This release marks the official debut of "Fan Mode," providing the first public-facing views of the promotion. This version establishes the architectural foundation for the fan experience and introduces the initial Roster and Events pages. Additionally, this version includes critical bug fixes to the core simulation engine, ensuring greater data integrity for wrestler and tag team records.
+
+### New Features: The Fan Mode Experience
+
+* **Architectural Foundation:** Implemented a new two-tiered base template system (`_booker_base.html`, `_fan_base.html`) to create a distinct look and feel for each mode while maintaining a shared core structure and navigation.
+* **Fan Mode Roster Page:** Created the initial Fan Mode Roster page (`/fan/roster`), which correctly groups active wrestlers and tag teams by their assigned division. The page fully implements all user-configurable sorting options: Alphabetical, Total Wins, and Win Percentage (with a 5-match minimum qualifier).
+* **Fan Mode Events Pages:** Built the main Fan Mode Events Index (`/fan/events`), which displays "Upcoming Events" and "Recent Results" sections based on user preferences.
+* **Yearly Event Archives:** The Events Index now links to new yearly archive pages (e.g., `/fan/events/2025`) to provide a clean, organized view of the promotion's history.
+
+### Bug Fixes & Stability Improvements
+
+* **Critical Fix:** Corrected the event finalization logic to ensure individual wrestlers' `Tag_Wins` and `Tag_Losses` are properly updated when their tag team competes in a match.
+* Resolved an issue where tag teams were not being sorted correctly in the Booker Mode participant builder.
+* Further hardened the application by making win/loss records read-only in the UI and implementing conditional deletion logic to protect historical data.
+* Improved data integrity by adding a "Division Type" (Singles/Tag-Team) to divisions, ensuring entities can only be assigned to the correct type of division.
+
 ## v1.0 Alpha 2 - Championship Update (2025-09-08)
 
 This is a major feature release that moves SlamSim! from a collection of CLI scripts to a fully functional web dashboard. This release also introduces a complete, automated championship tracking system and numerous quality-of-life improvements. The application now functions as a true wrestling simulator, where match outcomes have a direct and permanent impact on statistics and title lineages.
