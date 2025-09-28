@@ -1,9 +1,82 @@
-{% extends "_base.html" %}
+{% extends "fan/_fan_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <h1>Fan Home</h1>
-    <p>Welcome to Fan Mode! Explore the league's history, events, and wrestlers.</p>
-    <!-- Add more content and links for fan functionalities here -->
+{% block title %}Welcome to {{ prefs.league_short }}!{% endblock %}
+
+{% block fan_content %}
+
+{# LATEST NEWS SECTION #}
+{% if prefs.fan_mode_home_show_news != 'Off' and news_posts %}
+<div class="home-section">
+    <div class="header-bar">
+        <h2>Latest News</h2>
+        <div class="action-buttons">
+            <a href="{{ url_for('fan.news_list') }}">View All News</a>
+        </div>
+    </div>
+
+    {% for post in news_posts %}
+    <div class="news-item-home">
+        <h3><a href="{{ url_for('fan.view_news', news_id=post.News_ID) }}">{{ post.Subject }}</a></h3>
+        <p class="post-date">{{ post.Date }}</p>
+        {% if prefs.fan_mode_home_show_news == 'Show Full Posts' %}
+        <div class="content-body">
+            {{ post.RenderedContent | safe }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
 </div>
+{% endif %}
+
+
+{# UPCOMING EVENTS SECTION #}
+{% if prefs.fan_mode_show_future_events and upcoming_events %}
+<div class="home-section">
+    <div class="header-bar">
+        <h2>Upcoming Events</h2>
+    </div>
+    <ul class="event-list-home">
+        {% for event in upcoming_events %}
+        <li>{{ event.Date }} - <strong>{{ event.Event_Name }}</strong> - {{ event.Location }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+
+{# RECENT EVENTS SECTION #}
+{% if prefs.fan_mode_home_show_recent_events and recent_events %}
+<div class="home-section">
+    <div class="header-bar">
+        <h2>Recent Event Results</h2>
+    </div>
+    <ul class="event-list-home">
+        {% for event in recent_events %}
+        <li>{{ event.Date }} - <strong><a href="{{ url_for('fan.view_event', event_slug=event.Event_Name) }}">{{ event.Event_Name }}</a></strong> - {{ event.Location }}</li>
+        {% endfor %}
+    </ul>
+    <div class="view-all-link">
+        <a href="{{ url_for('fan.events_list') }}">View All Events</a>
+    </div>
+</div>
+{% endif %}
+
+
+{# CURRENT CHAMPIONS SECTION #}
+{% if prefs.fan_mode_home_show_champions and belts %}
+<div class="home-section">
+    <div class="header-bar">
+        <h2>Current Champions</h2>
+    </div>
+    <ul class="champions-list-home">
+        {% for belt in belts %}
+        <li><strong><a href="{{ url_for('fan.belt_history', belt_id=belt.ID) }}">{{ belt.Name }}</a>:</strong> {{ belt.display_holder or 'Vacant' }}</li>
+        {% endfor %}
+    </ul>
+    <div class="view-all-link">
+        <a href="{{ url_for('fan.roster') }}">View Full Roster</a>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

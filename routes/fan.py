@@ -66,7 +66,71 @@ def _sort_key_ignore_the(name):
 @fan_bp.route('/home')
 def home():
     """Renders the fan home page."""
-    return render_template('fan/home.html')
+    prefs = load_preferences()
+
+    # 1. Handle News
+    news_posts = []
+    if prefs.get('fan_mode_home_show_news') != 'Off':
+        all_news = load_news_posts()
+        # Sort news posts by date descending (newest first)
+        all_news.sort(key=lambda p: datetime.datetime.strptime(p.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
+        
+        num_news = int(prefs.get('fan_mode_home_number_news', 5))
+        news_posts = all_news[:num_news]
+
+        if prefs.get('fan_mode_home_show_news') == 'Show Full Posts':
+            for post in news_posts:
+                post['RenderedContent'] = markdown.markdown(post.get('Content', ''))
+
+    # 2. Handle Upcoming Events
+    upcoming_events = []
+    if prefs.get('fan_mode_show_future_events'):
+        all_events = load_events()
+        for event in all_events:
+            if event.get('Status') == 'Future':
+                upcoming_events.append(event)
+        # Sort upcoming events by date ascending
+        upcoming_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '9999-12-31'), '%Y-%m-%d'))
+        num_events = int(prefs.get('fan_mode_home_number_events', 5))
+        upcoming_events = upcoming_events[:num_events]
+
+    # 3. Handle Recent Events
+    recent_events = []
+    if prefs.get('fan_mode_home_show_recent_events'):
+        all_events = load_events()
+        for event in all_events:
+            if event.get('Finalized') == True:
+                recent_events.append(event)
+        # Sort finalized events by date descending (newest first)
+        recent_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
+        num_events = int(prefs.get('fan_mode_home_number_events', 5))
+        recent_events = recent_events[:num_events]
+
+    # 4. Handle Champions
+    belts = []
+    if prefs.get('fan_mode_home_show_champions'):
+        belts = load_belts()
+        belts.sort(key=lambda b: b.get('Display_Position', 0))
+        all_tagteams = load_tagteams()
+
+        for belt in belts:
+            belt['display_holder'] = belt.get('Current_Holder', '')
+            if belt.get('Holder_Type') == 'Tag-Team' and belt.get('Current_Holder'):
+                team_name = belt['Current_Holder']
+                tagteam = next((tt for tt in all_tagteams if tt['Name'] == team_name), None)
+                if tagteam:
+                    members = [m for m in [tagteam.get('Member1'), tagteam.get('Member2')] if m]
+                    if members:
+                        belt['display_holder'] = f"{team_name} ({', '.join(members)})"
+
+    return render_template(
+        'fan/home.html',
+        prefs=prefs,
+        news_posts=news_posts,
+        upcoming_events=upcoming_events,
+        recent_events=recent_events,
+        belts=belts
+    )
 
 @fan_bp.route('/wrestler/<string:wrestler_name>')
 def view_wrestler(wrestler_name):
