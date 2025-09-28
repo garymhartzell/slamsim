@@ -1,0 +1,16 @@
+{% extends 'fan/_fan_base.html' %}
+
+{% block title %}{{ news_post.Subject }} - {{ prefs.league_name }}{% endblock %}
+
+{% block fan_content %}
+<div class="container">
+    <h1 class="page-title">{{ news_post.Subject }}</h1>
+    <p class="news-date">Published: {{ news_post.Date }}</p>
+
+    <div class="news-content">
+        {{ news_post.RenderedContent | safe }}
+    </div>
+
+    <p class="back-link"><a href="{{ url_for('fan.news_list') }}">← Back to News List</a></p>
+</div>
+{% endblock %}

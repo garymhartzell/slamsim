@@ -5,8 +5,10 @@ from src.wrestlers import load_wrestlers, get_wrestler_by_name
 from src.tagteams import load_tagteams, get_tagteam_by_name
 from src.divisions import load_divisions
 from src.events import load_events, get_event_by_name, load_event_summary_content, get_event_by_slug
+import markdown
 from src.segments import load_segments, get_match_by_id, _slugify # Import _slugify for event_slug
 from src.belts import load_belts, get_belt_by_id, load_history_for_belt
+from src.news import load_news_posts, get_news_post_by_id
 
 fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
 
@@ -262,6 +264,66 @@ def archive_by_year(year):
     prefs = load_preferences() # Load preferences here
     all_events = load_events()
     archive_events = []
+
+@fan_bp.route('/news')
+def news_list():
+    """Renders the fan mode news index page."""
+    prefs = load_preferences()
+    all_news_posts = load_news_posts()
+
+    # Get unique years from news posts for archive links
+    years = sorted(list(set(datetime.datetime.strptime(p.get('Date'), '%Y-%m-%d').year for p in all_news_posts if p.get('Date'))), reverse=True)
+
+    return render_template(
+        'fan/news_list.html',
+        prefs=prefs,
+        news_posts=all_news_posts,
+        years=years
+    )
+
+@fan_bp.route('/news/<int:year>')
+def news_archive_by_year(year):
+    """Renders the fan mode news archive page for a specific year."""
+    prefs = load_preferences()
+    all_news_posts = load_news_posts()
+    archive_news_posts = []
+
+    for post in all_news_posts:
+        post_date_str = post.get('Date')
+        if post_date_str:
+            try:
+                post_year = datetime.datetime.strptime(post_date_str, '%Y-%m-%d').year
+                if post_year == year:
+                    archive_news_posts.append(post)
+            except ValueError:
+                continue
+    
+    archive_news_posts.sort(key=lambda p: datetime.datetime.strptime(p.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
+
+    return render_template(
+        'fan/news_archive.html',
+        year=year,
+        news_posts=archive_news_posts,
+        prefs=prefs
+    )
+
+@fan_bp.route('/news/<string:news_id>')
+def view_news(news_id):
+    """Renders the fan mode view page for a specific news post."""
+    prefs = load_preferences()
+    news_post = get_news_post_by_id(news_id)
+
+    if not news_post:
+        flash("News post not found.", 'danger')
+        return redirect(url_for('fan.news_list'))
+    
+    news_post['RenderedContent'] = markdown.markdown(news_post.get('Content', ''))
+
+    return render_template(
+        'fan/news_view.html',
+        news_post=news_post,
+        prefs=prefs
+    )
 
     for event in all_events:
         event_date_str = event.get('Date')
