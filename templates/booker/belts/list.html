@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Position</th>
                 <th>Name</th>
                 <th>Status</th>
                 <th>Holder Type</th>
@@ -26,6 +27,7 @@
             {% for belt in belts %}
             <tr>
                 <td>{{ belt.ID }}</td>
+                <td>{{ belt.Display_Position }}</td>
                 <td>{{ belt.Name }}</td>
                 <td>{{ belt.Status }}</td>
                 <td>{{ belt.Holder_Type }}</td>
@@ -44,7 +46,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">No belts found.</td>
+                <td colspan="7">No belts found.</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -18,7 +18,8 @@ HOLDER_TYPE_OPTIONS = ['Singles', 'Tag-Team']
 def _get_form_data(form, is_create=False):
     data = {
         'Name': form.get('name', '').strip(), 'Status': form.get('status', '').strip(),
-        'Holder_Type': form.get('holder_type', '').strip(), 'Current_Holder': form.get('current_holder', '').strip()
+        'Holder_Type': form.get('holder_type', '').strip(), 'Current_Holder': form.get('current_holder', '').strip(),
+        'Display_Position': form.get('display_position', 0, type=int)
     }
     if is_create:
         base_id = _slugify(data['Name'])
@@ -32,6 +33,7 @@ def list_belts():
     all_belts = load_belts()
     for belt in all_belts:
         belt['is_deletable'] = not bool(load_history_for_belt(belt['ID']))
+    all_belts.sort(key=lambda b: b.get('Display_Position', 0)) # Sort by Display_Position
     return render_template('booker/belts/list.html', belts=all_belts)
 
 @belts_bp.route('/create', methods=['GET', 'POST'])
