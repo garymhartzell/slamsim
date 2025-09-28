@@ -1,0 +1,17 @@
+{% extends "fan/_fan_base.html" %}
+
+{% block title %}Champions - {{ prefs.league_short }}{% endblock %}
+
+{% block fan_content %}
+<div class="container mt-4">
+    <h2>List of {{ prefs.league_short }} Champions</h2>
+
+    <ul class="list-group mt-3">
+        {% for belt in belts %}
+        <li class="list-group-item">
+            <strong><a href="{{ url_for('fan.belt_history', belt_id=belt.ID) }}">{{ belt.Name }}</a>:</strong> {{ belt.display_holder or 'Vacant' }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

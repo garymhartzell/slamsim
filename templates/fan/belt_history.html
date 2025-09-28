@@ -1,0 +1,40 @@
+{% extends "fan/_fan_base.html" %}
+
+{% block title %}Belt History: {{ belt.Name }} - {{ prefs.league_short }}{% endblock %}
+
+{% block fan_content %}
+<div class="container mt-4">
+    <h2>History: {{ belt.Name }}</h2>
+
+    {% if history %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>Champion</th>
+                    <th>Date Won</th>
+                    <th>Date Lost</th>
+                    <th>Days</th>
+                    <th>Defenses</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reign in history %}
+                <tr>
+                    <td>{{ reign.Champion_Name }}</td>
+                    <td>{{ reign.Date_Won }}</td>
+                    <td>{{ reign.Date_Lost if reign.Date_Lost else 'Current' }}</td>
+                    <td>{{ reign.Days }}</td>
+                    <td>{{ reign.Defenses }}</td>
+                    <td>{{ reign.Notes }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No history found for this belt.</p>
+    {% endif %}
+</div>
+{% endblock %}

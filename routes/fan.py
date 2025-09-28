@@ -6,8 +6,54 @@ from src.tagteams import load_tagteams, get_tagteam_by_name
 from src.divisions import load_divisions
 from src.events import load_events, get_event_by_name, load_event_summary_content, get_event_by_slug
 from src.segments import load_segments, get_match_by_id, _slugify # Import _slugify for event_slug
+from src.belts import load_belts, get_belt_by_id, load_history_for_belt
 
 fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
+
+@fan_bp.route('/champions')
+def champions_list():
+    """Renders the fan mode champions list page."""
+    prefs = load_preferences()
+    all_belts = load_belts()
+    all_belts.sort(key=lambda b: b.get('Display_Position', 0))
+    all_tagteams = load_tagteams()
+
+    for belt in all_belts:
+        belt['display_holder'] = belt.get('Current_Holder', '')
+        if belt.get('Holder_Type') == 'Tag-Team' and belt.get('Current_Holder'):
+            team_name = belt['Current_Holder']
+            tagteam = next((tt for tt in all_tagteams if tt['Name'] == team_name), None)
+            if tagteam:
+                members = [m for m in [tagteam.get('Member1'), tagteam.get('Member2')] if m]
+                if members:
+                    belt['display_holder'] = f"{team_name} ({', '.join(members)})"
+    
+    return render_template('fan/champions_list.html', belts=all_belts, prefs=prefs)
+
+@fan_bp.route('/belt/<string:belt_id>')
+def belt_history(belt_id):
+    """Renders the fan mode belt history page for a specific belt."""
+    prefs = load_preferences() # Load preferences for _fan_base.html
+    belt = get_belt_by_id(belt_id)
+    if not belt:
+        flash("Belt not found.", 'danger')
+        return redirect(url_for('fan.champions_list'))
+
+    history = load_history_for_belt(belt_id)
+    history.sort(key=lambda r: datetime.datetime.strptime(r['Date_Won'], '%Y-%m-%d'), reverse=True)
+
+    for reign in history:
+        date_won = datetime.datetime.strptime(reign['Date_Won'], '%Y-%m-%d')
+        date_lost_str = reign.get('Date_Lost')
+        
+        if date_lost_str:
+            date_lost = datetime.datetime.strptime(date_lost_str, '%Y-%m-%d')
+        else:
+            date_lost = datetime.date.today() # Use current date for active reigns
+        
+        reign['Days'] = (date_lost - date_won).days
+
+    return render_template('fan/belt_history.html', belt=belt, history=history, prefs=prefs)
 
 def _sort_key_ignore_the(name):
     """Returns a sort key that ignores a leading 'The '."""
