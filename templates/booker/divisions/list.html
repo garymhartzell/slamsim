@@ -34,7 +34,7 @@
                     <div class="action-buttons">
                         <a href="{{ url_for('divisions.edit_division', division_id=division.ID) }}" class="btn btn-secondary">Edit</a>
                         {% if division.is_deletable %}
-                        <form action="{{ url_for('divisions.delete_division_route', division_id=division.ID) }}" method="POST" class="d-inline">
+                        <form action="{{ url_for('divisions.delete_division_route', division_id=division.ID) }}" method="POST" class="d-inline" onsubmit="return confirmDelete('Are you sure you want to delete the division {{ division.Name }}?');">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
                         {% endif %}

@@ -28,7 +28,7 @@
                     <div class="action-buttons">
                         <a href="{{ url_for('news.view_news', news_id=post.News_ID) }}" class="btn btn-info">View</a>
                         <a href="{{ url_for('news.edit_news', news_id=post.News_ID) }}" class="btn btn-secondary">Edit</a>
-                        <form action="{{ url_for('news.delete_news_route', news_id=post.News_ID) }}" method="POST" class="d-inline">
+                        <form action="{{ url_for('news.delete_news_route', news_id=post.News_ID) }}" method="POST" class="d-inline" onsubmit="return confirmDelete('Are you sure you want to delete this news post?');">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
                     </div>

@@ -35,7 +35,7 @@
                         <a href="{{ url_for('events.view_event', event_name=event.Event_Name) }}" class="btn btn-info">View</a>
                         <a href="{{ url_for('events.edit_event', event_name=event.Event_Name) }}" class="btn btn-secondary">Edit</a>
                         {% if not event.Finalized %}
-                        <form action="{{ url_for('events.delete_event_route', event_name=event.Event_Name) }}" method="POST" class="d-inline">
+                        <form action="{{ url_for('events.delete_event_route', event_name=event.Event_Name) }}" method="POST" class="d-inline" onsubmit="return confirmDelete('Are you sure you want to delete the event {{ event.Event_Name }}?');">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
                         {% endif %}

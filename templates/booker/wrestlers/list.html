@@ -30,7 +30,7 @@
                     <div class="action-buttons">
                         <a href="{{ url_for('wrestlers.edit_wrestler', wrestler_name=wrestler.Name) }}" class="btn btn-secondary">Edit</a>
                         {% if wrestler.is_deletable %}
-                        <form action="{{ url_for('wrestlers.delete_wrestler_route', wrestler_name=wrestler.Name) }}" method="post" class="d-inline">
+                        <form action="{{ url_for('wrestlers.delete_wrestler_route', wrestler_name=wrestler.Name) }}" method="post" class="d-inline" onsubmit="return confirmDelete('Are you sure you want to delete the wrestler {{ wrestler.Name }}?');">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
                         {% endif %}

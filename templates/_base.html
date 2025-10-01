@@ -159,6 +159,10 @@
                 }
             });
         });
+
+        function confirmDelete(message) {
+            return confirm(message);
+        }
     </script>
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}

@@ -36,7 +36,7 @@
                 <td>
                     <div class="action-buttons">
                         <a href="{{ url_for('belts.edit_reign', reign_id=reign.Reign_ID) }}" class="btn btn-secondary">Edit</a>
-                        <form action="{{ url_for('belts.delete_reign_route', reign_id=reign.Reign_ID) }}" method="POST" class="d-inline">
+                        <form action="{{ url_for('belts.delete_reign_route', reign_id=reign.Reign_ID) }}" method="POST" class="d-inline" onsubmit="return confirmDelete('Are you sure you want to delete this reign?');">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
                     </div>

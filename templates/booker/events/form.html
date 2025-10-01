@@ -88,7 +88,7 @@
                         {% if not event.Finalized %}
                         <div class="action-buttons">
                             <a href="{{ url_for('segments.edit_segment', event_slug=event.Event_Name, position=segment.position) }}" class="btn btn-secondary">Edit</a>
-                            <form action="{{ url_for('segments.delete_segment_route', event_slug=event.Event_Name, position=segment.position) }}" method="POST" class="d-inline">
+                            <form action="{{ url_for('segments.delete_segment_route', event_slug=event.Event_Name, position=segment.position) }}" method="POST" class="d-inline" onsubmit="return confirmDelete('Are you sure you want to delete segment {{ segment.position }}?');">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
