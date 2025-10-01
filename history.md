@@ -4,6 +4,33 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
+## v1.0 Alpha 4 - Fan Mode Completion & Engine Overhaul (2025-10-01)
+
+This is the final and largest alpha release, preparing the application for its beta phase. This version introduces the complete "Fan Mode," a full-featured, read-only view of the promotion designed for an audience. It also includes a major overhaul of the core booking engine, focusing on data integrity, narrative control, and professional-grade administrative tools.
+
+### New Features: The Complete Fan Mode
+
+The application now has a fully realized "Fan Mode," a complete front-end experience for the wrestling promotion.
+
+- Homepage: A customizable homepage that aggregates content, including latest news, upcoming/recent events, and a list of current champions.
+- Championship Section: A dedicated champions list page that displays all belts and their current holders (with tag team members expanded). Each championship links to a detailed, chronological history page showing every title reign.
+- News System: A complete news section with a main page for recent articles and yearly archives, allowing fans to follow the narrative of the promotion.
+
+### Booking Engine & Data Integrity Overhaul
+
+- **Match Finish System:** The segment editor has been completely overhauled. It now includes a detailed "Match Finish & Presentation" section with options for "Method of Victory" (Pinfall, Submission, etc.) and a comprehensive "Match Outcome" dropdown that properly handles draws and no contests.
+
+- **Narrative Control:** The match_result string is now an intelligent, narrative-driven sentence that correctly reports on title changes (e.g., "...to become the new World Champion") and successful defenses.
+
+- **Conditional Deletion:** Deletion logic has been hardened across the entire application. Entities that are part of the historical record (e.g., a wrestler with a match, a belt with a reign history, a finalized event) can no longer be deleted, protecting data integrity.
+
+- **Architectural Improvements:** Added a Display_Position to Divisions and Belts for custom sorting and a Division_Type to Divisions to enforce correct entity assignment.
+
+### Bug Fixes
+
+- Critical Fix: Corrected the event finalization logic to ensure individual wrestlers' Tag_Wins and Tag_Losses are properly updated when their tag team competes in a match.
+- Resolved multiple critical bugs related to file generation, template rendering, and JavaScript functionality that were causing application crashes and a
+
 ## v1.0 Alpha 3 - Introducing Fan Mode (2025-09-23)
 
 This release marks the official debut of "Fan Mode," providing the first public-facing views of the promotion. This version establishes the architectural foundation for the fan experience and introduces the initial Roster and Events pages. Additionally, this version includes critical bug fixes to the core simulation engine, ensuring greater data integrity for wrestler and tag team records.
