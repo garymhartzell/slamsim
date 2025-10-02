@@ -558,17 +558,20 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
         all_belts_data = load_belts() # Load belts here for the display string generation
         generated_display_string = generate_match_result_display_string(processed_match_data, all_tagteams_data, all_belts_data)
         
+        # Use user-provided match_result_display if available, otherwise use generated
+        final_match_result_display = match_data.get('match_result_display') or generated_display_string
+
         match_id = str(uuid.uuid4())
         segment_data['match_id'] = match_id
         segment_data['participants_display'] = processed_match_data['participants_display']
         segment_data['sides'] = processed_match_data['sides']
         segment_data['match_result'] = processed_match_data.get('match_result', "")
-        segment_data['match_result_display'] = generated_display_string # Store the generated string
+        segment_data['match_result_display'] = final_match_result_display # Store the final string
 
         full_match_data_to_save = processed_match_data.copy()
         full_match_data_to_save['match_id'] = match_id
         full_match_data_to_save['segment_position'] = segment_data['position']
-        full_match_data_to_save['match_result_display'] = generated_display_string # Also store in full match data
+        full_match_data_to_save['match_result_display'] = final_match_result_display # Also store in full match data
         
         _add_match(event_slug, full_match_data_to_save)
     else:
@@ -647,14 +650,17 @@ def update_segment(event_slug, original_position, updated_data, summary_content,
         all_belts_data = load_belts() # Load belts here for the display string generation
         generated_display_string = generate_match_result_display_string(processed_match_data, all_tagteams_data, all_belts_data)
 
+        # Use user-provided match_result_display if available, otherwise use generated
+        final_match_result_display = match_data.get('match_result_display') or generated_display_string
+
         updated_data['participants_display'] = processed_match_data['participants_display']
         updated_data['sides'] = processed_match_data['sides']
         updated_data['match_result'] = processed_match_data.get('match_result', "")
-        updated_data['match_result_display'] = generated_display_string # Store the generated string
+        updated_data['match_result_display'] = final_match_result_display # Store the final string
 
         full_match_data_to_save = processed_match_data.copy()
         full_match_data_to_save['segment_position'] = updated_data['position']
-        full_match_data_to_save['match_result_display'] = generated_display_string # Also store in full match data
+        full_match_data_to_save['match_result_display'] = final_match_result_display # Also store in full match data
 
         if old_match_id:
             updated_data['match_id'] = old_match_id
