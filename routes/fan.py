@@ -51,7 +51,8 @@ def belt_history(belt_id):
         if date_lost_str:
             date_lost = datetime.datetime.strptime(date_lost_str, '%Y-%m-%d')
         else:
-            date_lost = datetime.date.today() # Use current date for active reigns
+            # Use current date for active reigns, ensuring it's a datetime.datetime object
+            date_lost = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
         
         reign['Days'] = (date_lost - date_won).days
 
