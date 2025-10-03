@@ -257,20 +257,21 @@ def roster():
     # Apply sorting to the filtered data
     for division_name, data in filtered_roster_by_division.items():
         # Sort wrestlers
-        if sort_order == 'Alphabetical':
-            data['wrestlers'].sort(key=lambda w: w.get('Name', ''))
-        elif sort_order == 'Total Wins':
-            data['wrestlers'].sort(key=lambda w: (int(w.get('Singles_Wins', 0)) + int(w.get('Tag_Wins', 0))), reverse=True)
-        elif sort_order == 'Win Percentage':
-            def get_wrestler_win_percentage_key(wrestler):
-                wins = int(wrestler.get('Singles_Wins', 0)) + int(wrestler.get('Tag_Wins', 0))
-                losses = int(wrestler.get('Singles_Losses', 0)) + int(wrestler.get('Tag_Losses', 0))
-                total_matches = wins + losses
-                # If less than 5 matches or 0-0 record, sort alphabetically at the bottom
-                if total_matches < 5 or (wins == 0 and losses == 0):
-                    return (-1.0, wrestler.get('Name', '')) # -1.0 ensures it's at the bottom when sorting descending
-                return (wins / total_matches, wrestler.get('Name', '')) # Win percentage, then name for tie-breaking
-            data['wrestlers'].sort(key=get_wrestler_win_percentage_key, reverse=True)
+        if data['type'] == 'Singles': # Only sort wrestlers if the division is Singles
+            if sort_order == 'Alphabetical':
+                data['wrestlers'].sort(key=lambda w: w.get('Name', ''))
+            elif sort_order == 'Total Wins':
+                data['wrestlers'].sort(key=lambda w: int(w.get('Singles_Wins', 0)), reverse=True)
+            elif sort_order == 'Win Percentage':
+                def get_wrestler_win_percentage_key(wrestler):
+                    wins = int(wrestler.get('Singles_Wins', 0))
+                    losses = int(wrestler.get('Singles_Losses', 0))
+                    total_matches = wins + losses
+                    # If less than 5 matches or 0-0 record, sort alphabetically at the bottom
+                    if total_matches < 5 or (wins == 0 and losses == 0):
+                        return (-1.0, wrestler.get('Name', '')) # -1.0 ensures it's at the bottom when sorting descending
+                    return (wins / total_matches, wrestler.get('Name', '')) # Win percentage, then name for tie-breaking
+                data['wrestlers'].sort(key=get_wrestler_win_percentage_key, reverse=True)
 
         # Sort tag teams
         if sort_order == 'Alphabetical':
