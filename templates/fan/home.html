@@ -52,7 +52,7 @@
     </div>
     <ul class="event-list-home">
         {% for event in recent_events %}
-        <li>{{ event.Date }} - <strong><a href="{{ url_for('fan.view_event', event_slug=event.Event_Name) }}">{{ event.Event_Name }}</a></strong> - {{ event.Location }}</li>
+        <li>{{ event.Date }} - <strong><a href="{{ url_for('fan.view_event', event_slug=event.event_slug) }}">{{ event.Event_Name }}</a></strong> - {{ event.Location }}</li>
         {% endfor %}
     </ul>
     <div class="view-all-link">
