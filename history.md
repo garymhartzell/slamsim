@@ -4,6 +4,17 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
+## v1.0 Beta 1
+
+### Bug Fixes
+
+- Fixed a bug in the fan route that was preventing viewing of belts.
+- Fixed a bug where match_result_display changes were not being saved.
+- Fixed a sorting bug on the fan.roster page.
+- Fixed a bug where match_class was not being updated dynamically in the segments builder.
+- Fixed a bug in the segments builder where participants_display was not showing tag-teams and individual wrestlers correctly in multi-person matches.
+- Fixed a couple of bad url_for strings in fan.home.
+
 ## v1.0 Alpha 4 - Fan Mode Completion & Engine Overhaul (2025-10-01)
 
 This is the final and largest alpha release, preparing the application for its beta phase. This version introduces the complete "Fan Mode," a full-featured, read-only view of the promotion designed for an audience. It also includes a major overhaul of the core booking engine, focusing on data integrity, narrative control, and professional-grade administrative tools.
