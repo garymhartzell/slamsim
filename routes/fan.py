@@ -106,6 +106,9 @@ def home():
         recent_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
         num_events = int(prefs.get('fan_mode_home_number_events', 5))
         recent_events = recent_events[:num_events]
+        # Ensure event_slug is present for linking in the template
+        for event in recent_events:
+            event['event_slug'] = _slugify(event.get('Event_Name', ''))
 
     # 4. Handle Champions
     belts = []
