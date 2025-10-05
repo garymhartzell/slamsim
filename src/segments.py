@@ -192,8 +192,8 @@ def _prepare_match_data_for_storage(match_data_input, all_wrestlers_data, all_ta
     prepared_match_data = match_data_input.copy()
     sides = prepared_match_data.get('sides', [])
 
-    if "match_class" not in prepared_match_data or not prepared_match_data["match_class"]:
-        prepared_match_data["match_class"] = _classify_match(sides)
+    # Always re-classify the match based on the current sides
+    prepared_match_data["match_class"] = _classify_match(sides)
 
     all_wrestlers_in_match = _get_all_wrestlers_involved(sides)
     all_teams_in_match = _get_all_tag_teams_involved(sides, all_tagteams_data)
@@ -489,15 +489,15 @@ def load_active_tagteams():
     return [t for t in load_tagteams() if t.get('Status') == 'Active']
 
 
-def generate_match_display_string(sides):
-    """Generates a readable display string for match participants."""
-    side_strings = []
+def _generate_participants_display_string(sides, all_tagteams_data):
+    """
+    Generates a human-readable display string for match participants,
+    expanding tag teams within each side.
+    """
+    side_display_strings = []
     for side in sides:
-        if side.get('tagteam'):
-            side_strings.append(side['tagteam'])
-        else:
-            side_strings.append(", ".join(side['members']))
-    return " vs ".join(side_strings)
+        side_display_strings.append(_generate_side_display_string(side, all_tagteams_data))
+    return " vs ".join(side_display_strings)
 
 
 def validate_match_data(sides, match_results=None):
@@ -562,8 +562,12 @@ def add_segment(event_slug, segment_data, summary_content, match_data=None):
         final_match_result_display = match_data.get('match_result_display') or generated_display_string
 
         match_id = str(uuid.uuid4())
+        # Generate participants_display here
+        participants_display = _generate_participants_display_string(processed_match_data['sides'], all_tagteams_data)
+
+        match_id = str(uuid.uuid4())
         segment_data['match_id'] = match_id
-        segment_data['participants_display'] = processed_match_data['participants_display']
+        segment_data['participants_display'] = participants_display # Use the generated string
         segment_data['sides'] = processed_match_data['sides']
         segment_data['match_result'] = processed_match_data.get('match_result', "")
         segment_data['match_result_display'] = final_match_result_display # Store the final string
@@ -653,7 +657,10 @@ def update_segment(event_slug, original_position, updated_data, summary_content,
         # Use user-provided match_result_display if available, otherwise use generated
         final_match_result_display = match_data.get('match_result_display') or generated_display_string
 
-        updated_data['participants_display'] = processed_match_data['participants_display']
+        # Generate participants_display here
+        participants_display = _generate_participants_display_string(processed_match_data['sides'], all_tagteams_data)
+
+        updated_data['participants_display'] = participants_display # Use the generated string
         updated_data['sides'] = processed_match_data['sides']
         updated_data['match_result'] = processed_match_data.get('match_result', "")
         updated_data['match_result_display'] = final_match_result_display # Store the final string

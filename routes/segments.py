@@ -3,7 +3,7 @@ from src.segments import (
     load_segments, get_segment_by_position, add_segment, update_segment, delete_segment,
     load_summary_content, _slugify, delete_all_segments_for_event,
     load_active_wrestlers, load_active_tagteams, get_match_by_id,
-    generate_match_display_string, validate_match_data
+    validate_match_data
 )
 from src.events import get_event_by_name
 from src.belts import load_belts
@@ -41,7 +41,6 @@ def _get_segment_form_data(form):
     if segment_type == 'Match':
         match_sides_json = form.get('match_sides_json', '[]')
         match_sides = json.loads(match_sides_json)
-        participants_display = form.get('participants_display', '')
         
         match_results_json = form.get('match_results_json', '{}')
         match_results_data = json.loads(match_results_json)
@@ -52,11 +51,9 @@ def _get_segment_form_data(form):
         match_result_display = form.get('match_result_display', '') # New field
 
         match_details = {
-            'participants_display': participants_display,
             'sides': match_sides,
             'match_time': form.get('match_time', ''),
             'match_championship': form.get('match_championship', ''),
-            'match_class': form.get('match_class', ''),
             'winning_side_index': match_results_data.get('winning_side_index', -1),
             'individual_results': match_results_data.get('individual_results', {}),
             'team_results': match_results_data.get('team_results', {}),
