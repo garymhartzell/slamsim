@@ -54,11 +54,23 @@ def _get_form_data(form):
 @tagteams_bp.route('/')
 def list_tagteams():
     """Displays a list of all tag-teams, sorted alphabetically, with deletable check."""
-    tagteams_list = sorted(load_tagteams(), key=lambda t: _sort_key_ignore_the(t.get('Name', '')))
+    selected_status = request.args.get('status', 'All')
+    all_tagteams = sorted(load_tagteams(), key=lambda t: _sort_key_ignore_the(t.get('Name', '')))
+
+    if selected_status != 'All':
+        tagteams_list = [t for t in all_tagteams if t.get('Status') == selected_status]
+    else:
+        tagteams_list = all_tagteams
+
     for team in tagteams_list:
         team['DivisionName'] = divisions.get_division_name_by_id(team.get('Division', ''))
         team['is_deletable'] = is_tagteam_deletable(team)
-    return render_template('booker/tagteams/list.html', tagteams=tagteams_list)
+
+    status_options_for_filter = ['All'] + STATUS_OPTIONS
+    return render_template('booker/tagteams/list.html',
+                           tagteams=tagteams_list,
+                           status_options=status_options_for_filter,
+                           selected_status=selected_status)
 
 @tagteams_bp.route('/create', methods=['GET', 'POST'])
 def create_tagteam():

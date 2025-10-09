@@ -22,8 +22,19 @@ def _get_form_data(form):
 
 @events_bp.route('/')
 def list_events():
-    events = sorted(load_events(), key=lambda e: e.get('Date', '0000-00-00'), reverse=True)
-    return render_template('booker/events/list.html', events=events)
+    selected_status = request.args.get('status', 'All')
+    all_events = sorted(load_events(), key=lambda e: e.get('Date', '0000-00-00'), reverse=True)
+
+    if selected_status != 'All':
+        events_list = [e for e in all_events if e.get('Status') == selected_status]
+    else:
+        events_list = all_events
+
+    status_options_for_filter = ['All'] + STATUS_OPTIONS
+    return render_template('booker/events/list.html',
+                           events=events_list,
+                           status_options=status_options_for_filter,
+                           selected_status=selected_status)
 
 @events_bp.route('/create', methods=['GET', 'POST'])
 def create_event():

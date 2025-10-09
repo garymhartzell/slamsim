@@ -28,11 +28,23 @@ def _get_form_data(form):
 
 @wrestlers_bp.route('/')
 def list_wrestlers():
-    wrestlers_list = sorted(load_wrestlers(), key=lambda w: w.get('Name', ''))
+    selected_status = request.args.get('status', 'All')
+    all_wrestlers = sorted(load_wrestlers(), key=lambda w: w.get('Name', ''))
+
+    if selected_status != 'All':
+        wrestlers_list = [w for w in all_wrestlers if w.get('Status') == selected_status]
+    else:
+        wrestlers_list = all_wrestlers
+
     for wrestler in wrestlers_list:
         wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
         wrestler['is_deletable'] = is_wrestler_deletable(wrestler)
-    return render_template('booker/wrestlers/list.html', wrestlers=wrestlers_list)
+
+    status_options_for_filter = ['All'] + STATUS_OPTIONS
+    return render_template('booker/wrestlers/list.html',
+                           wrestlers=wrestlers_list,
+                           status_options=status_options_for_filter,
+                           selected_status=selected_status)
 
 @wrestlers_bp.route('/create', methods=['GET', 'POST'])
 def create_wrestler():
