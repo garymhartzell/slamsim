@@ -13,13 +13,14 @@
 <div class="filter-bar">
     <form action="{{ url_for('wrestlers.list_wrestlers') }}" method="get" class="form-inline">
         <label for="status-filter">Status:</label>
-        <select name="status" id="status-filter" onchange="this.form.submit()">
+        <select name="status" id="status-filter">
             {% for status_option in status_options %}
             <option value="{{ status_option }}" {% if status_option == selected_status %}selected{% endif %}>
                 {{ status_option }}
             </option>
             {% endfor %}
         </select>
+        <button type="submit" class="btn btn-sm btn-primary">Go</button>
     </form>
 </div>
 
