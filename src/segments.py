@@ -308,9 +308,13 @@ def _validate_result_completeness(match_results, sides, all_wrestlers_in_match, 
     Returns a list of warning messages.
     """
     warnings = []
+    overall_match_result = match_results.get("match_result")
     individual_results = match_results.get("individual_results", {})
     team_results = match_results.get("team_results", {})
     winning_side_index = match_results.get("winning_side_index")
+
+    if not overall_match_result:
+        warnings.append("Overall match result is not set.")
 
     valid_results = ["Win", "Loss", "Draw", "No Contest"]
     for wrestler in all_wrestlers_in_match:

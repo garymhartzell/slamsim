@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.events import load_events, get_event_by_name, add_event, update_event, delete_event, save_event_summary
-from src.segments import load_segments, get_match_by_id, _get_all_wrestlers_involved, _get_all_tag_teams_involved, _slugify, delete_all_segments_for_event, load_summary_content
+from src.segments import load_segments, get_match_by_id, _get_all_wrestlers_involved, _get_all_tag_teams_involved, _slugify, delete_all_segments_for_event, load_summary_content, load_matches
 from src.wrestlers import update_wrestler_record
 from src.tagteams import load_tagteams, update_tagteam_record, get_tagteam_by_name
 from src.belts import get_belt_by_name, process_championship_change, update_reign_in_history, load_history_for_belt
@@ -64,24 +64,36 @@ def edit_event(event_name):
         return redirect(url_for('events.list_events'))
     sluggified_name = _slugify(event_name)
     segments = sorted(load_segments(sluggified_name), key=lambda s: s.get('position', 0))
+
+    event_warnings = []
+    if event.get('Status') == 'Past':
+        all_matches_data = load_matches(sluggified_name)
+        for segment in segments:
+            if segment.get('type') == 'Match' and segment.get('match_id'):
+                match_id = segment['match_id']
+                match = next((m for m in all_matches_data if m.get('match_id') == match_id), None)
+                if match and match.get('warnings'):
+                    for warning in match['warnings']:
+                        event_warnings.append(f"Segment {segment['position']}: {warning}")
+
     if request.method == 'POST':
         updated_data = _get_form_data(request.form)
         updated_data['Finalized'] = event.get('Finalized', False)
         if not all([updated_data['Event_Name'], updated_data['Status'], updated_data['Date']]):
             flash('Event Name, Status, and Date are required.', 'danger')
-            return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+            return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
         try:
             datetime.strptime(updated_data['Date'], '%Y-%m-%d')
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
         if update_event(event_name, updated_data):
             flash(f"Event '{updated_data['Event_Name']}' updated successfully!", 'success')
             return redirect(url_for('events.edit_event', event_name=updated_data['Event_Name']))
         else:
             flash(f"Failed to update event. New name might conflict.", 'danger')
-            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
-    return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name)
+            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
+    return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
 
 @events_bp.route('/view/<string:event_name>')
 def view_event(event_name):
@@ -115,7 +127,27 @@ def finalize_event(event_name):
     if not event or event.get('Finalized'):
         flash('Event not found or already finalized.', 'warning')
         return redirect(url_for('events.list_events'))
-    segments = load_segments(_slugify(event_name))
+
+    sluggified_name = _slugify(event_name)
+    segments = sorted(load_segments(sluggified_name), key=lambda s: s.get('position', 0))
+
+    # Re-evaluate warnings on POST to ensure current state
+    event_warnings = []
+    if event.get('Status') == 'Past':
+        all_matches_data = load_matches(sluggified_name)
+        for segment in segments:
+            if segment.get('type') == 'Match' and segment.get('match_id'):
+                match_id = segment['match_id']
+                match = next((m for m in all_matches_data if m.get('match_id') == match_id), None)
+                if match and match.get('warnings'):
+                    for warning in match['warnings']:
+                        event_warnings.append(f"Segment {segment['position']}: {warning}")
+
+    if event_warnings and not request.form.get('acknowledge_warnings'):
+        flash('Please acknowledge the warnings before finalizing the event.', 'danger')
+        # Redirect back to the edit page, passing the warnings again
+        return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
+
     all_tagteams = load_tagteams()
     for segment in segments:
         if segment.get('type') == 'Match' and segment.get('match_id'):

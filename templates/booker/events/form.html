@@ -110,12 +110,32 @@
     </div>
     
     {% if event.Status == 'Past' and not event.Finalized %}
+    {% if event_warnings|length > 0 %}
+    <hr class="section-divider">
+    <div class="warnings-section">
+        <h3>Warnings</h3>
+        <p class="text-danger">The following issues were found in your event's matches. Please review them before finalizing.</p>
+        <ul class="list-group mb-3">
+            {% for warning in event_warnings %}
+            <li class="list-group-item list-group-item-warning">{{ warning }}</li>
+            {% endfor %}
+        </ul>
+        </div>
+    </div>
+    {% endif %}
+
     <hr class="section-divider">
     <div class="finalize-section">
         <h3>Finalize Event</h3>
         <p>Finalizing an event is an irreversible action. It will update all wrestler and tag team records and process any championship changes based on the match results. The event and its segments will become read-only.</p>
         <form action="{{ url_for('events.finalize_event', event_name=event.Event_Name) }}" method="POST">
-             <button type="submit" class="btn btn-success btn-lg">Finalize Event and Update All Records</button>
+            {% if event_warnings|length > 0 %}
+            <div class="form-group">
+                <input type="checkbox" id="acknowledge_warnings" name="acknowledge_warnings">
+                <label for="acknowledge_warnings">I acknowledge these warnings and wish to proceed with finalization.</label>
+            </div>
+            {% endif %}
+            <button type="submit" id="finalize_button" class="btn btn-success btn-lg">Finalize Event and Update All Records</button>
         </form>
     </div>
     {% endif %}
