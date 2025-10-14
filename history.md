@@ -4,7 +4,14 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
-## v1.0 Beta 1
+## v1.0 Beta 1 (2025-10-14)
+
+This first official beta has two new features and several bug fixes. Next, I'll start working on the AI match writer.
+
+### New Features
+
+- In Booker Mode, you can now filter out events, wrestlers, and tag-teams by status (Inactive, Active, etc. for wrestlers and tag-teams, Past, Future, and Canceled for events).
+- In Booker Mode, before you finalize an event, warnings about inconsistancies (unequal sides, incorrectly tagged winners or losers, etc.) are displayed for your attention. You can either go back and fix them or choose to ignore them and publish anyhow.
 
 ### Bug Fixes
 
