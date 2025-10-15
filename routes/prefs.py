@@ -8,6 +8,11 @@ from src.system import delete_all_league_data, delete_all_temporary_files, get_l
 
 prefs_bp = Blueprint('prefs', __name__, url_prefix='/prefs')
 
+AVAILABLE_MODELS = {
+    "Google": ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-flash"],
+    "OpenAI": ["gpt-5.0", "gpt-4.0", "gpt-3.5"]
+}
+
 @prefs_bp.route('/', methods=['GET', 'POST'])
 def general_prefs():
     if request.method == 'POST':
@@ -27,6 +32,11 @@ def general_prefs():
         fan_mode_home_number_news = int(request.form.get('fan_mode_home_number_news', 5))
         fan_mode_home_show_recent_events = 'fan_mode_home_show_recent_events' in request.form
         fan_mode_home_number_events = int(request.form.get('fan_mode_home_number_events', 5))
+
+        ai_provider = request.form.get('ai_provider', '')
+        ai_model = request.form.get('ai_model', '')
+        google_api_key = request.form.get('google_api_key', '')
+        openai_api_key = request.form.get('openai_api_key', '')
         
         updated_prefs = {
             "league_name": league_name,
@@ -44,7 +54,11 @@ def general_prefs():
             "fan_mode_home_show_news": fan_mode_home_show_news,
             "fan_mode_home_number_news": fan_mode_home_number_news,
             "fan_mode_home_show_recent_events": fan_mode_home_show_recent_events,
-            "fan_mode_home_number_events": fan_mode_home_number_events
+            "fan_mode_home_number_events": fan_mode_home_number_events,
+            "ai_provider": ai_provider,
+            "ai_model": ai_model,
+            "google_api_key": google_api_key,
+            "openai_api_key": openai_api_key
         }
         save_preferences(updated_prefs)
 
@@ -82,7 +96,7 @@ def general_prefs():
         # For now, assuming 'includes' is directly accessible via static.
         league_logo_url = url_for('static', filename=f'{INCLUDES_DIR}/{LEAGUE_LOGO_FILENAME}')
 
-    return render_template('booker/prefs.html', prefs=prefs, league_logo_url=league_logo_url)
+    return render_template('booker/prefs.html', prefs=prefs, league_logo_url=league_logo_url, available_models=AVAILABLE_MODELS)
 
 @prefs_bp.route('/reset-records', methods=['POST'])
 def reset_records():

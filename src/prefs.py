@@ -33,7 +33,11 @@ def load_preferences():
         "fan_mode_home_show_news": "Show Links Only",
         "fan_mode_home_number_news": 5,
         "fan_mode_home_show_recent_events": True,
-        "fan_mode_home_number_events": 5
+        "fan_mode_home_number_events": 5,
+        "ai_provider": "",
+        "ai_model": "",
+        "google_api_key": "",
+        "openai_api_key": ""
     }
 
     if os.path.exists(prefs_path):
@@ -78,7 +82,11 @@ def save_preferences(prefs_dict):
         {"Pref": "Fan_Mode_Home_Show_News", "Value": prefs_dict.get("fan_mode_home_show_news", "Show Links Only")},
         {"Pref": "Fan_Mode_Home_Number_News", "Value": prefs_dict.get("fan_mode_home_number_news", 5)},
         {"Pref": "Fan_Mode_Home_Show_Recent_Events", "Value": prefs_dict.get("fan_mode_home_show_recent_events", True)},
-        {"Pref": "Fan_Mode_Home_Number_Events", "Value": prefs_dict.get("fan_mode_home_number_events", 5)}
+        {"Pref": "Fan_Mode_Home_Number_Events", "Value": prefs_dict.get("fan_mode_home_number_events", 5)},
+        {"Pref": "AI_Provider", "Value": prefs_dict.get("ai_provider", "")},
+        {"Pref": "AI_Model", "Value": prefs_dict.get("ai_model", "")},
+        {"Pref": "Google_API_Key", "Value": prefs_dict.get("google_api_key", "")},
+        {"Pref": "OpenAI_API_Key", "Value": prefs_dict.get("openai_api_key", "")}
     ]
 
     os.makedirs(os.path.dirname(prefs_path), exist_ok=True)

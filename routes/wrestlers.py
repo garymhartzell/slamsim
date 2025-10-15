@@ -7,6 +7,7 @@ wrestlers_bp = Blueprint('wrestlers', __name__, url_prefix='/wrestlers')
 
 STATUS_OPTIONS = ['Active', 'Inactive', 'Injured']
 ALIGNMENT_OPTIONS = ['Hero', 'Babyface', 'Anti-hero', 'Tweener', 'Heel', 'Villain']
+WRESTLING_STYLES_OPTIONS = ["All-Rounder", "Brawler", "Dirty", "High-Flyer", "Luchador", "Powerhouse", "Striker", "Submission Specialist", "Technical"]
 
 def is_wrestler_deletable(wrestler):
     return all(int(wrestler.get(key, 0)) == 0 for key in ['Singles_Wins', 'Singles_Losses', 'Singles_Draws', 'Tag_Wins', 'Tag_Losses', 'Tag_Draws'])
@@ -23,7 +24,8 @@ def _get_form_data(form):
         "Moves": html.escape(form.get('moves', '').strip()).replace('\n', '|').replace('\r', ''),
         "Awards": html.escape(form.get('awards', '').strip()).replace('\n', '|').replace('\r', ''),
         "Real_Name": html.escape(form.get('real_name', '').strip()), "Start_Date": html.escape(form.get('start_date', '').strip()),
-        "Salary": html.escape(form.get('salary', '').strip()).replace('\n', '|').replace('\r', '')
+        "Salary": html.escape(form.get('salary', '').strip()).replace('\n', '|').replace('\r', ''),
+        "Wrestling_Styles": '|'.join(html.escape(s.strip()) for s in form.getlist('wrestling_styles'))
     }
 
 @wrestlers_bp.route('/')
@@ -60,8 +62,8 @@ def create_wrestler():
             flash(f'Wrestler "{wrestler_data["Name"]}" created successfully!', 'success')
             return redirect(url_for('wrestlers.list_wrestlers'))
         else: flash(f'Wrestler with the name "{wrestler_data["Name"]}" already exists.', 'error')
-        return render_template('booker/wrestlers/form.html', wrestler=wrestler_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
-    return render_template('booker/wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=False)
+        return render_template('booker/wrestlers/form.html', wrestler=wrestler_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=False)
+    return render_template('booker/wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=False)
 
 @wrestlers_bp.route('/edit/<string:wrestler_name>', methods=['GET', 'POST'])
 def edit_wrestler(wrestler_name):
@@ -81,13 +83,15 @@ def edit_wrestler(wrestler_name):
             flash(f'Wrestler "{updated_data["Name"]}" updated successfully!', 'success')
             return redirect(url_for('wrestlers.list_wrestlers'))
         else: flash(f'Failed to update wrestler "{wrestler_name}". New name might already exist.', 'error')
-        return render_template('booker/wrestlers/form.html', wrestler=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
+        return render_template('booker/wrestlers/form.html', wrestler=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=True)
 
     wrestler_display = wrestler.copy()
     wrestler_display['Moves'] = wrestler_display.get('Moves', '').replace('|', '\n')
     wrestler_display['Awards'] = wrestler_display.get('Awards', '').replace('|', '\n')
     wrestler_display['Salary'] = wrestler_display.get('Salary', '').replace('|', '\n')
-    return render_template('booker/wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, edit_mode=True)
+    # Convert pipe-delimited string back to a list for checkbox checking
+    wrestler_display['Wrestling_Styles'] = wrestler_display.get('Wrestling_Styles', '').split('|') if wrestler_display.get('Wrestling_Styles') else []
+    return render_template('booker/wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=True)
 
 @wrestlers_bp.route('/view/<string:wrestler_name>')
 def view_wrestler(wrestler_name):

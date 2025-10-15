@@ -112,6 +112,15 @@
                 </select>
             </div>
             <div class="form-group">
+                <label>Wrestling Styles</label>
+                <div class="checkbox-group">
+                    {% for style in wrestling_styles_options %}
+                    <input type="checkbox" id="style_{{ loop.index }}" name="wrestling_styles" value="{{ style }}" {% if style in wrestler.Wrestling_Styles|default([]) %}checked{% endif %}>
+                    <label for="style_{{ loop.index }}">{{ style }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
                 <label for="music">Entrance Music</label>
                 <input type="text" id="music" name="music" value="{{ wrestler.Music | default('') }}">
             </div>
