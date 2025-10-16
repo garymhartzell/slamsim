@@ -184,46 +184,96 @@
                 <div class="ai-form-group">
                     <label for="story_beats">Key Story Beats & Desired Outcome</label>
                     <textarea id="story_beats" name="story_beats" rows="6"></textarea>
-                    <small class="text-muted">Outline specific moments, character developments, or the desired match outcome.</small>
+                    <small class="text-muted">Outline specific moments, character developments, or the desired outcome.</small>
                 </div>
 
                 <hr>
 
-                <h4>Control Panel</h4>
-                <div class="ai-control-panel">
-                    <div class="ai-form-row">
-                        <div class="ai-form-group">
-                            <label for="detail_level">Level of Detail</label>
-                            <select id="detail_level" name="detail_level">
-                                <option value="Brief Summary">Brief Summary</option>
-                                <option value="Detailed Summary">Detailed Summary</option>
-                                <option value="Play-by-Play">Play-by-Play</option>
-                            </select>
+                <!-- Match-specific AI Inputs -->
+                <div id="ai-match-inputs" style="display: none;">
+                    <h4>Match Control Panel</h4>
+                    <div class="ai-control-panel">
+                        <div class="ai-form-row">
+                            <div class="ai-form-group">
+                                <label for="detail_level">Level of Detail</label>
+                                <select id="detail_level" name="detail_level">
+                                    <option value="Brief Summary">Brief Summary</option>
+                                    <option value="Detailed Summary">Detailed Summary</option>
+                                    <option value="Play-by-Play">Play-by-Play</option>
+                                </select>
+                            </div>
+                            <div class="ai-form-group">
+                                <label for="narrative_style">Narrative Style</label>
+                                <select id="narrative_style" name="narrative_style">
+                                    <option value="Standard Commentary">Standard Commentary</option>
+                                    <option value="Dirt Sheet / Tabloid">"Dirt Sheet" / Tabloid</option>
+                                    <option value="Cinematic">Cinematic</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="ai-form-group">
-                            <label for="narrative_style">Narrative Style</label>
-                            <select id="narrative_style" name="narrative_style">
-                                <option value="Standard Commentary">Standard Commentary</option>
-                                <option value="Dirt Sheet / Tabloid">"Dirt Sheet" / Tabloid</option>
-                                <option value="Cinematic">Cinematic</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="ai-form-row">
-                        <div class="ai-form-group ai-checkbox-group">
-                            <input type="checkbox" id="include_entrances" name="include_entrances">
-                            <label for="include_entrances">Include Ring Entrances</label>
-                        </div>
-                        <div class="ai-form-group">
-                            <label for="commentary_level">Commentary Level</label>
-                            <select id="commentary_level" name="commentary_level">
-                                <option value="None">None</option>
-                                <option value="Some">Some</option>
-                                <option value="A lot">A lot</option>
-                            </select>
+                        <div class="ai-form-row">
+                            <div class="ai-form-group ai-checkbox-group">
+                                <input type="checkbox" id="include_entrances" name="include_entrances">
+                                <label for="include_entrances">Include Ring Entrances</label>
+                            </div>
+                            <div class="ai-form-group">
+                                <label for="commentary_level">Commentary Level</label>
+                                <select id="commentary_level" name="commentary_level">
+                                    <option value="None">None</option>
+                                    <option value="Some">Some</option>
+                                    <option value="A lot">A lot</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Promo-specific AI Inputs -->
+                <div id="ai-promo-inputs" style="display: none;">
+                    <h4>Promo Control Panel</h4>
+                    <div class="ai-control-panel">
+                        <div class="ai-form-row">
+                            <div class="ai-form-group">
+                                <label for="promo_speaker">Speaker</label>
+                                <select id="promo_speaker" name="promo_speaker">
+                                    <option value="">-- Select Speaker --</option>
+                                    <!-- Options will be populated by JS -->
+                                </select>
+                            </div>
+                            <div class="ai-form-group">
+                                <label for="promo_style">Promo Style</label>
+                                <select id="promo_style" name="promo_style">
+                                    <option value="Standard">Standard</option>
+                                    <option value="Intense">Intense</option>
+                                    <option value="Comedic">Comedic</option>
+                                    <option value="Serious">Serious</option>
+                                    <option value="Heelish">Heelish</option>
+                                    <option value="Babyface">Babyface</option>
+                                    <option value="Emotional">Emotional</option>
+                                    <option value="Technical">Technical</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ai-form-row">
+                            <div class="ai-form-group">
+                                <label for="promo_detail_level">Level of Detail</label>
+                                <select id="promo_detail_level" name="promo_detail_level">
+                                    <option value="Brief Summary">Brief Summary</option>
+                                    <option value="Detailed Summary">Detailed Summary</option>
+                                </select>
+                            </div>
+                            <div class="ai-form-group">
+                                <label for="promo_narrative_style">Narrative Style</label>
+                                <select id="promo_narrative_style" name="promo_narrative_style">
+                                    <option value="Standard Commentary">Standard Commentary</option>
+                                    <option value="Dirt Sheet / Tabloid">"Dirt Sheet" / Tabloid</option>
+                                    <option value="Cinematic">Cinematic</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="ai-modal-footer">
                     <button type="button" class="btn btn-primary" id="ai-generate-btn">Generate</button>
                     <button type="button" class="btn btn-secondary close-modal-btn">Cancel</button>
@@ -251,6 +301,7 @@
 
 <script>
     // --- FULL JAVASCRIPT BLOCK ---
+    let segmentDataFromServer = {{ segment | tojson | safe }}; // Added for AI modal context
     const allWrestlers = {{ all_wrestlers | tojson | safe }};
     const allTagTeams = {{ all_tagteams | tojson | safe }};
     const allBelts = {{ all_belts | tojson | safe }};
@@ -270,6 +321,12 @@
     let overallMatchResult = matchDataFromServer.match_result || "";
     let winnerMethod = matchDataFromServer.winner_method || "";
 
+    // Collect all potential speakers for promo segments
+    const allPotentialSpeakers = [];
+    allWrestlers.forEach(w => allPotentialSpeakers.push(w.Name));
+    allTagTeams.forEach(t => allPotentialSpeakers.push(t.Name));
+    allPotentialSpeakers.sort((a, b) => a.localeCompare(b));
+
     document.addEventListener('DOMContentLoaded', () => {
         document.body.dataset.currentSideIndex = '0';
         toggleMatchFields();
@@ -277,6 +334,7 @@
         if (document.getElementById('type').value === 'Match') {
            renderSides();
         }
+        populatePromoSpeakers(); // New: Populate speakers on load
     });
 
     function toggleMatchFields() {
@@ -744,12 +802,49 @@
 
     let lastFocusedElement = null; // To restore focus after modal closes
 
+    function populatePromoSpeakers() {
+        const speakerSelect = document.getElementById('promo_speaker');
+        speakerSelect.innerHTML = '<option value="">-- Select Speaker --</option>';
+        allPotentialSpeakers.forEach(speaker => {
+            const option = document.createElement('option');
+            option.value = speaker;
+            option.textContent = speaker;
+            speakerSelect.appendChild(option);
+        });
+        // If editing an existing promo, try to pre-select the speaker
+        const currentSegmentType = document.getElementById('type').value;
+        if (currentSegmentType === 'Promo' && segmentDataFromServer.promo_speaker) {
+            speakerSelect.value = segmentDataFromServer.promo_speaker;
+        }
+    }
+
     function openAiModal() {
         lastFocusedElement = document.activeElement;
         aiAssistantModal.style.display = 'flex';
         aiInputView.style.display = 'block';
         aiOutputView.style.display = 'none';
         aiResponseTextarea.value = ''; // Clear previous response
+
+        const currentSegmentType = document.getElementById('type').value;
+        const aiMatchInputs = document.getElementById('ai-match-inputs');
+        const aiPromoInputs = document.getElementById('ai-promo-inputs');
+
+        // Hide all specific input sections first
+        aiMatchInputs.style.display = 'none';
+        aiPromoInputs.style.display = 'none';
+
+        // Show relevant input section based on segment type
+        if (currentSegmentType === 'Match') {
+            aiMatchInputs.style.display = 'block';
+        } else if (currentSegmentType === 'Promo') {
+            aiPromoInputs.style.display = 'block';
+            populatePromoSpeakers(); // Ensure speakers are up-to-date
+        } else { // For 'In-ring', 'Brawl', 'Interview', 'Video Package'
+            // Show generic detail/narrative style controls if they are relevant for these types
+            aiMatchInputs.style.display = 'block';
+            // We might want to hide specific match-only controls within aiMatchInputs later if they are not generic.
+        }
+
         // Focus on the first interactive element in the modal for accessibility
         const firstInput = aiInputView.querySelector('textarea, select, input, button');
         if (firstInput) firstInput.focus();
@@ -779,40 +874,52 @@
 
         const feudSummary = document.getElementById('feud_summary').value;
         const storyBeats = document.getElementById('story_beats').value;
-        const detailLevel = document.getElementById('detail_level').value;
-        const narrativeStyle = document.getElementById('narrative_style').value;
-        const includeEntrances = document.getElementById('include_entrances').checked;
-        const commentaryLevel = document.getElementById('commentary_level').value;
-
         const segmentType = document.getElementById('type').value;
         const segmentHeader = document.getElementById('header').value;
-        const matchSidesJson = document.getElementById('match_sides_json_input').value;
-        const matchResultsJson = document.getElementById('match_results_json_input').value;
-        const matchChampionship = document.getElementById('match_championship').value;
-        const matchTime = document.getElementById('match_time').value;
-        const matchVisibilityJson = document.getElementById('match_visibility_json_input').value;
-        const participantsDisplay = document.getElementById('participants_display_input').value;
 
-        const requestBody = {
+        let requestBody = {
             feud_summary: feudSummary,
             story_beats: storyBeats,
-            detail_level: detailLevel,
-            narrative_style: narrativeStyle,
-            include_entrances: includeEntrances,
-            commentary_level: commentaryLevel,
             segment_type: segmentType,
             segment_header: segmentHeader,
-            match_sides_json: matchSidesJson,
-            match_results_json: matchResultsJson,
-            match_championship: matchChampionship,
-            match_time: matchTime,
-            match_visibility_json: matchVisibilityJson,
-            participants_display: participantsDisplay,
-            // Add other relevant segment data if needed for AI context
+            position: document.getElementById('position').value, // Add segment position
         };
 
+        // Add segment-type specific inputs to requestBody
+        if (segmentType === 'Match') {
+            requestBody.detail_level = document.getElementById('detail_level').value;
+            requestBody.narrative_style = document.getElementById('narrative_style').value;
+            requestBody.include_entrances = document.getElementById('include_entrances').checked;
+            requestBody.commentary_level = document.getElementById('commentary_level').value;
+
+            // Match-specific data from the main form
+            requestBody.match_sides_json = document.getElementById('match_sides_json_input').value;
+            requestBody.match_results_json = document.getElementById('match_results_json_input').value;
+            requestBody.match_championship = document.getElementById('match_championship').value;
+            requestBody.match_time = document.getElementById('match_time').value;
+            requestBody.match_visibility_json = document.getElementById('match_visibility_json_input').value;
+            requestBody.participants_display = document.getElementById('participants_display_input').value;
+            requestBody.overall_match_result = overallMatchResult;
+            requestBody.winner_method = winnerMethod;
+        } else if (segmentType === 'Promo') {
+            requestBody.promo_speaker = document.getElementById('promo_speaker').value;
+            requestBody.promo_style = document.getElementById('promo_style').value;
+            requestBody.detail_level = document.getElementById('promo_detail_level').value; // Use promo-specific detail level
+            requestBody.narrative_style = document.getElementById('promo_narrative_style').value; // Use promo-specific narrative style
+        } else { // For 'In-ring', 'Brawl', 'Interview', 'Video Package'
+            // Use the generic detail/narrative style controls from the match section as a fallback
+            requestBody.detail_level = document.getElementById('detail_level').value;
+            requestBody.narrative_style = document.getElementById('narrative_style').value;
+            // No include_entrances or commentary_level for these types unless explicitly added
+        }
+
+        // Debugging: Log the request body before sending
+        console.log('AI Generate Request Body:', requestBody);
+
         try {
-            const response = await fetch("{{ url_for('segments.ai_generate', event_slug=event_slug, position=segment.get('position', 0)) }}", {
+            const url = "{{ url_for('segments.ai_generate', event_slug=event_slug, position=segment.get('position', 0)) }}";
+            console.log('AI Generate URL:', url);
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -825,7 +932,7 @@
             }
 
             const data = await response.json();
-            aiResponseTextarea.value = data.generated_text || "No text generated.";
+            aiResponseTextarea.value = data.summary || "No summary generated."; // Changed from generated_text to summary
         } catch (error) {
             console.error('Error generating AI content:', error);
             aiResponseTextarea.value = `Error generating content: ${error.message}. Please try again.`;
