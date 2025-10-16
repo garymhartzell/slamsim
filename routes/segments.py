@@ -7,6 +7,8 @@ from src.segments import (
 )
 from src.events import get_event_by_name, get_event_by_slug
 from src.belts import load_belts
+import os # Added for AI API keys
+import litellm # Added for AI API calls
 from src.wrestlers import load_wrestlers # Added for AI context
 from src.tagteams import load_tagteams # Added for AI context
 from src.prefs import load_preferences # Added for AI context
@@ -262,11 +264,36 @@ def ai_generate(event_slug, position):
     user_input = request.get_json()
     print(f"AI Generate: user_input={user_input}")
 
+    # Sluggify event_slug for consistent lookup
+    sluggified_event_name = _slugify(event_slug)
+    print(f"AI Generate: Sluggified event name: {sluggified_event_name}")
+
+    # Load user's AI preferences
+    prefs = load_preferences()
+    ai_provider = prefs.get('ai_provider')
+    ai_model = prefs.get('ai_model')
+    google_api_key = prefs.get('google_api_key')
+    openai_api_key = prefs.get('openai_api_key')
+
+    # Set API key based on provider
+    if ai_provider == 'Google':
+        os.environ["GEMINI_API_KEY"] = google_api_key
+    elif ai_provider == 'OpenAI':
+        os.environ["OPENAI_API_KEY"] = openai_api_key
+    
+    if not ai_model:
+        return jsonify({'error': 'AI model not configured in preferences.'}), 400
+    if ai_provider == 'Google' and not google_api_key:
+        return jsonify({'error': 'Google API key not configured in preferences.'}), 400
+    if ai_provider == 'OpenAI' and not openai_api_key:
+        return jsonify({'error': 'OpenAI API key not configured in preferences.'}), 400
+
+
     segment = None
     if position != 0:  # Existing segment
-        segment = get_segment_by_position(event_slug, position)
+        segment = get_segment_by_position(sluggified_event_name, position) # Use sluggified name
         if not segment:
-            print(f"AI Generate: Segment not found for event_slug={event_slug}, position={position}")
+            print(f"AI Generate: Segment not found for event_slug={sluggified_event_name}, position={position}")
             return jsonify({'error': 'Segment not found'}), 404
     else:  # New segment (position == 0)
         # Construct a temporary segment dictionary from user input for AI context
@@ -294,15 +321,15 @@ def ai_generate(event_slug, position):
             segment['promo_speaker'] = user_input.get('promo_speaker', '')
 
 
-    event = get_event_by_slug(event_slug)
+    event = get_event_by_slug(sluggified_event_name) # Use sluggified name
     if not event:
         # If get_event_by_slug fails, it might be because event_slug is the original name, not the slug.
         # Try to get by name.
-        event = get_event_by_name(event_slug)
+        event = get_event_by_name(sluggified_event_name) # Use sluggified name
         if event:
-            print(f"AI Generate: Event found by name for event_slug={event_slug}")
+            print(f"AI Generate: Event found by name for event_slug={sluggified_event_name}")
         else:
-            print(f"AI Generate: Event not found for event_slug={event_slug} (neither by slug nor by name)")
+            print(f"AI Generate: Event not found for event_slug={sluggified_event_name} (neither by slug nor by name)")
             return jsonify({'error': 'Event not found'}), 404
     
     print(f"AI Generate: Loaded Event: {event.get('Event_Name')}, Date: {event.get('Event_Date')}")
@@ -476,5 +503,16 @@ def ai_generate(event_slug, position):
     print(final_prompt)
     print("---------------------------\n")
 
+    # Prepare messages for Litellm API
+    messages = [{"role": "user", "content": final_prompt}]
+    ai_summary = "Error: Could not generate summary."
+
+    try:
+        response = litellm.completion(model=ai_model, messages=messages)
+        ai_summary = response.choices[0].message.content
+    except Exception as e:
+        print(f"Error calling Litellm API: {e}")
+        ai_summary = f"Error generating content: {e}. Please check your API key and model settings in preferences."
+
     # Return the full prompt string for debugging
-    return jsonify({'summary': final_prompt})
+    return jsonify({'summary': ai_summary})
