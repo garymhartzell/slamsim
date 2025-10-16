@@ -159,12 +159,95 @@
     </fieldset>
 
     <div class="action-buttons form-actions">
+        <button type="button" class="btn btn-info" id="ai-assistant-btn">Generate with AI Assistant</button>
         <button type="submit" class="btn btn-primary">
             {% if segment.get('position') %}Update Segment{% else %}Create Segment{% endif %}
         </button>
         <a href="{{ url_for('events.edit_event', event_name=event_slug) }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+<!-- AI Assistant Modal -->
+<div id="ai-assistant-modal" class="ai-assistant-modal-overlay" style="display: none;">
+    <div class="ai-assistant-modal-content">
+        <div class="ai-modal-header">
+            <h3>AI Assistant</h3>
+            <button type="button" class="close-modal-btn" aria-label="Close AI Assistant">&times;</button>
+        </div>
+        <div class="ai-modal-body">
+            <div id="ai-input-view">
+                <div class="ai-form-group">
+                    <label for="feud_summary">Feud/Storyline Summary</label>
+                    <textarea id="feud_summary" name="feud_summary" rows="4"></textarea>
+                    <small class="text-muted">Briefly describe the ongoing feud or storyline.</small>
+                </div>
+                <div class="ai-form-group">
+                    <label for="story_beats">Key Story Beats & Desired Outcome</label>
+                    <textarea id="story_beats" name="story_beats" rows="6"></textarea>
+                    <small class="text-muted">Outline specific moments, character developments, or the desired match outcome.</small>
+                </div>
+
+                <hr>
+
+                <h4>Control Panel</h4>
+                <div class="ai-control-panel">
+                    <div class="ai-form-row">
+                        <div class="ai-form-group">
+                            <label for="detail_level">Level of Detail</label>
+                            <select id="detail_level" name="detail_level">
+                                <option value="Brief Summary">Brief Summary</option>
+                                <option value="Detailed Summary">Detailed Summary</option>
+                                <option value="Play-by-Play">Play-by-Play</option>
+                            </select>
+                        </div>
+                        <div class="ai-form-group">
+                            <label for="narrative_style">Narrative Style</label>
+                            <select id="narrative_style" name="narrative_style">
+                                <option value="Standard Commentary">Standard Commentary</option>
+                                <option value="Dirt Sheet / Tabloid">"Dirt Sheet" / Tabloid</option>
+                                <option value="Cinematic">Cinematic</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ai-form-row">
+                        <div class="ai-form-group ai-checkbox-group">
+                            <input type="checkbox" id="include_entrances" name="include_entrances">
+                            <label for="include_entrances">Include Ring Entrances</label>
+                        </div>
+                        <div class="ai-form-group">
+                            <label for="commentary_level">Commentary Level</label>
+                            <select id="commentary_level" name="commentary_level">
+                                <option value="None">None</option>
+                                <option value="Some">Some</option>
+                                <option value="A lot">A lot</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="ai-modal-footer">
+                    <button type="button" class="btn btn-primary" id="ai-generate-btn">Generate</button>
+                    <button type="button" class="btn btn-secondary close-modal-btn">Cancel</button>
+                </div>
+            </div>
+
+            <div id="ai-output-view" style="display: none;">
+                <div class="ai-form-group">
+                    <label for="ai-response-textarea">AI Generated Text</label>
+                    <textarea id="ai-response-textarea" rows="20"></textarea>
+                </div>
+                <div class="ai-loading-indicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Generating...</p>
+                </div>
+                <div class="ai-modal-footer">
+                    <button type="button" class="btn btn-success" id="ai-accept-btn">Accept & Use Text</button>
+                    <button type="button" class="btn btn-primary" id="ai-regenerate-btn">Regenerate</button>
+                    <button type="button" class="btn btn-secondary close-modal-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     // --- FULL JAVASCRIPT BLOCK ---
@@ -645,5 +728,118 @@
         toggleWinnerMethodVisibility(); // This now calls generateAndSetMatchResultDisplay
         updateHiddenInputs();
     }
+
+    // AI Assistant Modal Logic
+    const aiAssistantModal = document.getElementById('ai-assistant-modal');
+    const aiAssistantBtn = document.getElementById('ai-assistant-btn');
+    const closeAiModalBtns = document.querySelectorAll('.close-modal-btn');
+    const aiInputView = document.getElementById('ai-input-view');
+    const aiOutputView = document.getElementById('ai-output-view');
+    const aiGenerateBtn = document.getElementById('ai-generate-btn');
+    const aiAcceptBtn = document.getElementById('ai-accept-btn');
+    const aiRegenerateBtn = document.getElementById('ai-regenerate-btn');
+    const aiResponseTextarea = document.getElementById('ai-response-textarea');
+    const summaryTextarea = document.getElementById('summary_text');
+    const aiLoadingIndicator = aiOutputView.querySelector('.ai-loading-indicator');
+
+    let lastFocusedElement = null; // To restore focus after modal closes
+
+    function openAiModal() {
+        lastFocusedElement = document.activeElement;
+        aiAssistantModal.style.display = 'flex';
+        aiInputView.style.display = 'block';
+        aiOutputView.style.display = 'none';
+        aiResponseTextarea.value = ''; // Clear previous response
+        // Focus on the first interactive element in the modal for accessibility
+        const firstInput = aiInputView.querySelector('textarea, select, input, button');
+        if (firstInput) firstInput.focus();
+    }
+
+    function closeAiModal() {
+        aiAssistantModal.style.display = 'none';
+        if (lastFocusedElement) {
+            lastFocusedElement.focus(); // Restore focus
+        }
+    }
+
+    aiAssistantBtn.addEventListener('click', openAiModal);
+    closeAiModalBtns.forEach(btn => btn.addEventListener('click', closeAiModal));
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && aiAssistantModal.style.display === 'flex') {
+            closeAiModal();
+        }
+    });
+
+    async function generateAiContent() {
+        aiInputView.style.display = 'none';
+        aiOutputView.style.display = 'block';
+        aiLoadingIndicator.style.display = 'flex';
+        aiResponseTextarea.value = ''; // Clear previous content
+
+        const feudSummary = document.getElementById('feud_summary').value;
+        const storyBeats = document.getElementById('story_beats').value;
+        const detailLevel = document.getElementById('detail_level').value;
+        const narrativeStyle = document.getElementById('narrative_style').value;
+        const includeEntrances = document.getElementById('include_entrances').checked;
+        const commentaryLevel = document.getElementById('commentary_level').value;
+
+        const segmentType = document.getElementById('type').value;
+        const segmentHeader = document.getElementById('header').value;
+        const matchSidesJson = document.getElementById('match_sides_json_input').value;
+        const matchResultsJson = document.getElementById('match_results_json_input').value;
+        const matchChampionship = document.getElementById('match_championship').value;
+        const matchTime = document.getElementById('match_time').value;
+        const matchVisibilityJson = document.getElementById('match_visibility_json_input').value;
+        const participantsDisplay = document.getElementById('participants_display_input').value;
+
+        const requestBody = {
+            feud_summary: feudSummary,
+            story_beats: storyBeats,
+            detail_level: detailLevel,
+            narrative_style: narrativeStyle,
+            include_entrances: includeEntrances,
+            commentary_level: commentaryLevel,
+            segment_type: segmentType,
+            segment_header: segmentHeader,
+            match_sides_json: matchSidesJson,
+            match_results_json: matchResultsJson,
+            match_championship: matchChampionship,
+            match_time: matchTime,
+            match_visibility_json: matchVisibilityJson,
+            participants_display: participantsDisplay,
+            // Add other relevant segment data if needed for AI context
+        };
+
+        try {
+            const response = await fetch("{{ url_for('segments.ai_generate', event_slug=event_slug, position=segment.get('position', 0)) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            aiResponseTextarea.value = data.generated_text || "No text generated.";
+        } catch (error) {
+            console.error('Error generating AI content:', error);
+            aiResponseTextarea.value = `Error generating content: ${error.message}. Please try again.`;
+        } finally {
+            aiLoadingIndicator.style.display = 'none';
+        }
+    }
+
+    aiGenerateBtn.addEventListener('click', generateAiContent);
+    aiRegenerateBtn.addEventListener('click', generateAiContent);
+
+    aiAcceptBtn.addEventListener('click', () => {
+        summaryTextarea.value = aiResponseTextarea.value;
+        closeAiModal();
+    });
 </script>
 {% endblock %}

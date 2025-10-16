@@ -283,3 +283,160 @@ nav .dropdown-content a:focus { /* Add focus for keyboard nav */
     color: white;
     outline: none; /* Remove default focus outline as we're providing our own */
 }
+
+/* AI Assistant Modal Styles */
+.ai-assistant-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Darker overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* Ensure it's on top of everything */
+}
+
+.ai-assistant-modal-content {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 90%; /* Take up more width */
+    max-width: 1000px; /* Max width for larger screens */
+    height: 90%; /* Take up more height */
+    max-height: 90vh; /* Max height for larger screens */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* For internal scrolling */
+}
+
+.ai-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: #333; /* Slightly darker header */
+}
+
+.ai-modal-header h3 {
+    margin: 0;
+    color: var(--primary-text-color);
+}
+
+.ai-modal-header .close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.ai-modal-header .close-modal-btn:hover {
+    color: var(--primary-text-color);
+}
+
+.ai-modal-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    overflow-y: auto; /* Enable scrolling for content */
+}
+
+.ai-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background-color: #333; /* Slightly darker footer */
+}
+
+.ai-form-group {
+    margin-bottom: 1rem;
+}
+
+.ai-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--primary-text-color);
+}
+
+.ai-form-group textarea,
+.ai-form-group select,
+.ai-form-group input[type="text"],
+.ai-form-group input[type="checkbox"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--primary-text-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.ai-form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.ai-form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.ai-form-row .ai-form-group {
+    flex: 1;
+    margin-bottom: 0; /* Remove bottom margin if part of a row */
+}
+
+.ai-checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: 1.5rem; /* Adjust as needed */
+}
+
+.ai-checkbox-group input[type="checkbox"] {
+    width: auto; /* Allow checkbox to be its natural size */
+    margin-right: 0.5rem;
+}
+
+.ai-checkbox-group label {
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+.ai-control-panel h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--primary-text-color);
+}
+
+/* Loading Indicator */
+.ai-loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--secondary-text-color);
+}
+
+.ai-loading-indicator .spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid var(--accent-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

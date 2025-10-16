@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from src.segments import (
     load_segments, get_segment_by_position, add_segment, update_segment, delete_segment,
     load_summary_content, _slugify, delete_all_segments_for_event,
@@ -247,3 +247,18 @@ def delete_segment_route(event_slug, position):
     else:
         flash(f"Failed to delete segment at position {position}.", 'danger')
     return redirect(url_for('events.edit_event', event_name=event_slug))
+
+
+@segments_bp.route('/ai_generate/<int:position>', methods=['POST'])
+def ai_generate(event_slug, position):
+    """Placeholder for AI content generation."""
+    # This is a placeholder. Actual AI logic will be implemented later.
+    # For now, it just returns a dummy response.
+    data = request.get_json()
+    print(f"AI Generate request for event: {event_slug}, position: {position}")
+    print(f"Received data: {data}")
+    
+    # Simulate AI processing
+    generated_text = "This is a placeholder AI-generated summary based on your input. The full AI integration will be implemented in a future update."
+    
+    return jsonify({'generated_text': generated_text})
