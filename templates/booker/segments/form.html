@@ -348,6 +348,16 @@
         } else {
             matchFieldsDiv.style.display = 'none';
         }
+
+        // Control visibility of the AI Assistant button
+        const aiAssistantBtn = document.getElementById('ai-assistant-btn');
+        if (aiAssistantBtn) {
+            if (segmentType === 'Match') {
+                aiAssistantBtn.style.display = 'inline-block'; // Or 'block' depending on desired layout
+            } else {
+                aiAssistantBtn.style.display = 'none';
+            }
+        }
     }
 
     function updateChampionDisplay() {
