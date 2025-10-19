@@ -172,26 +172,35 @@ def edit_segment(event_slug, position):
     all_belts = load_belts()
     summary_content = load_summary_content(segment.get('summary_file', ''))
     
-    match_data_for_template = {}
+    # Initialize with full default structure to prevent Undefined errors in template
+    match_data_for_template = {
+        'sides': [], 'participants_display': '', 'match_time': '',
+        'match_championship': '',
+        'match_class': '', 'winning_side_index': -1, 'individual_results': {},
+        'team_results': {}, 'sync_teams_to_individuals': True, 'warnings': [],
+        'match_result': '', 'winner_method': '', 'match_result_display': '',
+        'match_visibility': {
+            'hide_from_card': False,
+            'hide_summary': False,
+            'hide_result': False,
+        }
+    }
+
     if segment.get('type') == 'Match' and segment.get('match_id'):
         full_match = get_match_by_id(sluggified_event_name, segment['match_id'])
         if full_match:
-            # Ensure fields exist for template, including new match_visibility
-            full_match.setdefault('match_championship', '')
-            full_match.setdefault('match_result', segment.get('match_result', ''))
-            full_match.setdefault('winner_method', segment.get('winner_method', ''))
-            full_match.setdefault('match_result_display', segment.get('match_result_display', ''))
-            full_match.setdefault('match_visibility', {
+            # Update the default structure with actual match data
+            match_data_for_template.update(full_match)
+            # Ensure all sub-keys are present, especially for match_visibility,
+            # in case the loaded match data is incomplete.
+            match_data_for_template.setdefault('match_visibility', {
                 'hide_from_card': False,
                 'hide_summary': False,
                 'hide_result': False,
             })
-            # Ensure all sub-keys are present if match_visibility exists but is incomplete
-            full_match['match_visibility'].setdefault('hide_from_card', False)
-            full_match['match_visibility'].setdefault('hide_summary', False)
-            full_match['match_visibility'].setdefault('hide_result', False)
-
-            match_data_for_template = full_match
+            match_data_for_template['match_visibility'].setdefault('hide_from_card', False)
+            match_data_for_template['match_visibility'].setdefault('hide_summary', False)
+            match_data_for_template['match_visibility'].setdefault('hide_result', False)
 
     if request.method == 'POST':
         updated_segment_data, updated_match_details, new_summary_content = _get_segment_form_data(request.form)
@@ -457,6 +466,14 @@ def ai_generate(event_slug, position):
                 if d.get('Moves'): prompt_parts.append(f"  Moves: {', '.join(d['Moves'])}")
 
     prompt_parts.append("\n--- Creative Direction ---")
+    # New instructions for in-ring action
+    prompt_parts.append("IN-RING ACTION INSTRUCTIONS:")
+    prompt_parts.append("Your description of the match should be vivid and reflect the participants' unique styles.")
+    prompt_parts.append("- You MUST incorporate some of their listed Signature Moves into the narrative.")
+    prompt_parts.append("- You SHOULD describe other common wrestling moves that are appropriate for their selected Wrestling Styles (e.g., describe suplexes for a Powerhouse, quick arm-drags for a Luchador, or brawling outside the ring for a Brawler).")
+    prompt_parts.append("- Use the provided physical stats (height, weight) to inform the story of the match where appropriate (e.g., a smaller wrestler using speed against a larger one).")
+    prompt_parts.append("---")
+
     if feud_summary:
         prompt_parts.append(f"Feud/Storyline Summary: {feud_summary}")
     if story_beats:
