@@ -4,6 +4,34 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
+## v1.0 Beta 2 - The AI Match Writer (2025-10-22)
+
+This beta release introduces the first iteration of the AI Assistant, focused specifically on generating match summaries. It also includes configuration options for managing AI providers and a new quality-of-life feature for roster management.
+
+### New Feature: AI Match Writing Assistant
+
+- **Integration:** Added a "Generate with AI Assistant" button to the Segment Editor, visible only for segments of type "Match".
+- **Context-Aware Prompts:** The backend now automatically gathers a rich "context packet" for each match, including event details, participant dossiers (alignment, styles, belts, affiliations, moves, stats), and sends this along with user-provided creative direction to the selected AI model.
+- **User Control:** The AI Assistant modal provides options to guide the generation:
+    - **Creative Direction:** Fields for "Feud/Storyline Summary" and "Key Story Beats & Desired Outcome".
+    - **Output Style:** Dropdowns for "Level of Detail" (Brief, Detailed, Play-by-Play), "Narrative Style" (Standard, Dirt Sheet, Cinematic), and "Commentary Level" (None, Some, A lot).
+    - **Entrances:** Checkbox to include ring entrance descriptions.
+- **Two-Stage Workflow:** The modal presents the AI-generated text in an editable textarea, allowing the user to review, modify, regenerate, or accept the text before applying it to the main segment summary.
+
+### New Feature: AI Configuration
+
+- Added a new "AI Assistant Configuration" section to the Preferences page.
+- Allows users to select an AI provider (Google or OpenAI).
+- Allows users to specify the model name to use (e.g., `gemini-2.5-flash`, `gpt-4.0`).
+- Includes fields to securely input API keys for Google and OpenAI.
+- The UI dynamically updates the available models and the correct API key field based on the selected provider.
+
+### New Feature: Roster Visibility Control
+
+- Added a "Hide from Fan Mode Roster" checkbox to the Wrestler and Tag Team editor forms in Booker Mode.
+- Wrestlers and Tag Teams marked with this flag will still appear in Booker Mode lists and dropdowns but will be excluded from the public-facing Fan Mode roster page.
+
+
 ## v1.0 Beta 1 (2025-10-14)
 
 This first official beta has two new features and several bug fixes. Next, I'll start working on the AI match writer.
