@@ -25,7 +25,8 @@ def _get_form_data(form):
         "Awards": html.escape(form.get('awards', '').strip()).replace('\n', '|').replace('\r', ''),
         "Real_Name": html.escape(form.get('real_name', '').strip()), "Start_Date": html.escape(form.get('start_date', '').strip()),
         "Salary": html.escape(form.get('salary', '').strip()).replace('\n', '|').replace('\r', ''),
-        "Wrestling_Styles": '|'.join(html.escape(s.strip()) for s in form.getlist('wrestling_styles'))
+        "Wrestling_Styles": '|'.join(html.escape(s.strip()) for s in form.getlist('wrestling_styles')),
+        "Hide_From_Fan_Roster": 'hide_from_fan_roster' in form
     }
 
 @wrestlers_bp.route('/')

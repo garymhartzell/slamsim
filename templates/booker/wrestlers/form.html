@@ -41,6 +41,11 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="hide_from_fan_roster" name="hide_from_fan_roster" {% if wrestler.Hide_From_Fan_Roster %}checked{% endif %}>
+                <label for="hide_from_fan_roster">Hide from Fan Mode Roster</label>
+                <small>Check this box to exclude this wrestler from the public roster page (useful for tag-team members with no singles career).</small>
+            </div>
         </fieldset>
 
         <fieldset class="form-section">

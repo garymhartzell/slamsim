@@ -48,7 +48,8 @@ def _get_form_data(form):
         "Faction": escape(form.get('Faction', '')).strip(),
         "Manager": escape(form.get('Manager', '')).strip(),
         "Moves": escape(form.get('Moves', '')).strip(),
-        "Awards": escape(form.get('Awards', '')).strip()
+        "Awards": escape(form.get('Awards', '')).strip(),
+        "Hide_From_Fan_Roster": 'hide_from_fan_roster' in form
     }
 
 @tagteams_bp.route('/')

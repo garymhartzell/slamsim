@@ -219,12 +219,13 @@ def view_event(event_slug):
 def roster():
     """Renders the fan roster page with sorted wrestlers and tag teams."""
     prefs = load_preferences()
-    all_wrestlers = load_wrestlers()
-    all_tagteams = load_tagteams()
+    all_wrestlers_raw = load_wrestlers()
+    all_tagteams_raw = load_tagteams()
     all_divisions = load_divisions()
 
-    active_wrestlers = [w for w in all_wrestlers if w.get('Status') == 'Active']
-    active_tagteams = [tt for tt in all_tagteams if tt.get('Status') == 'Active']
+    # Filter out wrestlers and tag teams hidden from the fan roster
+    active_wrestlers = [w for w in all_wrestlers_raw if w.get('Status') == 'Active' and not w.get('Hide_From_Fan_Roster', False)]
+    active_tagteams = [tt for tt in all_tagteams_raw if tt.get('Status') == 'Active' and not tt.get('Hide_From_Fan_Roster', False)]
 
     # Prepare a dictionary to hold roster data, grouped by division
     # Sort divisions by Display_Position for consistent display
