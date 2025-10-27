@@ -164,10 +164,16 @@ def finalize_event(event_name):
                             update_wrestler_record(member_name, 'tag', team_result)
             all_wrestlers_in_match = _get_all_wrestlers_involved(match.get('sides', []))
             for wrestler_name in all_wrestlers_in_match:
-                 if match.get('match_class') == 'singles':
-                    result = match['individual_results'].get(wrestler_name)
-                    if result:
-                        update_wrestler_record(wrestler_name, 'singles', result)
+                result = match['individual_results'].get(wrestler_name)
+                if result:
+                    record_match_class = None
+                    if match.get('match_class') == 'singles':
+                        record_match_class = 'singles'
+                    elif match.get('match_class') == 'tag':
+                        record_match_class = 'tag'
+                    
+                    if record_match_class:
+                        update_wrestler_record(wrestler_name, record_match_class, result)
             belt_name = match.get('match_championship')
             if belt_name:
                 belt = get_belt_by_name(belt_name)
