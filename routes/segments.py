@@ -472,6 +472,7 @@ def ai_generate(event_slug, position):
     prompt_parts.append("- You MUST incorporate some of their listed Signature Moves into the narrative.")
     prompt_parts.append("- You SHOULD describe other common wrestling moves that are appropriate for their selected Wrestling Styles (e.g., describe suplexes for a Powerhouse, quick arm-drags for a Luchador, or brawling outside the ring for a Brawler).")
     prompt_parts.append("- Use the provided physical stats (height, weight) to inform the story of the match where appropriate (e.g., a smaller wrestler using speed against a larger one).")
+    prompt_parts.append("- **CRITICAL RULE:** You must *only* use the specific, branded move names provided in a wrestler's 'Signature Moves' list. For all other moves, you MUST use the generic, common name for that maneuver (e.g., \"piledriver,\" \"suplex,\" \"DDT\"). You are NOT allowed to invent new branded move names (like \"The Matthews Driver\") for any wrestler.")
     prompt_parts.append("---")
 
     if feud_summary:
