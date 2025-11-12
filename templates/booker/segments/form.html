@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form id="segment-form" class="wide-form" method="POST" action="{{ url_for('segments.create_segment', event_slug=event_slug) if not segment.get('position') else url_for('segments.edit_segment', event_slug=event_slug, position=original_position) }}">
+<form id="segment-form" class="wide-form" method="POST" action="{{ url_for('segments.create_segment', event_slug=event_slug) if not edit_mode else url_for('segments.edit_segment', event_slug=event_slug, position=original_position) }}">
     <fieldset class="form-section">
         <legend</h3>Segment Details</h3></legend>
         <div class="form-row">

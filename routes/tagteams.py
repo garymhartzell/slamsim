@@ -1,3 +1,4 @@
+import html
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.tagteams import (
     load_tagteams, get_tagteam_by_name, add_tagteam, update_tagteam, 
@@ -47,8 +48,8 @@ def _get_form_data(form):
         "Members": members_string,
         "Faction": escape(form.get('Faction', '')).strip(),
         "Manager": escape(form.get('Manager', '')).strip(),
-        "Moves": escape(form.get('Moves', '')).strip(),
-        "Awards": escape(form.get('Awards', '')).strip(),
+        "Moves": html.escape(form.get('moves', '').strip()).replace('\n', '|').replace('\r', ''),
+        "Awards": html.escape(form.get('awards', '').strip()).replace('\n', '|').replace('\r', ''),
         "Hide_From_Fan_Roster": 'hide_from_fan_roster' in form
     }
 
@@ -110,9 +111,39 @@ def edit_tagteam(tagteam_name):
     old_members = set(tagteam.get('Members', '').split('|')) if tagteam else set()
 
     if request.method == 'POST':
-        updated_data = _get_form_data(request.form)
-        updated_data['Belt'] = tagteam.get('Belt', '') # Preserve existing belt value
+        # Start with a copy of the existing tagteam data to preserve non-editable fields
+        updated_data = tagteam.copy() 
+
+        # Update fields that are directly editable via the form
+        updated_data["Name"] = escape(request.form.get('Name', '')).strip()
+        updated_data["Division"] = escape(request.form.get('Division', '')).strip()
+        updated_data["Location"] = escape(request.form.get('Location', '')).strip()
+        updated_data["Weight"] = escape(request.form.get('Weight', '')).strip()
+        updated_data["Alignment"] = request.form.get('Alignment', '')
+        updated_data["Music"] = escape(request.form.get('Music', '')).strip()
+        updated_data["Faction"] = escape(request.form.get('Faction', '')).strip()
+        updated_data["Manager"] = escape(request.form.get('Manager', '')).strip()
         
+        # Handle Members
+        member_names = [request.form.get('Member1'), request.form.get('Member2'), request.form.get('Member3')]
+        updated_data["Members"] = '|'.join(filter(None, member_names))
+
+        # Handle Status with validation
+        new_status = request.form.get('Status')
+        member_status_active = get_active_members_status(filter(None, member_names))
+        if new_status == 'Active' and not member_status_active:
+            flash("Cannot set tag-team status to 'Active' because one or more members are inactive.", 'warning')
+            updated_data["Status"] = 'Inactive' # Force to Inactive if members are inactive
+        else:
+            updated_data["Status"] = new_status
+
+        # Handle Moves and Awards (these should be updated if present, or cleared if empty in form)
+        updated_data["Moves"] = html.escape(request.form.get('moves', '').strip()).replace('\n', '|').replace('\r', '')
+        updated_data["Awards"] = html.escape(request.form.get('awards', '').strip()).replace('\n', '|').replace('\r', '')
+
+        # Handle checkbox
+        updated_data["Hide_From_Fan_Roster"] = 'hide_from_fan_roster' in request.form
+
         if not updated_data['Name']:
             flash('Tag-team Name is required.', 'danger')
         elif not request.form.get('Member1') or not request.form.get('Member2'):
@@ -138,6 +169,13 @@ def edit_tagteam(tagteam_name):
 
             flash(f"Tag-team '{updated_data['Name']}' updated successfully!", 'success')
             return redirect(url_for('tagteams.list_tagteams'))
+        
+        # If validation fails, re-render the form with the updated_data (which includes form submissions)
+        # and also ensure member fields are split back out for the form.
+        members_list_for_form = updated_data.get('Members', '').split('|')
+        updated_data['Member1'] = members_list_for_form[0] if len(members_list_for_form) > 0 else ''
+        updated_data['Member2'] = members_list_for_form[1] if len(members_list_for_form) > 1 else ''
+        updated_data['Member3'] = members_list_for_form[2] if len(members_list_for_form) > 2 else ''
         return render_template('booker/tagteams/form.html', tagteam=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=True)
     
     # Pre-fill form for GET request

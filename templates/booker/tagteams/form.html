@@ -121,12 +121,24 @@
                 <input type="text" id="Music" name="Music" value="{{ tagteam.Music | default('') }}">
             </div>
             <div class="form-group">
-                <label for="Moves">Moves</label>
-                <input type="text" id="Moves" name="Moves" value="{{ tagteam.Moves | default('') }}">
+                <label for="Moves">Moves (One per line)</label>
+                <textarea rows="4" id="Moves" name="Moves">{{ tagteam.Moves | default('') }}</textarea>
+            </div>
+        <fieldset class="form-section">
+            <legend>Affiliations</legend>
+            <div class="form-group">
+                <label for="faction">Faction</label>
+                <input type="text" id="faction" name="faction" value="{{ tagteam.Faction | default('') }}">
             </div>
             <div class="form-group">
+                <label for="manager">Manager</label>
+                <input type="text" id="manager" name="manager" value="{{ tagteam.Manager | default('') }}">
+            </div>
+        </fieldset>
+
+            <div class="form-group">
                 <label for="Awards">Awards and Accomplishments</label>
-                <input type="text" id="Awards" name="Awards" value="{{ tagteam.Awards | default('') }}">
+                <textarea id="Awards" rows="4" name="Awards">{{ tagteam.Awards | default('') }}</textarea>
             </div>
         </fieldset>
     </div>

@@ -72,15 +72,32 @@ def _get_segment_form_data(form):
     
     return segment_data, match_details, summary_text
 
-def _validate_segment_base_data(segment_data):
-    """Performs basic validation on common segment data fields."""
+def _validate_segment_form_data(event_slug, segment_data, original_position=None):
+    """Performs basic validation on common segment data fields, including position uniqueness."""
     errors = []
-    if segment_data['position'] is None:
-        errors.append("Position is required and must be an integer.")
+    position = segment_data['position']
+
+    if position is None:
+        errors.append("Position is required and must be a positive integer.")
+    elif not isinstance(position, int) or position <= 0:
+        errors.append("Position must be a positive integer.")
+    
     if not segment_data['type']:
         errors.append("Type is required.")
     if segment_data['type'] not in SEGMENT_TYPE_OPTIONS:
         errors.append(f"Invalid segment type: {segment_data['type']}.")
+
+    # Check for duplicate position only if position is valid
+    if position is not None and isinstance(position, int) and position > 0:
+        existing_segments = load_segments(event_slug)
+        for seg in existing_segments:
+            # If we are in edit mode, allow the segment to keep its own position
+            if original_position is not None and seg['position'] == original_position:
+                continue
+            if seg['position'] == position:
+                errors.append(f"Position {position} is already taken by another segment. Please choose a different position.")
+                break
+    
     return errors
 
 @segments_bp.route('/create', methods=['GET', 'POST'])
@@ -102,7 +119,7 @@ def create_segment(event_slug):
         'match_class': '', 'winning_side_index': -1, 'individual_results': {},
         'team_results': {}, 'sync_teams_to_individuals': True, 'warnings': [],
         'match_result': '', 'winner_method': '', 'match_result_display': '',
-        'match_visibility': { # New field
+        'match_visibility': {
             'hide_from_card': False,
             'hide_summary': False,
             'hide_result': False,
@@ -111,7 +128,7 @@ def create_segment(event_slug):
 
     if request.method == 'POST':
         segment_data, match_details, summary_content = _get_segment_form_data(request.form)
-        errors = _validate_segment_base_data(segment_data)
+        errors = _validate_segment_form_data(sluggified_event_name, segment_data, original_position=None)
         
         if segment_data['type'] == 'Match':
             if match_details:
@@ -129,7 +146,8 @@ def create_segment(event_slug):
                                    segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                                    all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
                                    match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
-                                   winner_method_options=WINNER_METHOD_OPTIONS)
+                                   winner_method_options=WINNER_METHOD_OPTIONS,
+                                   edit_mode=False) # Explicitly set edit_mode
 
         try:
             success, message = add_segment(sluggified_event_name, segment_data, summary_content, match_details)
@@ -145,13 +163,15 @@ def create_segment(event_slug):
                                segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                                all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
                                match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
-                               winner_method_options=WINNER_METHOD_OPTIONS)
+                               winner_method_options=WINNER_METHOD_OPTIONS,
+                               edit_mode=False) # Explicitly set edit_mode
 
     return render_template('booker/segments/form.html', event_slug=event_slug, segment={},
                            segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content="",
                            all_wrestlers=all_wrestlers, all_tagteams=all_tagteams, all_belts=all_belts,
                            match_data=match_data_for_template, match_result_options=MATCH_RESULT_OPTIONS,
-                           winner_method_options=WINNER_METHOD_OPTIONS)
+                           winner_method_options=WINNER_METHOD_OPTIONS,
+                           edit_mode=False) # Explicitly set edit_mode
 
 @segments_bp.route('/edit/<int:position>', methods=['GET', 'POST'])
 def edit_segment(event_slug, position):
@@ -204,7 +224,7 @@ def edit_segment(event_slug, position):
 
     if request.method == 'POST':
         updated_segment_data, updated_match_details, new_summary_content = _get_segment_form_data(request.form)
-        errors = _validate_segment_base_data(updated_segment_data)
+        errors = _validate_segment_form_data(sluggified_event_name, updated_segment_data, original_position=position)
 
         if updated_segment_data['type'] == 'Match':
             if updated_match_details:
@@ -222,7 +242,8 @@ def edit_segment(event_slug, position):
                                    original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
                                    all_belts=all_belts, match_data=updated_match_details or {},
                                    match_result_options=MATCH_RESULT_OPTIONS,
-                                   winner_method_options=WINNER_METHOD_OPTIONS)
+                                   winner_method_options=WINNER_METHOD_OPTIONS,
+                                   edit_mode=True) # Explicitly set edit_mode
         try:
             success, message = update_segment(sluggified_event_name, position, updated_segment_data, new_summary_content, updated_match_details)
             if success:
@@ -238,14 +259,16 @@ def edit_segment(event_slug, position):
                                original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
                                all_belts=all_belts, match_data=updated_match_details or {},
                                match_result_options=MATCH_RESULT_OPTIONS,
-                               winner_method_options=WINNER_METHOD_OPTIONS)
+                               winner_method_options=WINNER_METHOD_OPTIONS,
+                               edit_mode=True) # Explicitly set edit_mode
 
     return render_template('booker/segments/form.html', event_slug=event_slug, segment=segment,
                            segment_type_options=SEGMENT_TYPE_OPTIONS, summary_content=summary_content,
                            original_position=position, all_wrestlers=all_wrestlers, all_tagteams=all_tagteams,
                            all_belts=all_belts, match_data=match_data_for_template,
                            match_result_options=MATCH_RESULT_OPTIONS,
-                           winner_method_options=WINNER_METHOD_OPTIONS)
+                           winner_method_options=WINNER_METHOD_OPTIONS,
+                           edit_mode=True) # Explicitly set edit_mode
 
 @segments_bp.route('/delete/<int:position>', methods=['POST'])
 def delete_segment_route(event_slug, position):
