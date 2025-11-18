@@ -161,6 +161,29 @@
         </div>
     </fieldset>
 
+    <fieldset class="form-section">
+        <legend><h3>Game Date Settings</h3></legend>
+        <div class="form-group">
+            <label>Game Date Mode</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="game_date_mode" id="game_date_mode_realtime" value="real-time" {% if prefs.game_date_mode == "real-time" %}checked{% endif %}>
+                <label class="form-check-label" for="game_date_mode_realtime">
+                    Use Real Time Date (Application uses today's actual date)
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="game_date_mode" id="game_date_mode_latest_event" value="latest-event-date" {% if prefs.game_date_mode == "latest-event-date" %}checked{% endif %}>
+                <label class="form-check-label" for="game_date_mode_latest_event">
+                    Use Latest Event/News Date (Application date advances with booked events/news)
+                </label>
+            </div>
+            {% if prefs.game_date_mode == "latest-event-date" %}
+                <p class="form-text text-muted mt-2">Current Game Date: <strong>{{ current_game_date }}</strong></p>
+            {% endif %}
+            <small class="form-text text-muted">Choose how the application determines its current date for calculations (e.g., reign durations).</small>
+        </div>
+    </fieldset>
+
     <div class="action-buttons form-actions">
         <button type="submit" class="btn btn-primary">Save Preferences</button>
     </div>

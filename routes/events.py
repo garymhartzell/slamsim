@@ -4,7 +4,8 @@ from src.segments import load_segments, get_match_by_id, _get_all_wrestlers_invo
 from src.wrestlers import update_wrestler_record
 from src.tagteams import load_tagteams, update_tagteam_record, get_tagteam_by_name
 from src.belts import get_belt_by_name, process_championship_change, update_reign_in_history, load_history_for_belt
-from src.prefs import load_preferences
+from src.prefs import load_preferences, save_preferences # Import save_preferences
+from src.date_utils import get_current_working_date # Import the new utility
 from datetime import datetime
 
 events_bp = Blueprint('events', __name__, url_prefix='/events')
@@ -38,26 +39,41 @@ def list_events():
 
 @events_bp.route('/create', methods=['GET', 'POST'])
 def create_event():
+    prefs = load_preferences() # Load preferences here
+    current_working_date = get_current_working_date().isoformat() # Get the current working date
+
     if request.method == 'POST':
         event_data = _get_form_data(request.form)
         if not all([event_data['Event_Name'], event_data['Status'], event_data['Date']]):
             flash('Event Name, Status, and Date are required.', 'danger')
-            return render_template('booker/events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[])
+            return render_template('booker/events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[], prefs=prefs)
         try:
             datetime.strptime(event_data['Date'], '%Y-%m-%d')
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return render_template('booker/events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[])
+            return render_template('booker/events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[], prefs=prefs)
+        
         if add_event(event_data):
+            # Update game_date if checkbox is checked and mode is 'latest-event-date'
+            if prefs.get('game_date_mode') == 'latest-event-date' and request.form.get('update_game_date'):
+                prefs['game_date'] = event_data['Date']
+                save_preferences(prefs)
+                flash(f"Game date updated to {event_data['Date']}.", 'info')
+
             flash(f"Event '{event_data['Event_Name']}' created successfully! You can now add segments.", 'success')
             return redirect(url_for('events.edit_event', event_name=event_data['Event_Name']))
         else:
             flash(f"Event with name '{event_data['Event_Name']}' already exists.", 'danger')
-            return render_template('booker/events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[])
-    return render_template('booker/events/form.html', event={}, status_options=STATUS_OPTIONS, segments=[])
+            return render_template('booker/events/form.html', event=event_data, status_options=STATUS_OPTIONS, segments=[], prefs=prefs)
+    
+    # For GET request, pre-fill date with current working date
+    return render_template('booker/events/form.html', event={'Date': current_working_date}, status_options=STATUS_OPTIONS, segments=[], prefs=prefs)
 
 @events_bp.route('/edit/<string:event_name>', methods=['GET', 'POST'])
 def edit_event(event_name):
+    prefs = load_preferences() # Load preferences here
+    current_working_date = get_current_working_date().isoformat() # Get the current working date
+
     event = get_event_by_name(event_name)
     if not event:
         flash('Event not found.', 'danger')
@@ -81,19 +97,31 @@ def edit_event(event_name):
         updated_data['Finalized'] = event.get('Finalized', False)
         if not all([updated_data['Event_Name'], updated_data['Status'], updated_data['Date']]):
             flash('Event Name, Status, and Date are required.', 'danger')
-            return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
+            return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings, prefs=prefs)
         try:
             datetime.strptime(updated_data['Date'], '%Y-%m-%d')
         except ValueError:
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
+            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings, prefs=prefs)
+        
         if update_event(event_name, updated_data):
+            # Update game_date if checkbox is checked and mode is 'latest-event-date'
+            if prefs.get('game_date_mode') == 'latest-event-date' and request.form.get('update_game_date'):
+                prefs['game_date'] = updated_data['Date']
+                save_preferences(prefs)
+                flash(f"Game date updated to {updated_data['Date']}.", 'info')
+
             flash(f"Event '{updated_data['Event_Name']}' updated successfully!", 'success')
             return redirect(url_for('events.edit_event', event_name=updated_data['Event_Name']))
         else:
             flash(f"Failed to update event. New name might conflict.", 'danger')
-            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
-    return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
+            return render_template('booker/events/form.html', event=updated_data, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings, prefs=prefs)
+    
+    # For GET request, ensure event date is set, or use current working date if new event
+    if not event.get('Date'):
+        event['Date'] = current_working_date
+
+    return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings, prefs=prefs)
 
 @events_bp.route('/view/<string:event_name>')
 def view_event(event_name):
@@ -146,7 +174,8 @@ def finalize_event(event_name):
     if event_warnings and not request.form.get('acknowledge_warnings'):
         flash('Please acknowledge the warnings before finalizing the event.', 'danger')
         # Redirect back to the edit page, passing the warnings again
-        return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings)
+        prefs = load_preferences() # Load prefs for template
+        return render_template('booker/events/form.html', event=event, segments=segments, status_options=STATUS_OPTIONS, original_name=event_name, event_warnings=event_warnings, prefs=prefs)
 
     all_tagteams = load_tagteams()
     for segment in segments:

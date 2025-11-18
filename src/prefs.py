@@ -1,5 +1,6 @@
 import json
 import os
+import datetime # Import datetime
 
 PREFS_FILE = 'data/prefs.json'
 
@@ -37,7 +38,9 @@ def load_preferences():
         "ai_provider": "",
         "ai_model": "",
         "google_api_key": "",
-        "openai_api_key": ""
+        "openai_api_key": "",
+        "game_date_mode": "real-time", # New preference
+        "game_date": datetime.date.today().isoformat() # New preference
     }
 
     if os.path.exists(prefs_path):
@@ -86,7 +89,9 @@ def save_preferences(prefs_dict):
         {"Pref": "AI_Provider", "Value": prefs_dict.get("ai_provider", "")},
         {"Pref": "AI_Model", "Value": prefs_dict.get("ai_model", "")},
         {"Pref": "Google_API_Key", "Value": prefs_dict.get("google_api_key", "")},
-        {"Pref": "OpenAI_API_Key", "Value": prefs_dict.get("openai_api_key", "")}
+        {"Pref": "OpenAI_API_Key", "Value": prefs_dict.get("openai_api_key", "")},
+        {"Pref": "Game_Date_Mode", "Value": prefs_dict.get("game_date_mode", "real-time")}, # New preference
+        {"Pref": "Game_Date", "Value": prefs_dict.get("game_date", datetime.date.today().isoformat())} # New preference
     ]
 
     os.makedirs(os.path.dirname(prefs_path), exist_ok=True)

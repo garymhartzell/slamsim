@@ -3,6 +3,8 @@ from src.news import (
     load_news_posts, get_news_post_by_id, add_news_post,
     update_news_post, delete_news_post, NEWS_DATE_FORMAT
 )
+from src.prefs import load_preferences, save_preferences # Import save_preferences
+from src.date_utils import get_current_working_date # Import the new utility
 from datetime import datetime
 import markdown
 
@@ -39,28 +41,40 @@ def list_news():
 @news_bp.route('/create', methods=['GET', 'POST'])
 def create_news():
     """Handles the creation of a new news post."""
+    prefs = load_preferences() # Load preferences here
+    current_working_date = get_current_working_date().strftime(NEWS_DATE_FORMAT) # Get the current working date
+
     if request.method == 'POST':
         news_data, errors = _get_form_data(request.form, is_create=True)
         if errors:
             for field, msg in errors.items():
                 flash(msg, 'danger')
             # Pass back form data for re-population
-            news_post_for_form = {'Date': news_data.get('Date', datetime.now().strftime(NEWS_DATE_FORMAT)),
+            news_post_for_form = {'Date': news_data.get('Date', current_working_date), # Use current_working_date as fallback
                                   'Subject': news_data.get('Subject', ''),
                                   'Content': news_data.get('Content', '')}
-            return render_template('booker/news/form.html', news_post=news_post_for_form, form_action='create')
+            return render_template('booker/news/form.html', news_post=news_post_for_form, form_action='create', prefs=prefs)
         
         add_news_post(news_data)
+
+        # Update game_date if checkbox is checked and mode is 'latest-event-date'
+        if prefs.get('game_date_mode') == 'latest-event-date' and request.form.get('update_game_date'):
+            prefs['game_date'] = news_data['Date']
+            save_preferences(prefs)
+            flash(f"Game date updated to {news_data['Date']}.", 'info')
+
         flash('News post created successfully!', 'success')
         return redirect(url_for('news.list_news'))
     
-    # Pre-fill date for GET request
-    default_date = datetime.now().strftime(NEWS_DATE_FORMAT)
-    return render_template('booker/news/form.html', news_post={'Date': default_date}, form_action='create')
+    # Pre-fill date for GET request with current working date
+    return render_template('booker/news/form.html', news_post={'Date': current_working_date}, form_action='create', prefs=prefs)
 
 @news_bp.route('/edit/<string:news_id>', methods=['GET', 'POST'])
 def edit_news(news_id):
     """Handles the editing of an existing news post."""
+    prefs = load_preferences() # Load preferences here
+    current_working_date = get_current_working_date().strftime(NEWS_DATE_FORMAT) # Get the current working date
+
     news_post = get_news_post_by_id(news_id)
     if not news_post:
         flash('News post not found.', 'danger')
@@ -77,13 +91,20 @@ def edit_news(news_id):
                                   'Date': news_data.get('Date', news_post.get('Date')),
                                   'Subject': news_data.get('Subject', news_post.get('Subject')),
                                   'Content': news_data.get('Content', news_post.get('Content'))}
-            return render_template('booker/news/form.html', news_post=news_post_for_form, form_action='edit')
+            return render_template('booker/news/form.html', news_post=news_post_for_form, form_action='edit', prefs=prefs)
         
         update_news_post(news_id, news_data)
+
+        # Update game_date if checkbox is checked and mode is 'latest-event-date'
+        if prefs.get('game_date_mode') == 'latest-event-date' and request.form.get('update_game_date'):
+            prefs['game_date'] = news_data['Date']
+            save_preferences(prefs)
+            flash(f"Game date updated to {news_data['Date']}.", 'info')
+
         flash('News post updated successfully!', 'success')
         return redirect(url_for('news.list_news'))
 
-    return render_template('booker/news/form.html', news_post=news_post, form_action='edit')
+    return render_template('booker/news/form.html', news_post=news_post, form_action='edit', prefs=prefs)
 
 @news_bp.route('/view/<string:news_id>')
 def view_news(news_id):

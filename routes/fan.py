@@ -9,6 +9,7 @@ import markdown
 from src.segments import load_segments, get_match_by_id, _slugify # Import _slugify for event_slug
 from src.belts import load_belts, get_belt_by_id, load_history_for_belt
 from src.news import load_news_posts, get_news_post_by_id
+from src.date_utils import get_current_working_date # Import the new utility
 
 fan_bp = Blueprint('fan', __name__, url_prefix='/fan')
 
@@ -44,6 +45,8 @@ def belt_history(belt_id):
     history = load_history_for_belt(belt_id)
     history.sort(key=lambda r: datetime.datetime.strptime(r['Date_Won'], '%Y-%m-%d'), reverse=True)
 
+    current_working_date = get_current_working_date() # Use the new utility function
+    
     for reign in history:
         date_won = datetime.datetime.strptime(reign['Date_Won'], '%Y-%m-%d')
         date_lost_str = reign.get('Date_Lost')
@@ -51,12 +54,18 @@ def belt_history(belt_id):
         if date_lost_str:
             date_lost = datetime.datetime.strptime(date_lost_str, '%Y-%m-%d')
         else:
-            # Use current date for active reigns, ensuring it's a datetime.datetime object
-            date_lost = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
+            # Use current_working_date for active reigns
+            date_lost = datetime.datetime.combine(current_working_date, datetime.time.min)
         
         reign['Days'] = (date_lost - date_won).days
 
-    return render_template('fan/belt_history.html', belt=belt, history=history, prefs=prefs)
+    # Add note about game date if applicable
+    if prefs.get('game_date_mode') == 'latest-event-date':
+        game_date_note = f"As of {current_working_date.strftime('%Y-%m-%d')}"
+    else:
+        game_date_note = None
+
+    return render_template('fan/belt_history.html', belt=belt, history=history, prefs=prefs, game_date_note=game_date_note)
 
 def _sort_key_ignore_the(name):
     """Returns a sort key that ignores a leading 'The '."""
