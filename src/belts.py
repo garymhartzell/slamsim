@@ -43,8 +43,9 @@ def get_belt_by_id(belt_id):
     return next((belt for belt in load_belts() if belt.get('ID') == belt_id), None)
 
 def get_belt_by_name(belt_name):
-    """Retrieves a single belt by its full name."""
-    return next((belt for belt in load_belts() if belt.get('Name') == belt_name), None)
+    """Retrieves a single belt by its full name, performing a case-insensitive and stripped match."""
+    normalized_belt_name = belt_name.strip().lower()
+    return next((belt for belt in load_belts() if belt.get('Name', '').strip().lower() == normalized_belt_name), None)
 
 def load_active_belts_by_type(holder_type):
     """Loads all active belts of a specific type."""

@@ -53,6 +53,11 @@
             <small>Leave blank if status is 'Vacant'.</small>
         </div>
         <div class="form-group">
+            <label for="champion_title">Champion Title Name</label>
+            <input type="text" id="champion_title" name="champion_title" value="{{ belt.get('Champion_Title', 'Champion') }}">
+            <small>The name of the title holder (e.g., 'Champion', 'King of the Mountain'). Used in public bio text.</small>
+        </div>
+        <div class="form-group">
             <label for="display_position">Display Position</label>
             <input type="number" id="display_position" name="display_position" value="{{ belt.Display_Position | default(0) }}">
         </div>

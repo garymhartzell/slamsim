@@ -12,7 +12,7 @@
 
 {% if tagteam.Belt %}
 <div class="champion-banner">
-    <h3>Current {{ tagteam.Belt }}</h3>
+    <h3>Current {{ tagteam.get('current_champion_title_display', tagteam.Belt) }}</h3>
 </div>
 {% endif %}
 

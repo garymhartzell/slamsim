@@ -17,8 +17,11 @@ HOLDER_TYPE_OPTIONS = ['Singles', 'Tag-Team']
 
 def _get_form_data(form, is_create=False):
     data = {
-        'Name': form.get('name', '').strip(), 'Status': form.get('status', '').strip(),
-        'Holder_Type': form.get('holder_type', '').strip(), 'Current_Holder': form.get('current_holder', '').strip(),
+        'Name': form.get('name', '').strip(),
+        'Status': form.get('status', '').strip(),
+        'Holder_Type': form.get('holder_type', '').strip(),
+        'Current_Holder': form.get('current_holder', '').strip(),
+        'Champion_Title': form.get('champion_title', 'Champion').strip(), # New field
         'Display_Position': form.get('display_position', 0, type=int)
     }
     if is_create:

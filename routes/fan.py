@@ -7,7 +7,7 @@ from src.divisions import load_divisions
 from src.events import load_events, get_event_by_name, load_event_summary_content, get_event_by_slug
 import markdown
 from src.segments import load_segments, get_match_by_id, _slugify # Import _slugify for event_slug
-from src.belts import load_belts, get_belt_by_id, load_history_for_belt
+from src.belts import load_belts, get_belt_by_id, load_history_for_belt, get_belt_by_name
 from src.news import load_news_posts, get_news_post_by_id
 from src.date_utils import get_current_working_date # Import the new utility
 
@@ -155,6 +155,14 @@ def view_wrestler(wrestler_name):
         flash(f"Wrestler '{wrestler_name}' not found.", 'danger')
         return redirect(url_for('fan.roster'))
 
+    # Add champion_title_display for individual wrestler view
+    if wrestler.get('Belt'):
+        belt_obj = get_belt_by_name(wrestler['Belt'])
+        if belt_obj:
+            wrestler['current_champion_title_display'] = belt_obj.get('Champion_Title', 'Champion')
+        else:
+            wrestler['current_champion_title_display'] = wrestler['Belt'] # Fallback to belt name
+
     # Calculate total record
     singles_wins = int(wrestler.get('Singles_Wins', 0))
     singles_losses = int(wrestler.get('Singles_Losses', 0))
@@ -180,6 +188,14 @@ def view_tagteam(tagteam_name):
     if not tagteam:
         flash(f"Tag Team '{tagteam_name}' not found.", 'danger')
         return redirect(url_for('fan.roster'))
+
+    # Add champion_title_display for individual tagteam view
+    if tagteam.get('Belt'):
+        belt_obj = get_belt_by_name(tagteam['Belt'])
+        if belt_obj:
+            tagteam['current_champion_title_display'] = belt_obj.get('Champion_Title', 'Champion')
+        else:
+            tagteam['current_champion_title_display'] = tagteam['Belt'] # Fallback to belt name
 
     return render_template('fan/tagteam.html', tagteam=tagteam, prefs=prefs)
 
@@ -250,11 +266,23 @@ def roster():
         # Add wrestlers to their division
         for wrestler in active_wrestlers:
             if wrestler.get('Division') == division_id:
+                if wrestler.get('Belt'):
+                    belt_obj = get_belt_by_name(wrestler['Belt'])
+                    if belt_obj:
+                        wrestler['current_champion_title_display'] = belt_obj.get('Champion_Title', 'Champion')
+                    else:
+                        wrestler['current_champion_title_display'] = wrestler['Belt'] # Fallback to belt name
                 roster_by_division[division_name]['wrestlers'].append(wrestler)
         
         # Add tag teams to their division
         for tagteam in active_tagteams:
             if tagteam.get('Division') == division_id:
+                if tagteam.get('Belt'):
+                    belt_obj = get_belt_by_name(tagteam['Belt'])
+                    if belt_obj:
+                        tagteam['current_champion_title_display'] = belt_obj.get('Champion_Title', 'Champion')
+                    else:
+                        tagteam['current_champion_title_display'] = tagteam['Belt'] # Fallback to belt name
                 roster_by_division[division_name]['tagteams'].append(tagteam)
 
     # Filter out divisions that have no active wrestlers or tagteams
