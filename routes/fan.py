@@ -335,6 +335,28 @@ def archive_by_year(year):
     all_events = load_events()
     archive_events = []
 
+    for event in all_events:
+        event_date_str = event.get('Date')
+        if event.get('Finalized') == True and event_date_str:
+            try:
+                event_year = datetime.datetime.strptime(event_date_str, '%Y-%m-%d').year
+                if event_year == year:
+                    archive_events.append(event)
+            except ValueError:
+                # Handle cases where date might be malformed, skip such events
+                continue
+    
+    # Sort archive events by date descending (newest first)
+    archive_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
+
+    return render_template(
+        'fan/events_archive.html',
+        year=year,
+        events=archive_events,
+        prefs=prefs, # Pass prefs to the template
+        _slugify=_slugify # Pass _slugify to the template
+    )
+
 @fan_bp.route('/news')
 def news_list():
     """Renders the fan mode news index page."""
@@ -393,26 +415,4 @@ def view_news(news_id):
         'fan/news_view.html',
         news_post=news_post,
         prefs=prefs
-    )
-
-    for event in all_events:
-        event_date_str = event.get('Date')
-        if event.get('Finalized') == True and event_date_str:
-            try:
-                event_year = datetime.datetime.strptime(event_date_str, '%Y-%m-%d').year
-                if event_year == year:
-                    archive_events.append(event)
-            except ValueError:
-                # Handle cases where date might be malformed, skip such events
-                continue
-    
-    # Sort archive events by date descending (newest first)
-    archive_events.sort(key=lambda e: datetime.datetime.strptime(e.get('Date', '1900-01-01'), '%Y-%m-%d'), reverse=True)
-
-    return render_template(
-        'fan/events_archive.html',
-        year=year,
-        events=archive_events,
-        prefs=prefs, # Pass prefs to the template
-        _slugify=_slugify # Pass _slugify to the template
     )
