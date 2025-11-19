@@ -39,7 +39,10 @@ def create_division():
         unique_suffix = str(uuid.uuid4())[:4]
         division_data['ID'] = f"{base_id}-{unique_suffix}"
 
-        if not all(division_data.values()): # Check if all values are present after ID generation
+        # Validate required fields, allowing 0 for Display_Position
+        if not division_data['Name'] or \
+           not division_data['Holder_Type'] or \
+           not division_data['Status']:
             flash('All fields are required.', 'danger')
         else:
             success, message = add_division(division_data)
@@ -63,7 +66,10 @@ def edit_division(division_id):
         # The ID is passed via a hidden field in the form for edits
         updated_data['ID'] = request.form.get('division_id') 
 
-        if not all(updated_data.values()):
+        # Validate required fields, allowing 0 for Display_Position
+        if not updated_data['Name'] or \
+           not updated_data['Holder_Type'] or \
+           not updated_data['Status']:
             flash('All fields are required.', 'danger')
         else:
             success, message = update_division(division_id, updated_data)
@@ -89,7 +95,12 @@ def view_division(division_id):
 @divisions_bp.route('/delete/<string:division_id>', methods=['POST'])
 def delete_division_route(division_id):
     """Deletes a division only if it's not in use."""
-    if is_division_in_use(division_id):
+    division_to_delete = get_division_by_id(division_id)
+    if not division_to_delete:
+        flash('Division not found.', 'danger')
+        return redirect(url_for('divisions.list_divisions'))
+
+    if is_division_in_use(division_to_delete):
         flash('Cannot delete a division that is currently assigned to wrestlers.', 'danger')
         return redirect(url_for('divisions.list_divisions'))
     
