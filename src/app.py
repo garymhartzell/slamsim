@@ -11,6 +11,7 @@ from routes.belts import belts_bp
 from routes.news import news_bp
 from routes.booker import booker_bp # Import the new booker blueprint
 from routes.fan import fan_bp       # Import the new fan blueprint
+from routes.tools import tools_bp   # Import the new tools blueprint
 from src.system import INCLUDES_DIR, LEAGUE_LOGO_FILENAME # Import INCLUDES_DIR and LEAGUE_LOGO_FILENAME
 
 app = Flask(__name__, template_folder='../templates')
@@ -29,6 +30,7 @@ app.register_blueprint(belts_bp)
 app.register_blueprint(news_bp)
 app.register_blueprint(booker_bp) # Register the booker blueprint
 app.register_blueprint(fan_bp)     # Register the fan blueprint
+app.register_blueprint(tools_bp)   # Register the tools blueprint
 
 # Register a custom Jinja2 filter for markdown
 @app.template_filter('markdown')

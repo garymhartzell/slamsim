@@ -21,7 +21,6 @@
                         <a href="{{ url_for('divisions.list_divisions') }}">Divisions</a>
                         <a href="{{ url_for('belts.list_belts') }}">Belts</a>
                         <a href="{{ url_for('news.list_news') }}">News</a>
-                        <a href="{{ url_for('prefs.general_prefs') }}">Preferences</a>
                     </div>
                 </li>
                 <li class="dropdown">
@@ -33,6 +32,13 @@
                         <a href="{{ url_for('fan.champions_list') }}">Champions</a>
                         <a href="{{ url_for('fan.news_list') }}">News</a>
                         {# Add more fan-facing pages here later #}
+                    </div>
+                </li>
+                <li><a href="{{ url_for('prefs.general_prefs') }}">Preferences</a></li>
+                <li class="dropdown">
+                    <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Tools</button>
+                    <div class="dropdown-content" id="toolsDropdown">
+                        <a href="{{ url_for('tools.backup_restore') }}">Backup and Restore</a>
                     </div>
                 </li>
                 <li><a href="{{ url_for('about') }}">About</a></li>

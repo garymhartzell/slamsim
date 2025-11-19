@@ -8,9 +8,10 @@ from .belts import belts_bp
 from .news import news_bp
 from .booker import booker_bp
 from .fan import fan_bp
+from .tools import tools_bp # Import the new tools blueprint
 
 __all__ = [
     'divisions_bp', 'prefs_bp', 'wrestlers_bp', 'tagteams_bp',
     'events_bp', 'segments_bp', 'belts_bp', 'news_bp',
-    'booker_bp', 'fan_bp'
+    'booker_bp', 'fan_bp', 'tools_bp' # Add tools_bp to the all list
 ]

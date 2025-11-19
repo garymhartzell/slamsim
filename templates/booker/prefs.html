@@ -296,30 +296,6 @@
         </form>
     </div>
 
-    <hr class="subsection-divider">
-
-    <!-- Delete All Data Section -->
-    <div class="form-group">
-        <label>Delete All League Data</label>
-        <p>This is a permanent, irreversible action. It will delete **all wrestlers, teams, belts, history, events, and news posts**. Use this to start a completely fresh league.</p>
-        <button id="delete-button" class="btn btn-danger btn-lg" onclick="document.getElementById('delete-confirmation').style.display='block'; this.style.display='none';">
-            Delete All League Data
-        </button>
-    </div>
-    <div id="delete-confirmation" style="display: none;">
-        <form method="POST" action="{{ url_for('prefs.delete_league') }}">
-            <div class="form-group">
-                <label for="confirmation-delete">To confirm, please type `DELETE` in the box below:</label>
-                <input type="text" id="confirmation-delete" name="confirmation" required>
-            </div>
-            <div class="action-buttons">
-                <button type="submit" class="btn btn-danger">I understand the consequences, delete everything</button>
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('delete-confirmation').style.display='none'; document.getElementById('delete-button').style.display='block';">
-                    Cancel
-                </button>
-            </div>
-        </form>
-    </div>
 </fieldset>
 {% endblock %}
 

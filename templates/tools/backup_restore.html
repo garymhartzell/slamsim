@@ -1,0 +1,32 @@
+{% extends "_base.html" %}
+
+{% block title %}Backup and Restore - SlamSim!{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Tools: Backup and Restore</h1>
+
+        <section class="card">
+            <h2>Backup Data</h2>
+            <p>Create a backup of your current SlamSim! league data. This will download a single file containing all your league information.</p>
+            <form action="{{ url_for('tools.backup_data') }}" method="GET">
+                <button type="submit" class="button primary">Download Backup</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Restore Data</h2>
+            <p>Upload a previously saved backup file to restore your league data. This action cannot be undone.</p>
+            <p class="warning">
+                <strong>WARNING:</strong> Restoring a backup will completely overwrite your current SlamSim! data. Proceed with caution.
+            </p>
+            <form action="{{ url_for('tools.restore_data') }}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="backup_file">Backup File:</label>
+                    <input type="file" id="backup_file" name="backup_file" accept=".zip" required>
+                </div>
+                <button type="submit" class="button danger">Restore Backup</button>
+            </form>
+        </section>
+    </div>
+{% endblock %}
