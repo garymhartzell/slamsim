@@ -4,6 +4,38 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
+## v1.0 Beta 3 - Tools and Data Safety (2025-11-18)
+
+This release focuses on application structure, user experience, and—most importantly—data security. We have introduced a critical Backup and Restore feature to ensure data is protected, and simplified the top-level navigation.
+
+### New Feature: Data Tools
+
+- **Top-Level Navigation:** The new **'Tools'** menu item has been added to the main application navigation bar, providing easy access to vital system functions.
+- **Backup & Restore:** Implemented a robust system for data safety:
+    * **Backup:** Allows the booker to download a single compressed file (`.zip`) of the entire **`data`** directory, ensuring all events, rosters, and preferences are saved.
+    * **Restore:** Allows the booker to upload a backup file. The system implements a critical safety protocol: it renames the current `data` folder (e.g., to `data_old...`) before extracting the backup, ensuring local data is never accidentally deleted during a restore operation.
+
+### New Feature: Game Time
+- **Custom Date Toggle:** Added a "Game Date" setting in Preferences, allowing the user to switch between Real Time and Latest Event/News Date.
+- **Immersive Booking:** When using the "Latest Event/News Date" mode, all new Event and News item forms in Booker Mode now pre-fill their dates with the current game_date.
+- **Date Advancement:** A new checkbox, "Update Game Date," is available on Event and News submission forms, allowing the booker to advance the game_date to the date of the new item upon publishing.
+- **Accurate Reign Calculations:** All championship reign durations in Fan Mode are now calculated using the dynamic game_date instead of the system's current date, ensuring accurate reign length and immersive display (e.g., "136 days" instead of "14,381 days"). A note confirms the date used for the calculation ("As of [Date]").
+
+### Enhancement: Champion Titles
+- **Champion Title Field:** Added a new text field to the Championship editor in Booker Mode called "Champion Title Name."
+- **Improved Narrative Flow:** This field allows the booker to specify the title holder's professional name (e.g., "Champion," "Tag Team Champion," "King of the Mountain").
+- **Enhanced Roster Display:** The Fan Mode Roster page now uses the Champion Title Name in wrestler bios, correcting narrative phrasing from "Current World Championship" to the more immersive and grammatically correct "Current World Champion."
+
+### Usability Improvements
+- **Top-Level Preferences:** The **'Preferences'** link has been moved from the Booker Mode sub-menu to the **top-level navigation bar**, making global application settings much easier to find and access.
+
+### Bug Fixes
+- Fixed a critical bug where editing a wrestler would reset certain field values to 0 or null.
+- Fixed a bug in event archive by year that was causing 404 errors.
+- Fixed a bug where the default position for a division is 0, but the system required a number > 0.
+- Fixed a bug in calculating tagteam records for wrestlers.
+- Added missing 'awards' and 'moves' in tagteam profiles in Fan Mode.
+
 ## v1.0 Beta 2 - The AI Match Writer (2025-10-22)
 
 This beta release introduces the first iteration of the AI Assistant, focused specifically on generating match summaries. It also includes configuration options for managing AI providers and a new quality-of-life feature for roster management.
