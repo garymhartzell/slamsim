@@ -1,0 +1,101 @@
+{% extends '_base.html' %}
+
+{% block title %}AI Roster Generator{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h1 class="mb-4 text-center">AI Roster Generator</h1>
+
+            {% if generated_roster %}
+            <h2 class="mb-3 text-center">Review Generated Roster</h2>
+            <p class="alert alert-info text-center">Review the AI-generated wrestlers below. Uncheck any you do not wish to add. You can edit them later from the main roster page.</p>
+
+            <form action="{{ url_for('tools.commit_roster') }}" method="POST">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Add</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Nickname</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Alignment</th>
+                                <th scope="col">Styles</th>
+                                <th scope="col">Finisher</th>
+                                <th scope="col">Height</th>
+                                <th scope="col">Weight</th>
+                                <th scope="col">DOB</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for wrestler_item in generated_roster %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="selected_wrestlers[]" value="{{ wrestler_item.encoded_data }}" checked>
+                                </td>
+                                <td>{{ wrestler_item.display_data.Name }}</td>
+                                <td>{{ wrestler_item.display_data.nickname }}</td>
+                                <td>{{ wrestler_item.display_data.location }}</td>
+                                <td>{{ wrestler_item.display_data.Alignment }}</td>
+                                <td>{{ wrestler_item.display_data.Wrestling_Styles | join(', ') }}</td>
+                                <td>{{ wrestler_item.display_data.Finisher }}</td>
+                                <td>{{ wrestler_item.display_data.Height }}</td>
+                                <td>{{ wrestler_item.display_data.Weight }}</td>
+                                <td>{{ wrestler_item.display_data.DOB }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">Commit Selected Wrestlers to Database</button>
+                    <a href="{{ url_for('tools.ai_roster_generator_form') }}" class="btn btn-secondary btn-lg">Generate New Roster</a>
+                </div>
+            </form>
+
+            {% else %}
+            <form action="{{ url_for('tools.generate_roster') }}" method="POST">
+                <div class="mb-3">
+                    <label for="roster_prompt" class="form-label">Creative Prompt:</label>
+                    <textarea class="form-control" id="roster_prompt" name="roster_prompt" rows="5" placeholder="Describe the type of wrestlers you want to generate (e.g., 'A group of high-flying luchadores from Mexico', 'A stable of monstrous powerhouses', 'A mix of technical wrestlers and brawlers for a new indie promotion')." required></textarea>
+                    <div class="form-text">Provide a detailed description to guide the AI in generating your roster.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Content Mode:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="content_mode" id="content_mode_fictional" value="fictional" checked>
+                        <label class="form-check-label" for="content_mode_fictional">
+                            Fictional (Invented characters, names, and backstories)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="content_mode" id="content_mode_real_world" value="real_world">
+                        <label class="form-check-label" for="content_mode_real_world">
+                            Real-World (Historical/Active wrestlers, AI will generate based on real data)
+                        </label>
+                    </div>
+                    <div class="form-text">Choose whether the AI should invent new wrestlers or base them on real-world personalities.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="max_wrestlers" class="form-label">Maximum Wrestlers to Create:</label>
+                    <input type="number" class="form-control" id="max_wrestlers" name="max_wrestlers" value="10" min="1" max="30" required>
+                    <div class="form-text">Specify the maximum number of wrestlers the AI should generate (1-30).</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Review Generated Roster</button>
+            </form>
+
+            <hr class="my-4">
+
+            <div id="generator_results" class="mt-4">
+                <!-- Generated roster will be displayed here -->
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

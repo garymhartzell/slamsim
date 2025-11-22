@@ -20,7 +20,7 @@
         <div class="card-content">
             <p><strong>Status:</strong> {{ wrestler.Status }}</p>
             <p><strong>Division:</strong> {{ wrestler.DivisionName }}</p>
-            <p><strong>Belt:</strong> {{ wrestler.Belt or 'None' }}</p>
+            <p><strong>Belt:</strong> {% if wrestler.Belt and wrestler.Belt != '0' %}{{ wrestler.Belt }}{% else %}None{% endif %}</p>
             <p><strong>Team:</strong> {{ wrestler.Team or 'None' }}</p>
             <p><strong>Faction:</strong> {{ wrestler.Faction or 'None' }}</p>
             <p><strong>Manager:</strong> {{ wrestler.Manager or 'None' }}</p>
@@ -41,9 +41,9 @@
             <p>{{ wrestler.Tag_Wins | default('0') }} - {{ wrestler.Tag_Losses | default('0') }} - {{ wrestler.Tag_Draws | default('0') }} (W-L-D)</p>
             <hr>
             <h4>Overall</h4>
-            {% set total_wins = (wrestler.Singles_Wins | int) + (wrestler.Tag_Wins | int) %}
-            {% set total_losses = (wrestler.Singles_Losses | int) + (wrestler.Tag_Losses | int) %}
-            {% set total_draws = (wrestler.Singles_Draws | int) + (wrestler.Tag_Draws | int) %}
+            {% set total_wins = (wrestler.get('Singles_Wins', 0) | int) + (wrestler.get('Tag_Wins', 0) | int) %}
+            {% set total_losses = (wrestler.get('Singles_Losses', 0) | int) + (wrestler.get('Tag_Losses', 0) | int) %}
+            {% set total_draws = (wrestler.get('Singles_Draws', 0) | int) + (wrestler.get('Tag_Draws', 0) | int) %}
             <p>{{ total_wins }} - {{ total_losses }} - {{ total_draws }} (W-L-D)</p>
         </div>
     </div>

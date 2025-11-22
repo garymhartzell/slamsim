@@ -2,15 +2,212 @@ import os
 import zipfile
 import shutil # Import shutil for directory operations
 from datetime import datetime
+import litellm
+import json
+import html # Import the html module for unescaping
+import base64 # Import base64 for encoding/decoding JSON data
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from src.system import get_project_root, DATA_DIR, delete_all_temporary_files
+from src.prefs import load_preferences
+from src.wrestlers import add_wrestler
 
 tools_bp = Blueprint('tools', __name__, url_prefix='/tools')
 
-@tools_bp.route('/backup_restore')
+@tools_bp.route('/')
+def tools_main():
+    """Renders the main tools dashboard page."""
+    return render_template('tools/main.html')
+
+@tools_bp.route('/backup')
 def backup_restore():
-    """Renders the backup and restore page."""
-    return render_template('tools/backup_restore.html')
+    """Renders the backup and restore section within the tools dashboard."""
+    return render_template('tools/main.html', active_tool='backup_restore')
+
+@tools_bp.route('/ai-roster-generator')
+def ai_roster_generator_form():
+    """Renders the AI Roster Generator input form."""
+    return render_template('tools/roster_generator.html')
+
+@tools_bp.route('/generate-roster', methods=['POST'])
+def generate_roster():
+    """
+    Generates a roster of wrestlers using AI based on user input and displays them for review.
+    """
+    roster_prompt = request.form.get('roster_prompt')
+    content_mode = request.form.get('content_mode')
+    max_wrestlers = min(int(request.form.get('max_wrestlers', 10)), 30) # Cap at 30
+
+    if not roster_prompt:
+        flash("Roster prompt cannot be empty.", "danger")
+        return redirect(url_for('tools.ai_roster_generator_form'))
+
+    try:
+        # Load AI preferences
+        prefs = load_preferences()
+        model_provider = prefs.get('ai_provider') # Corrected key
+        model_name = prefs.get('ai_model')       # Corrected key
+        
+        api_key = None
+        if model_provider == "Google":
+            api_key = prefs.get('google_api_key')
+            os.environ["GEMINI_API_KEY"] = api_key # Set environment variable for litellm
+        elif model_provider == "OpenAI":
+            api_key = prefs.get('openai_api_key')
+            os.environ["OPENAI_API_KEY"] = api_key # Set environment variable for litellm
+        # Add other providers and their respective environment variables if necessary
+
+        if not all([model_provider, model_name, api_key]):
+            flash("AI model preferences are not fully configured. Please check your preferences.", "danger")
+            return redirect(url_for('tools.ai_roster_generator_form'))
+
+        system_prompt = f"""
+        You are an expert wrestling booker and creative writer. Your task is to generate a list of {max_wrestlers} professional wrestlers based on the user's prompt.
+        The output MUST be a single, valid JSON object with a top-level key "wrestlers" containing an array of wrestler objects.
+        Each wrestler object MUST strictly adhere to the following schema:
+        {{
+          "Name": "STRING (e.g., Ric Flair) - Must be unique and creative.",
+          "nickname": "STRING (e.g., 'The Nature Boy') - Can be empty if no nickname.",
+          "location": "STRING (e.g., 'Charlotte, North Carolina' or 'Parts Unknown')",
+          "Alignment": "STRING (MUST be one of: 'Babyface', 'Heel', 'Tweener')",
+          "Wrestling_Styles": "ARRAY OF STRINGS (List 1-3 appropriate styles, e.g., ['Technical', 'Brawler', 'High-Flyer'])",
+          "Moves": "ARRAY OF STRINGS (List 3-5 signature moves. Use generic names only for non-finishers. MUST include one clear finisher name)",
+          "Finisher": "STRING (The name of the finisher move, must match one item in 'Moves')",
+          "Height": "STRING (e.g., '5 ft. 1 in.' or '185 cm')",
+          "Weight": "STRING (e.g., '243 lbs.')",
+          "DOB": "DATE (e.g. '1972-07-04') - Must be a valid date in YYYY-MM-DD format."
+        }}
+        Ensure all fields are populated with creative and realistic data relevant to the prompt.
+        The 'Name' field must be unique for each wrestler.
+        """
+
+        # --- Fix 1: Dynamically Modify System Prompt for Real-World Grounding ---
+        if content_mode == 'real_world':
+            # This is the CRITICAL instruction to force tool use
+            system_prompt += f"""
+            
+            *** CRITICAL REAL-WORLD INSTRUCTION ***
+            You are in REAL-WORLD mode. You MUST use the Google Search grounding tool to find the real names, 
+            heights, weights, birthdates, and move sets of historical or active wrestlers matching the user's prompt. 
+            Do NOT invent any data for this mode. Use the information found via search exclusively.
+            """
+            user_prompt = f"Using your search tool, generate {max_wrestlers} REAL-WORLD wrestlers. Creative prompt: '{roster_prompt}'"
+
+        else:
+            # Revert to standard fictional prompt for clarity
+            user_prompt = f"Generate {max_wrestlers} FICTIONAL wrestlers. Creative prompt: '{roster_prompt}'"
+        
+        # Grounding logic
+        tools = []
+        if content_mode == 'real_world':
+            tools = [{"google_search": {}}]
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+
+        # Construct the model string in the format litellm expects (e.g., "gemini/gemini-1.5-flash")
+        litellm_model_string = ""
+        if model_provider == "Google":
+            litellm_model_string = f"gemini/{model_name}"
+        elif model_provider == "OpenAI":
+            litellm_model_string = f"openai/{model_name}"
+        # Add other providers if necessary
+
+        if not litellm_model_string:
+            flash("Unsupported AI provider configured.", "danger")
+            return redirect(url_for('tools.ai_roster_generator_form'))
+
+        response = litellm.completion(
+            model=litellm_model_string,
+            messages=messages,
+            tools=tools,
+            response_format={"type": "json_object"}, # Instruct API to return JSON
+            temperature=0.7 # A bit of creativity
+        )
+
+        # Extract content from the response
+        ai_content = response.choices[0].message.content
+        
+        # Parse the JSON response
+        generated_data = json.loads(ai_content)
+        generated_roster_raw = generated_data.get('wrestlers', [])
+
+        # Prepare roster for template: original data for display, encoded data for form submission
+        generated_roster_for_template = []
+        for wrestler_data in generated_roster_raw:
+            # Convert dict to JSON string, then Base64 encode it
+            encoded_wrestler = base64.b64encode(json.dumps(wrestler_data).encode('utf-8')).decode('utf-8')
+            generated_roster_for_template.append({
+                'display_data': wrestler_data,
+                'encoded_data': encoded_wrestler
+            })
+
+        if not generated_roster_for_template:
+            flash("AI generated an empty roster or invalid structure. Please try again.", "warning")
+            return redirect(url_for('tools.ai_roster_generator_form'))
+
+        # --- Fix 2: Extract Grounding Sources (Even if unused right now, it's necessary for inspection) ---
+        search_sources = []
+        try:
+            # litellm response structure may vary, check for standard grounding metadata
+            if response.get('usage', {}).get('grounding_metadata'):
+                search_sources = response['usage']['grounding_metadata'].get('grounding_attributions', [])
+        except AttributeError:
+            # Handle cases where the response structure is unexpected
+            pass 
+
+        # Render the review page
+        return render_template('tools/roster_generator.html', 
+                                generated_roster=generated_roster_for_template, 
+                                search_sources=search_sources)
+
+    except json.JSONDecodeError as e:
+        flash(f"AI response was not valid JSON. Error: {e}. Raw response: {ai_content[:500]}...", "danger")
+        return redirect(url_for('tools.ai_roster_generator_form'))
+    except litellm.exceptions.APIError as e:
+        flash(f"AI API Error: {e}. Please check your API key and model configuration.", "danger")
+        return redirect(url_for('tools.ai_roster_generator_form'))
+    except Exception as e:
+        flash(f"An unexpected error occurred: {e}", "danger")
+        return redirect(url_for('tools.ai_roster_generator_form'))
+
+@tools_bp.route('/commit-roster', methods=['POST'])
+def commit_roster():
+    """
+    Commits selected wrestlers from the generated roster to the database.
+    """
+    selected_wrestlers_json = request.form.getlist('selected_wrestlers[]')
+    
+    if not selected_wrestlers_json:
+        flash("No wrestlers were selected to commit.", "warning")
+        return redirect(url_for('tools.ai_roster_generator_form'))
+
+    successful_adds = 0
+    failed_adds = 0
+    for wrestler_json_str_encoded in selected_wrestlers_json:
+        try:
+            # Base64 decode the string, then decode from bytes to utf-8 string, then parse JSON
+            decoded_json_bytes = base64.b64decode(wrestler_json_str_encoded)
+            wrestler_data = json.loads(decoded_json_bytes.decode('utf-8'))
+            if add_wrestler(wrestler_data):
+                successful_adds += 1
+            else:
+                failed_adds += 1
+                flash(f"Failed to add wrestler '{wrestler_data.get('Name', 'Unknown')}' (possibly duplicate name).", "warning")
+        except (json.JSONDecodeError, base64.binascii.Error) as e:
+            failed_adds += 1
+            flash(f"Failed to parse wrestler data (JSON or Base64 error): {e} for data: {wrestler_json_str_encoded[:50]}...", "danger")
+        except Exception as e:
+            failed_adds += 1
+            flash(f"Error adding wrestler: {e} for data: {wrestler_json_str_encoded[:50]}...", "danger")
+
+    if successful_adds > 0:
+        flash(f"Successfully added {successful_adds} wrestler(s) to the roster!", "success")
+    if failed_adds > 0:
+        flash(f"{failed_adds} wrestler(s) could not be added.", "warning")
+
+    return redirect(url_for('wrestlers.list_wrestlers'))
 
 @tools_bp.route('/backup_data', methods=['GET'])
 def backup_data():

@@ -1,0 +1,25 @@
+{% extends '_base.html' %}
+
+{% block title %}Tools Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4 text-center">Tools Dashboard</h1>
+
+            <div class="list-group">
+                <a href="{{ url_for('tools.backup_data') }}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">Backup & Restore Data</h5>
+                    <p class="mb-1">Create a backup of your league data or restore from a previous backup.</p>
+                </a>
+                <a href="{{ url_for('tools.ai_roster_generator_form') }}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">AI Roster Generator</h5>
+                    <p class="mb-1">Generate a new roster of wrestlers using AI based on your creative prompt.</p>
+                </a>
+                <!-- Add more tool links here as they are developed -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

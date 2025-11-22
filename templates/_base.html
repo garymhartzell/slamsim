@@ -38,7 +38,9 @@
                 <li class="dropdown">
                     <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Tools</button>
                     <div class="dropdown-content" id="toolsDropdown">
-                        <a href="{{ url_for('tools.backup_restore') }}">Backup and Restore</a>
+                        <a href="{{ url_for('tools.tools_main') }}">Tools Dashboard</a>
+                        <a href="{{ url_for('tools.ai_roster_generator_form') }}">AI Roster Generator</a>
+                        <a href="{{ url_for('tools.backup_data') }}">Backup and Restore</a>
                     </div>
                 </li>
                 <li><a href="{{ url_for('about') }}">About</a></li>
