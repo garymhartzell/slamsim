@@ -4,6 +4,15 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
+## V1.0 Beta 4 (2025-11-22)
+
+This release introduces a new AI tool for quickly creating wrestler rosters.
+
+### New Feature: AI Roster Generator
+- A tool that allows bookers to generate a creative roster of up to 30 wrestlers based on a user prompt (e.g., "10 futuristic tag teams" or "15 wrestlers from the 1980s").
+- **Creative Mode:** Generates original fictional wrestlers with full creative profiles.
+- **Real-World Grounding Mode:** Uses Google Search to find real wrestler data (names, heights, weights, move-sets, and birthdates) for historical or active figures.
+
 ## v1.0 Beta 3 - Tools and Data Safety (2025-11-18)
 
 This release focuses on application structure, user experience, and—most importantly—data security. We have introduced a critical Backup and Restore feature to ensure data is protected, and simplified the top-level navigation.
