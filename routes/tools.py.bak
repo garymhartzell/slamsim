@@ -66,8 +66,8 @@ def generate_roster():
         Each wrestler object MUST strictly adhere to the following schema, which only includes the creative elements:
         {{
           "Name": "STRING (e.g., Ric Flair) - Must be unique and creative.",
-          "nickname": "STRING (e.g., 'The Nature Boy') - Can be empty if no nickname.",
-          "location": "STRING (e.g., 'Charlotte, North Carolina' or 'Parts Unknown')",
+          "Nickname": "STRING (e.g., 'The Nature Boy') - Can be empty if no nickname.",
+          "Location": "STRING (e.g., 'Charlotte, North Carolina' or 'Parts Unknown')",
           "Alignment": "STRING (MUST be one of: 'Babyface', 'Heel', 'Tweener')",
           "Wrestling_Styles": "ARRAY OF STRINGS (List 1-3 appropriate styles, e.g., ['Technical', 'Brawler', 'High-Flyer'])",
           "Moves": "ARRAY OF STRINGS (List 3-5 signature moves. Use generic names only for non-finishers. MUST include one clear finisher name)",
@@ -133,23 +133,10 @@ def generate_roster():
         generated_data = json.loads(ai_content)
         generated_roster_raw = generated_data.get('wrestlers', [])
 
-        
+        # --- START FIX: Inject required application defaults for fields not requested from AI ---
+        # This ensures all wrestlers (AI-generated or manual) have a default Status, Belt, and stats.
         for wrestler_data in generated_roster_raw:
-            # --- START FIX: Key Capitalization and Normalization ---
-            # Now ADD the capitalized key without removing the lowercase one.
-            # This satisfies both the HTML template (which uses lowercase keys for display)
-            # and the database commit (which uses capitalized keys).
-            
-            # 1. Normalize 'location' to 'Location'
-            if 'location' in wrestler_data:
-                wrestler_data['Location'] = wrestler_data['location'] # ADD capitalized key
-            
-            # 2. Normalize 'nickname' to 'Nickname'
-            if 'nickname' in wrestler_data:
-                wrestler_data['Nickname'] = wrestler_data['nickname'] # ADD capitalized key
-            # --- END FIX ---
-            
-            # Set Belt, Status, and Stats defaults (previous fix)
+            # Set Belt and Status defaults to match the 'create' route in wrestlers_bp
             if 'Status' not in wrestler_data:
                 wrestler_data['Status'] = 'Inactive' 
             if 'Belt' not in wrestler_data:
@@ -161,7 +148,8 @@ def generate_roster():
             for key in ['Singles_Wins', 'Singles_Losses', 'Singles_Draws', 'Tag_Wins', 'Tag_Losses', 'Tag_Draws']:
                 if key not in wrestler_data:
                     wrestler_data[key] = '0'
-        
+        # --- END FIX ---
+
 
         # Prepare roster for template: original data for display, encoded data for form submission
         generated_roster_for_template = []
