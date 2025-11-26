@@ -27,6 +27,30 @@ SEGMENT_TYPE_OPTIONS = ["Match", "Promo", "Interview", "In-ring", "Brawl", "Vide
 MATCH_RESULT_OPTIONS = ["Win", "Loss", "Draw", "No Contest"]
 WINNER_METHOD_OPTIONS = ["pinfall", "submission", "KO", "referee stoppage", "disqualification", "countout"]
 
+CONCISE_NARRATIVE_PROMPT = """
+ACT AS A FAST-PACED, ACTION-FOCUSED COMMENTATOR, providing a concise, move-by-move summary for a wrestling newsletter or match report. 
+CRITICAL RULES FOR THIS STYLE:
+1. **Focus on Action ONLY:** Describe the moves and the immediate flow of momentum.
+2. **Elaborate on General Actions:** When a general action (e.g., "several power moves") is implied or given, expand upon it by describing specific moves appropriate to the participants' 'Wrestling_Styles' and 'Signature_Moves' (provided in their dossiers). Use generic names for non-signature moves.
+3. **STRICTLY EXCLUDE DIRECT MENTION OF STATS/STYLES:** Do not explicitly mention wrestler stats (height, weight), alignment, or wrestling styles in the narrative. Instead, *show* their style through the moves described.
+4. **Be Brief and Punchy:** Use short, sharp sentences to drive the action forward without flowery descriptions.
+"""
+
+STANDARD_NARRATIVE_PROMPT = """
+Your description of the match should be vivid and reflect the participants' unique styles.
+- You MUST incorporate some of their listed Signature Moves into the narrative.
+- You SHOULD describe other common wrestling moves that are appropriate for their selected Wrestling Styles (e.g., describe suplexes for a Powerhouse, quick arm-drags for a Luchador, or brawling outside the ring for a Brawler).
+- Use the provided physical stats (height, weight) to inform the story of the match where appropriate (e.g., a smaller wrestler using speed against a larger one).
+- **CRITICAL RULE:** You must *only* use the specific, branded move names provided in a wrestler's 'Signature Moves' list. For all other moves, you MUST use the generic, common name for that maneuver (e.g., "piledriver," "suplex," "DDT"). You are NOT allowed to invent new branded move names (like "The Matthews Driver") for any wrestler.
+"""
+
+NARRATIVE_STYLE_INSTRUCTIONS = {
+    "Standard Commentary": STANDARD_NARRATIVE_PROMPT,
+    "Concise": CONCISE_NARRATIVE_PROMPT,
+    "Dirt Sheet / Tabloid": STANDARD_NARRATIVE_PROMPT, # Can be customized later
+    "Cinematic": STANDARD_NARRATIVE_PROMPT, # Can be customized later
+}
+
 def _get_segment_form_data(form):
     """Extracts segment data from the form, including new match participant and result data."""
     position_str = form.get('position')
@@ -465,37 +489,12 @@ def ai_generate(event_slug, position):
             prompt_parts.append(f"Promo Style: {promo_style}")
 
 
-    if dossiers:
-        prompt_parts.append("\n--- Participant Dossiers ---")
-        for d in dossiers:
-            if d["Type"] == "Wrestler":
-                prompt_parts.append(f"Wrestler: {d['Name']}")
-                if d.get('Nickname'): prompt_parts.append(f"  Nickname: {d['Nickname']}")
-                if d.get('Alignment'): prompt_parts.append(f"  Alignment: {d['Alignment']}")
-                if d.get('Wrestling_Styles'): prompt_parts.append(f"  Styles: {', '.join(d['Wrestling_Styles'])}")
-                if d.get('Belt'): prompt_parts.append(f"  Current Champion: {d['Belt']}")
-                if d.get('Manager'): prompt_parts.append(f"  Manager: {d['Manager']}")
-                if d.get('Faction'): prompt_parts.append(f"  Faction: {d['Faction']}")
-                if d.get('Height'): prompt_parts.append(f"  Height: {d['Height']}")
-                if d.get('Weight'): prompt_parts.append(f"  Weight: {d['Weight']}")
-                if d.get('Signature_Moves'): prompt_parts.append(f"  Signature Moves: {', '.join(d['Signature_Moves'])}")
-            elif d["Type"] == "Tag-Team":
-                prompt_parts.append(f"Tag-Team: {d['Name']}")
-                if d.get('Members'): prompt_parts.append(f"  Members: {', '.join(d['Members'])}")
-                if d.get('Alignment'): prompt_parts.append(f"  Alignment: {d['Alignment']}")
-                if d.get('Belt'): prompt_parts.append(f"  Current Champion: {d['Belt']}")
-                if d.get('Manager'): prompt_parts.append(f"  Manager: {d['Manager']}")
-                if d.get('Faction'): prompt_parts.append(f"  Faction: {d['Faction']}")
-                if d.get('Moves'): prompt_parts.append(f"  Moves: {', '.join(d['Moves'])}")
-
     prompt_parts.append("\n--- Creative Direction ---")
-    # New instructions for in-ring action
     prompt_parts.append("IN-RING ACTION INSTRUCTIONS:")
-    prompt_parts.append("Your description of the match should be vivid and reflect the participants' unique styles.")
-    prompt_parts.append("- You MUST incorporate some of their listed Signature Moves into the narrative.")
-    prompt_parts.append("- You SHOULD describe other common wrestling moves that are appropriate for their selected Wrestling Styles (e.g., describe suplexes for a Powerhouse, quick arm-drags for a Luchador, or brawling outside the ring for a Brawler).")
-    prompt_parts.append("- Use the provided physical stats (height, weight) to inform the story of the match where appropriate (e.g., a smaller wrestler using speed against a larger one).")
-    prompt_parts.append("- **CRITICAL RULE:** You must *only* use the specific, branded move names provided in a wrestler's 'Signature Moves' list. For all other moves, you MUST use the generic, common name for that maneuver (e.g., \"piledriver,\" \"suplex,\" \"DDT\"). You are NOT allowed to invent new branded move names (like \"The Matthews Driver\") for any wrestler.")
+    
+    # Get narrative style specific instructions
+    style_instructions = NARRATIVE_STYLE_INSTRUCTIONS.get(narrative_style, STANDARD_NARRATIVE_PROMPT)
+    prompt_parts.append(style_instructions)
     prompt_parts.append("---")
 
     if feud_summary:
