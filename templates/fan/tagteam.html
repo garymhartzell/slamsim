@@ -43,7 +43,7 @@
         <div class="card-header"><h3>Profile</h3></div>
         <div class="card-content">
             <p><strong>Location:</strong> {{ tagteam.Location or 'Parts Unknown' }}</p>
-            {% if tagteam.Weight %}<p><strong>Combined Weight:</strong> {{ tagteam.Weight }}</p>{% endif %}
+            {% if tagteam.Weight %}<p><strong>Combined Weight:</strong> {{ tagteam.Weight }} {{ prefs.weight_unit }}</p>{% endif %}
             <p><strong>Alignment:</strong> {{ tagteam.Alignment }}</p>
             {% if tagteam.Music %}<p><strong>Entrance Music:</strong> {{ tagteam.Music }}</p>{% endif %}
         </div>

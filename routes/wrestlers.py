@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from src.wrestlers import load_wrestlers, get_wrestler_by_name, add_wrestler, update_wrestler, delete_wrestler
 from src import divisions
+from src.prefs import load_preferences # Import load_preferences
 import html
 
 wrestlers_bp = Blueprint('wrestlers', __name__, url_prefix='/wrestlers')
@@ -18,7 +19,8 @@ def _get_form_data(form):
         "Status": html.escape(form.get('status', '').strip()), # Use .get() for robustness
         "Division": html.escape(form.get('division', '').strip()), # Use .get() for robustness
         "Nickname": html.escape(form.get('nickname', '').strip()), "Location": html.escape(form.get('location', '').strip()),
-        "Height": html.escape(form.get('height', '').strip()), "Weight": html.escape(form.get('weight', '').strip()),
+        "Height": html.escape(form.get('height', '').strip()), 
+        "Weight": html.escape(form.get('weight', '').strip()), # Weight is now expected to be a number string
         "DOB": html.escape(form.get('dob', '').strip()), "Alignment": html.escape(form['alignment'].strip()),
         "Music": html.escape(form.get('music', '').strip()),
         "Faction": html.escape(form.get('faction', '').strip()), "Manager": html.escape(form.get('manager', '').strip()),
@@ -44,14 +46,17 @@ def list_wrestlers():
         wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
         wrestler['is_deletable'] = is_wrestler_deletable(wrestler)
 
+    prefs = load_preferences() # Load preferences
     status_options_for_filter = ['All'] + STATUS_OPTIONS
     return render_template('booker/wrestlers/list.html',
                            wrestlers=wrestlers_list,
                            status_options=status_options_for_filter,
-                           selected_status=selected_status)
+                           selected_status=selected_status,
+                           prefs=prefs) # Pass preferences to the template
 
 @wrestlers_bp.route('/create', methods=['GET', 'POST'])
 def create_wrestler():
+    prefs = load_preferences() # Load preferences
     all_divisions = divisions.get_all_division_ids_and_names()
     if request.method == 'POST':
         wrestler_data = _get_form_data(request.form)
@@ -65,11 +70,12 @@ def create_wrestler():
             flash(f'Wrestler "{wrestler_data["Name"]}" created successfully!', 'success')
             return redirect(url_for('wrestlers.list_wrestlers'))
         else: flash(f'Wrestler with the name "{wrestler_data["Name"]}" already exists.', 'error')
-        return render_template('booker/wrestlers/form.html', wrestler=wrestler_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=False)
-    return render_template('booker/wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=False)
+        return render_template('booker/wrestlers/form.html', wrestler=wrestler_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=False, prefs=prefs) # Pass preferences
+    return render_template('booker/wrestlers/form.html', wrestler={}, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=False, prefs=prefs) # Pass preferences
 
 @wrestlers_bp.route('/edit/<string:wrestler_name>', methods=['GET', 'POST'])
 def edit_wrestler(wrestler_name):
+    prefs = load_preferences() # Load preferences
     wrestler = get_wrestler_by_name(wrestler_name)
     if not wrestler:
         flash(f'Wrestler "{wrestler_name}" not found.', 'error')
@@ -86,7 +92,7 @@ def edit_wrestler(wrestler_name):
             flash(f'Wrestler "{updated_data["Name"]}" updated successfully!', 'success')
             return redirect(url_for('wrestlers.list_wrestlers'))
         else: flash(f'Failed to update wrestler "{wrestler_name}". New name might already exist.', 'error')
-        return render_template('booker/wrestlers/form.html', wrestler=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=True)
+        return render_template('booker/wrestlers/form.html', wrestler=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=True, prefs=prefs) # Pass preferences
 
     wrestler_display = wrestler.copy()
 
@@ -110,16 +116,21 @@ def edit_wrestler(wrestler_name):
         wrestler_display['Wrestling_Styles'] = wrestling_styles_data.split('|')
     else:
         wrestler_display['Wrestling_Styles'] = []
-    return render_template('booker/wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=True)
+    
+    # Ensure Weight is just the number for the form input, converting to string first if necessary
+    wrestler_display['Weight'] = str(wrestler_display.get('Weight', '')).split(' ')[0]
+
+    return render_template('booker/wrestlers/form.html', wrestler=wrestler_display, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, divisions=all_divisions, wrestling_styles_options=WRESTLING_STYLES_OPTIONS, edit_mode=True, prefs=prefs) # Pass preferences
 
 @wrestlers_bp.route('/view/<string:wrestler_name>')
 def view_wrestler(wrestler_name):
+    prefs = load_preferences() # Load preferences
     wrestler = get_wrestler_by_name(wrestler_name)
     if not wrestler:
         flash(f'Wrestler "{wrestler_name}" not found.', 'error')
         return redirect(url_for('wrestlers.list_wrestlers'))
     wrestler['DivisionName'] = divisions.get_division_name_by_id(wrestler.get('Division', ''))
-    return render_template('booker/wrestlers/view.html', wrestler=wrestler)
+    return render_template('booker/wrestlers/view.html', wrestler=wrestler, prefs=prefs) # Pass preferences
 
 @wrestlers_bp.route('/delete/<string:wrestler_name>', methods=['POST'])
 def delete_wrestler_route(wrestler_name):

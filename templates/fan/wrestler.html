@@ -23,7 +23,7 @@
             {% if wrestler.Nickname %}<p><strong>Nickname:</strong> {{ wrestler.Nickname }}</p>{% endif %}
             <p><strong>Location:</strong> {{ wrestler.Location or 'Parts Unknown' }}</p>
             <p><strong>Height:</strong> {{ wrestler.Height }}</p>
-            <p><strong>Weight:</strong> {{ wrestler.Weight }}</p>
+            <p><strong>Weight:</strong> {{ wrestler.Weight }} {{ prefs.weight_unit }}</p>
             {% if wrestler.DOB %}<p><strong>Date of Birth:</strong> {{ wrestler.DOB }}</p>{% endif %}
             <p><strong>Alignment:</strong> {{ wrestler.Alignment }}</p>
             {% if wrestler.Music %}<p><strong>Entrance Music:</strong> {{ wrestler.Music }}</p>{% endif %}

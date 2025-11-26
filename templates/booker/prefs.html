@@ -131,6 +131,19 @@
     </fieldset>
 
     <fieldset class="form-section">
+        <legend><h3>Units</h3></legend>
+        <div class="form-group">
+            <label>Weight Unit</label>
+            <div class="radio-group">
+                <input type="radio" id="weight_unit_lbs" name="weight_unit" value="lbs." {% if prefs.weight_unit == 'lbs.' %}checked{% endif %}>
+                <label for="weight_unit_lbs">Pounds (lbs.)</label>
+                <input type="radio" id="weight_unit_kg" name="weight_unit" value="kg." {% if prefs.weight_unit == 'kg.' %}checked{% endif %}>
+                <label for="weight_unit_kg">Kilograms (kg.)</label>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
         <legend><h3>AI Assistant Configuration</h3></legend>
         <div class="form-group">
             <label for="ai_provider">AI Provider</label>
@@ -268,6 +281,17 @@
                     Cancel
                 </button>
             </div>
+        </form>
+    </div>
+
+    <hr class="subsection-divider">
+
+    <!-- Recalculate Tag Team Weights Section -->
+    <div class="form-group">
+        <label>Recalculate All Tag Team Weights</label>
+        <p>This will re-calculate the combined weight for all tag teams based on their current members' weights. This is useful if wrestler weights have changed or if you suspect an inconsistency.</p>
+        <form method="POST" action="{{ url_for('prefs.recalculate_tagteam_weights_route') }}">
+            <button type="submit" class="btn btn-info">Recalculate All Tag Team Weights</button>
         </form>
     </div>
 

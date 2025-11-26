@@ -90,8 +90,8 @@
                     <input type="text" id="height" name="height" value="{{ wrestler.Height | default('') }}">
                 </div>
                 <div class="form-group">
-                    <label for="weight">Weight</label>
-                    <input type="text" id="weight" name="weight" value="{{ wrestler.Weight | default('') }}">
+                    <label for="weight">Weight ({{ prefs.weight_unit }})</label>
+                    <input type="number" id="weight" name="weight" value="{{ wrestler.Weight | default('') }}">
                 </div>
             </div>
             <div class="form-row">

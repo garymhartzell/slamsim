@@ -52,6 +52,50 @@ def get_wrestler_names():
     from src.wrestlers import load_wrestlers
     return sorted([w['Name'] for w in load_wrestlers()])
 
+def _calculate_tagteam_weight(member_names):
+    """Calculates the combined weight of tag team members."""
+    from src.wrestlers import load_wrestlers # Import here to avoid circular dependency
+    all_wrestlers = load_wrestlers()
+    total_weight = 0
+    for member_name in member_names:
+        if member_name:
+            wrestler = next((w for w in all_wrestlers if w['Name'] == member_name), None)
+            if wrestler:
+                    # Extract only numeric part if weight includes units (e.g., "250 lbs")
+                    # Ensure weight is treated as an integer for calculation
+                    weight_str = str(wrestler.get('Weight', '0')).split(' ')[0]
+                    try:
+                        total_weight += int(weight_str)
+                    except ValueError:
+                        # Handle cases where weight is not a valid number, treat as 0
+                        pass
+    return str(total_weight) if total_weight > 0 else ''
+
+def recalculate_all_tagteam_weights():
+    """
+    Recalculates the weight for all tag teams based on their current members
+    and updates the tagteam data.
+    """
+    all_tagteams = load_tagteams()
+    updated_count = 0
+    for team in all_tagteams:
+        member_names = team.get('Members', '').split('|')
+        # Filter out empty strings from member_names list
+        valid_member_names = [name for name in member_names if name]
+        
+        if valid_member_names:
+            new_weight = _calculate_tagteam_weight(valid_member_names)
+            if team.get('Weight') != new_weight:
+                team['Weight'] = new_weight
+                updated_count += 1
+        elif team.get('Weight') != '': # If no members, weight should be empty
+            team['Weight'] = ''
+            updated_count += 1
+            
+    if updated_count > 0:
+        save_tagteams(all_tagteams)
+    return updated_count
+
 def get_active_members_status(member_names):
     """Checks if all specified members are active."""
     for member_name in member_names:

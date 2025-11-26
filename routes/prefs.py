@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.utils import secure_filename
 from src.prefs import load_preferences, save_preferences
 from src.wrestlers import reset_all_wrestler_records
-from src.tagteams import reset_all_tagteam_records
+from src.tagteams import reset_all_tagteam_records, recalculate_all_tagteam_weights # Import new function
 from src.system import delete_all_temporary_files, get_league_logo_path, LEAGUE_LOGO_FILENAME, INCLUDES_DIR
 from src.date_utils import get_current_working_date # Import the new utility
 
@@ -45,6 +45,9 @@ def general_prefs():
         game_date_mode = request.form.get('game_date_mode', 'real-time')
         # game_date itself is updated by events/news, not directly here.
         
+        # New Weight Unit preference
+        weight_unit = request.form.get('weight_unit', 'lbs.')
+
         updated_prefs = {
             "league_name": league_name,
             "league_short": league_short,
@@ -67,7 +70,8 @@ def general_prefs():
             "google_api_key": google_api_key,
             "openai_api_key": openai_api_key,
             "game_date_mode": game_date_mode, # Save new preference
-            "game_date": prefs.get("game_date") # Preserve existing game_date, it's updated elsewhere
+            "game_date": prefs.get("game_date"), # Preserve existing game_date, it's updated elsewhere
+            "weight_unit": weight_unit # Save new weight unit preference
         }
         save_preferences(updated_prefs)
 
@@ -128,5 +132,15 @@ def clear_temp_files():
             flash('An error occurred while clearing temporary files.', 'danger')
     else:
         flash('Confirmation text was incorrect. Temporary files were not cleared.', 'danger')
+    return redirect(url_for('prefs.general_prefs'))
+
+@prefs_bp.route('/recalculate-tagteam-weights', methods=['POST'])
+def recalculate_tagteam_weights_route():
+    """Handles the recalculation of all tag team weights."""
+    updated_count = recalculate_all_tagteam_weights()
+    if updated_count > 0:
+        flash(f'Successfully recalculated weights for {updated_count} tag teams.', 'success')
+    else:
+        flash('No tag team weights needed recalculation.', 'info')
     return redirect(url_for('prefs.general_prefs'))
 

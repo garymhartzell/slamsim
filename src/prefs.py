@@ -40,7 +40,8 @@ def load_preferences():
         "google_api_key": "",
         "openai_api_key": "",
         "game_date_mode": "real-time", # New preference
-        "game_date": datetime.date.today().isoformat() # New preference
+        "game_date": datetime.date.today().isoformat(), # New preference
+        "weight_unit": "lbs." # New preference for weight unit
     }
 
     if os.path.exists(prefs_path):
@@ -91,7 +92,8 @@ def save_preferences(prefs_dict):
         {"Pref": "Google_API_Key", "Value": prefs_dict.get("google_api_key", "")},
         {"Pref": "OpenAI_API_Key", "Value": prefs_dict.get("openai_api_key", "")},
         {"Pref": "Game_Date_Mode", "Value": prefs_dict.get("game_date_mode", "real-time")}, # New preference
-        {"Pref": "Game_Date", "Value": prefs_dict.get("game_date", datetime.date.today().isoformat())} # New preference
+        {"Pref": "Game_Date", "Value": prefs_dict.get("game_date", datetime.date.today().isoformat())}, # New preference
+        {"Pref": "Weight_Unit", "Value": prefs_dict.get("weight_unit", "lbs.")} # New preference for weight unit
     ]
 
     os.makedirs(os.path.dirname(prefs_path), exist_ok=True)
