@@ -48,8 +48,8 @@ def _get_form_data(form):
         "Members": members_string,
         "Faction": escape(form.get('Faction', '')).strip(),
         "Manager": escape(form.get('Manager', '')).strip(),
-        "Moves": html.escape(form.get('moves', '').strip()).replace('\n', '|').replace('\r', ''),
-        "Awards": html.escape(form.get('awards', '').strip()).replace('\n', '|').replace('\r', ''),
+        "Moves": html.escape(form.get('Moves', '').strip()).replace('\n', '|').replace('\r', ''),
+        "Awards": html.escape(form.get('Awards', '').strip()).replace('\n', '|').replace('\r', ''),
         "Hide_From_Fan_Roster": 'hide_from_fan_roster' in form
     }
 
@@ -111,38 +111,27 @@ def edit_tagteam(tagteam_name):
     old_members = set(tagteam.get('Members', '').split('|')) if tagteam else set()
 
     if request.method == 'POST':
+        # Get processed form data using the helper function
+        form_data_processed = _get_form_data(request.form)
+
         # Start with a copy of the existing tagteam data to preserve non-editable fields
+        # (like Wins, Losses, Draws, Belt which are not part of the edit form)
         updated_data = tagteam.copy() 
 
-        # Update fields that are directly editable via the form
-        updated_data["Name"] = escape(request.form.get('Name', '')).strip()
-        updated_data["Division"] = escape(request.form.get('Division', '')).strip()
-        updated_data["Location"] = escape(request.form.get('Location', '')).strip()
-        updated_data["Weight"] = escape(request.form.get('Weight', '')).strip()
-        updated_data["Alignment"] = request.form.get('Alignment', '')
-        updated_data["Music"] = escape(request.form.get('Music', '')).strip()
-        updated_data["Faction"] = escape(request.form.get('Faction', '')).strip()
-        updated_data["Manager"] = escape(request.form.get('Manager', '')).strip()
-        
-        # Handle Members
-        member_names = [request.form.get('Member1'), request.form.get('Member2'), request.form.get('Member3')]
-        updated_data["Members"] = '|'.join(filter(None, member_names))
-
-        # Handle Status with validation
-        new_status = request.form.get('Status')
-        member_status_active = get_active_members_status(filter(None, member_names))
-        if new_status == 'Active' and not member_status_active:
-            flash("Cannot set tag-team status to 'Active' because one or more members are inactive.", 'warning')
-            updated_data["Status"] = 'Inactive' # Force to Inactive if members are inactive
-        else:
-            updated_data["Status"] = new_status
-
-        # Handle Moves and Awards (these should be updated if present, or cleared if empty in form)
-        updated_data["Moves"] = html.escape(request.form.get('moves', '').strip()).replace('\n', '|').replace('\r', '')
-        updated_data["Awards"] = html.escape(request.form.get('awards', '').strip()).replace('\n', '|').replace('\r', '')
-
-        # Handle checkbox
-        updated_data["Hide_From_Fan_Roster"] = 'hide_from_fan_roster' in request.form
+        # Update fields from the processed form data
+        updated_data["Name"] = form_data_processed["Name"]
+        updated_data["Status"] = form_data_processed["Status"] # _get_form_data handles status validation and flashing
+        updated_data["Division"] = form_data_processed["Division"]
+        updated_data["Location"] = form_data_processed["Location"]
+        updated_data["Weight"] = form_data_processed["Weight"]
+        updated_data["Alignment"] = form_data_processed["Alignment"]
+        updated_data["Music"] = form_data_processed["Music"]
+        updated_data["Members"] = form_data_processed["Members"]
+        updated_data["Faction"] = form_data_processed["Faction"]
+        updated_data["Manager"] = form_data_processed["Manager"]
+        updated_data["Moves"] = form_data_processed["Moves"]
+        updated_data["Awards"] = form_data_processed["Awards"]
+        updated_data["Hide_From_Fan_Roster"] = form_data_processed["Hide_From_Fan_Roster"]
 
         if not updated_data['Name']:
             flash('Tag-team Name is required.', 'danger')
@@ -179,6 +168,25 @@ def edit_tagteam(tagteam_name):
         return render_template('booker/tagteams/form.html', tagteam=updated_data, status_options=STATUS_OPTIONS, alignment_options=ALIGNMENT_OPTIONS, wrestler_names=wrestler_names, divisions=all_divisions, edit_mode=True)
     
     # Pre-fill form for GET request
+    # Ensure all fields are present for rendering, defaulting to empty string or appropriate value if missing.
+    # Convert stored '|' to '\n' for multi-line text areas for 'Moves' and 'Awards'.
+    tagteam['Name'] = tagteam.get('Name', '')
+    tagteam['Wins'] = tagteam.get('Wins', '0')
+    tagteam['Losses'] = tagteam.get('Losses', '0')
+    tagteam['Draws'] = tagteam.get('Draws', '0')
+    tagteam['Status'] = tagteam.get('Status', '')
+    tagteam['Division'] = tagteam.get('Division', '')
+    tagteam['Location'] = tagteam.get('Location', '')
+    tagteam['Weight'] = tagteam.get('Weight', '')
+    tagteam['Alignment'] = tagteam.get('Alignment', '')
+    tagteam['Music'] = tagteam.get('Music', '')
+    tagteam['Faction'] = tagteam.get('Faction', '')
+    tagteam['Manager'] = tagteam.get('Manager', '')
+    tagteam['Moves'] = tagteam.get('Moves', '').replace('|', '\n')
+    tagteam['Awards'] = tagteam.get('Awards', '').replace('|', '\n')
+    tagteam['Hide_From_Fan_Roster'] = tagteam.get('Hide_From_Fan_Roster', False)
+    tagteam['Belt'] = tagteam.get('Belt', '') # Ensure 'Belt' is present, though not directly editable here
+
     members_list = tagteam.get('Members', '').split('|')
     tagteam['Member1'] = members_list[0] if len(members_list) > 0 else ''
     tagteam['Member2'] = members_list[1] if len(members_list) > 1 else ''
