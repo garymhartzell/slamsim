@@ -276,8 +276,19 @@
                 </div>
 
                 <div class="ai-modal-footer">
-                    <button type="button" class="btn btn-primary" id="ai-generate-btn">Generate</button>
+                    <button type="button" class="btn btn-primary" id="ai-generate-prompt-btn">Generate Prompt</button>
                     <button type="button" class="btn btn-secondary close-modal-btn">Cancel</button>
+                </div>
+            </div>
+
+            <div id="ai-prompt-review-view" style="display: none;">
+                <div class="ai-form-group">
+                    <label for="ai-prompt-textarea">Review AI Prompt</label>
+                    <textarea id="ai-prompt-textarea" rows="20" readonly></textarea>
+                </div>
+                <div class="ai-modal-footer">
+                    <button type="button" class="btn btn-primary" id="ai-send-to-ai-btn">Send to AI</button>
+                    <button type="button" class="btn btn-secondary" id="ai-edit-prompt-btn">Edit Prompt</button>
                 </div>
             </div>
 
@@ -353,7 +364,7 @@
         // Control visibility of the AI Assistant button
         const aiAssistantBtn = document.getElementById('ai-assistant-btn');
         if (aiAssistantBtn) {
-            if (segmentType === 'Match') {
+            if (segmentType === 'Match' || segmentType === 'Promo' || segmentType === 'Interview' || segmentType === 'In-ring' || segmentType === 'Brawl' || segmentType === 'Video Package') {
                 aiAssistantBtn.style.display = 'inline-block'; // Or 'block' depending on desired layout
             } else {
                 aiAssistantBtn.style.display = 'none';
@@ -803,15 +814,20 @@
     const aiAssistantBtn = document.getElementById('ai-assistant-btn');
     const closeAiModalBtns = document.querySelectorAll('.close-modal-btn');
     const aiInputView = document.getElementById('ai-input-view');
+    const aiPromptReviewView = document.getElementById('ai-prompt-review-view'); // New
     const aiOutputView = document.getElementById('ai-output-view');
-    const aiGenerateBtn = document.getElementById('ai-generate-btn');
+    const aiGeneratePromptBtn = document.getElementById('ai-generate-prompt-btn'); // Changed
+    const aiSendToAiBtn = document.getElementById('ai-send-to-ai-btn'); // New
+    const aiEditPromptBtn = document.getElementById('ai-edit-prompt-btn'); // New
     const aiAcceptBtn = document.getElementById('ai-accept-btn');
     const aiRegenerateBtn = document.getElementById('ai-regenerate-btn');
     const aiResponseTextarea = document.getElementById('ai-response-textarea');
+    const aiPromptTextarea = document.getElementById('ai-prompt-textarea'); // New
     const summaryTextarea = document.getElementById('summary_text');
     const aiLoadingIndicator = aiOutputView.querySelector('.ai-loading-indicator');
 
     let lastFocusedElement = null; // To restore focus after modal closes
+    let currentPrompt = ""; // To store the generated prompt
 
     function populatePromoSpeakers() {
         const speakerSelect = document.getElementById('promo_speaker');
@@ -833,8 +849,10 @@
         lastFocusedElement = document.activeElement;
         aiAssistantModal.style.display = 'flex';
         aiInputView.style.display = 'block';
+        aiPromptReviewView.style.display = 'none'; // Hide new view initially
         aiOutputView.style.display = 'none';
         aiResponseTextarea.value = ''; // Clear previous response
+        aiPromptTextarea.value = ''; // Clear previous prompt
 
         const currentSegmentType = document.getElementById('type').value;
         const aiMatchInputs = document.getElementById('ai-match-inputs');
@@ -877,11 +895,12 @@
         }
     });
 
-    async function generateAiContent() {
+    async function generatePromptAndShowReview() {
         aiInputView.style.display = 'none';
-        aiOutputView.style.display = 'block';
-        aiLoadingIndicator.style.display = 'flex';
-        aiResponseTextarea.value = ''; // Clear previous content
+        aiPromptReviewView.style.display = 'block';
+        aiOutputView.style.display = 'none';
+        aiLoadingIndicator.style.display = 'flex'; // Show loading indicator while generating prompt
+        aiPromptTextarea.value = 'Generating prompt...';
 
         const feudSummary = document.getElementById('feud_summary').value;
         const storyBeats = document.getElementById('story_beats').value;
@@ -893,17 +912,16 @@
             story_beats: storyBeats,
             segment_type: segmentType,
             segment_header: segmentHeader,
-            position: document.getElementById('position').value, // Add segment position
+            position: document.getElementById('position').value,
+            // Indicate that we only want the prompt, not the full AI generation yet
+            get_prompt_only: true 
         };
 
-        // Add segment-type specific inputs to requestBody
         if (segmentType === 'Match') {
             requestBody.detail_level = document.getElementById('detail_level').value;
             requestBody.narrative_style = document.getElementById('narrative_style').value;
             requestBody.include_entrances = document.getElementById('include_entrances').checked;
             requestBody.commentary_level = document.getElementById('commentary_level').value;
-
-            // Match-specific data from the main form
             requestBody.match_sides_json = document.getElementById('match_sides_json_input').value;
             requestBody.match_results_json = document.getElementById('match_results_json_input').value;
             requestBody.match_championship = document.getElementById('match_championship').value;
@@ -915,21 +933,17 @@
         } else if (segmentType === 'Promo') {
             requestBody.promo_speaker = document.getElementById('promo_speaker').value;
             requestBody.promo_style = document.getElementById('promo_style').value;
-            requestBody.detail_level = document.getElementById('promo_detail_level').value; // Use promo-specific detail level
-            requestBody.narrative_style = document.getElementById('promo_narrative_style').value; // Use promo-specific narrative style
-        } else { // For 'In-ring', 'Brawl', 'Interview', 'Video Package'
-            // Use the generic detail/narrative style controls from the match section as a fallback
+            requestBody.detail_level = document.getElementById('promo_detail_level').value;
+            requestBody.narrative_style = document.getElementById('promo_narrative_style').value;
+        } else {
             requestBody.detail_level = document.getElementById('detail_level').value;
             requestBody.narrative_style = document.getElementById('narrative_style').value;
-            // No include_entrances or commentary_level for these types unless explicitly added
         }
 
-        // Debugging: Log the request body before sending
-        console.log('AI Generate Request Body:', requestBody);
+        console.log('AI Generate Prompt Request Body:', requestBody);
 
         try {
             const url = "{{ url_for('segments.ai_generate', event_slug=event_slug, position=segment.get('position', 0)) }}";
-            console.log('AI Generate URL:', url);
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -943,7 +957,77 @@
             }
 
             const data = await response.json();
-            aiResponseTextarea.value = data.summary || "No summary generated."; // Changed from generated_text to summary
+            currentPrompt = data.prompt || "Error: Could not generate prompt.";
+            aiPromptTextarea.value = currentPrompt;
+        } catch (error) {
+            console.error('Error generating AI prompt:', error);
+            aiPromptTextarea.value = `Error generating prompt: ${error.message}. Please try again.`;
+        } finally {
+            aiLoadingIndicator.style.display = 'none'; // Hide loading indicator
+        }
+    }
+
+    async function sendPromptToAI() {
+        aiPromptReviewView.style.display = 'none';
+        aiOutputView.style.display = 'block';
+        aiLoadingIndicator.style.display = 'flex';
+        aiResponseTextarea.value = 'Sending prompt to AI and generating response...';
+
+        const feudSummary = document.getElementById('feud_summary').value;
+        const storyBeats = document.getElementById('story_beats').value;
+        const segmentType = document.getElementById('type').value;
+        const segmentHeader = document.getElementById('header').value;
+
+        let requestBody = {
+            feud_summary: feudSummary,
+            story_beats: storyBeats,
+            segment_type: segmentType,
+            segment_header: segmentHeader,
+            position: document.getElementById('position').value,
+            // Do not include get_prompt_only, so the backend proceeds with AI generation
+        };
+
+        if (segmentType === 'Match') {
+            requestBody.detail_level = document.getElementById('detail_level').value;
+            requestBody.narrative_style = document.getElementById('narrative_style').value;
+            requestBody.include_entrances = document.getElementById('include_entrances').checked;
+            requestBody.commentary_level = document.getElementById('commentary_level').value;
+            requestBody.match_sides_json = document.getElementById('match_sides_json_input').value;
+            requestBody.match_results_json = document.getElementById('match_results_json_input').value;
+            requestBody.match_championship = document.getElementById('match_championship').value;
+            requestBody.match_time = document.getElementById('match_time').value;
+            requestBody.match_visibility_json = document.getElementById('match_visibility_json_input').value;
+            requestBody.participants_display = document.getElementById('participants_display_input').value;
+            requestBody.overall_match_result = overallMatchResult;
+            requestBody.winner_method = winnerMethod;
+        } else if (segmentType === 'Promo') {
+            requestBody.promo_speaker = document.getElementById('promo_speaker').value;
+            requestBody.promo_style = document.getElementById('promo_style').value;
+            requestBody.detail_level = document.getElementById('promo_detail_level').value;
+            requestBody.narrative_style = document.getElementById('promo_narrative_style').value;
+        } else {
+            requestBody.detail_level = document.getElementById('detail_level').value;
+            requestBody.narrative_style = document.getElementById('narrative_style').value;
+        }
+
+        console.log('AI Send to AI Request Body:', requestBody);
+
+        try {
+            const url = "{{ url_for('segments.ai_generate', event_slug=event_slug, position=segment.get('position', 0)) }}";
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            aiResponseTextarea.value = data.summary || "No summary generated.";
         } catch (error) {
             console.error('Error generating AI content:', error);
             aiResponseTextarea.value = `Error generating content: ${error.message}. Please try again.`;
@@ -952,8 +1036,13 @@
         }
     }
 
-    aiGenerateBtn.addEventListener('click', generateAiContent);
-    aiRegenerateBtn.addEventListener('click', generateAiContent);
+    aiGeneratePromptBtn.addEventListener('click', generatePromptAndShowReview); // Changed
+    aiSendToAiBtn.addEventListener('click', sendPromptToAI); // New
+    aiEditPromptBtn.addEventListener('click', () => { // New
+        aiPromptReviewView.style.display = 'none';
+        aiInputView.style.display = 'block';
+    });
+    aiRegenerateBtn.addEventListener('click', sendPromptToAI); // Regenerate now means re-send the prompt to AI
 
     aiAcceptBtn.addEventListener('click', () => {
         summaryTextarea.value = aiResponseTextarea.value;

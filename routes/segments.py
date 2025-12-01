@@ -316,6 +316,7 @@ def ai_generate(event_slug, position):
     Generates AI content for a segment based on context and user input.
     This function assembles a detailed context packet and returns the full prompt.
     """
+    litellm.drop_params = True # Enable dropping of unsupported parameters for AI models
     print(f"AI Generate: event_slug={event_slug}, position (from URL)={position}")
     user_input = request.get_json()
     print(f"AI Generate: user_input={user_input}")
@@ -424,7 +425,7 @@ def ai_generate(event_slug, position):
                 "Faction": wrestler.get('Faction'),
                 "Height": wrestler.get('Height'),
                 "Weight": wrestler.get('Weight'),
-                "Signature_Moves": wrestler.get('Signature_Moves', '').split('|') if wrestler.get('Signature_Moves') else [],
+                "Moves": wrestler.get('Moves', '').split('|') if wrestler.get('Moves') else [], # Changed from Signature_Moves to Moves
             }
             dossiers.append(dossier)
         else:
@@ -523,6 +524,11 @@ def ai_generate(event_slug, position):
         if narrative_style != 'Standard Commentary': # Only add if not default
             prompt_parts.append(f"Narrative Style: {narrative_style}")
 
+    if dossiers:
+        prompt_parts.append("\n--- Participant Dossiers ---")
+        for dossier in dossiers:
+            prompt_parts.append(json.dumps(dossier, indent=2)) # Pretty print JSON for readability
+        prompt_parts.append("--- End Participant Dossiers ---")
 
     prompt_parts.append("\n--- Task ---")
     task_description = f"Generate a segment summary for Segment {segment.get('position', 'N/A')} of {event.get('Event_Name', 'N/A')}. The summary should be written in the specified narrative style and detail level, incorporating the feud/storyline context, key story beats, and participant information."
@@ -543,6 +549,10 @@ def ai_generate(event_slug, position):
     print(final_prompt)
     print("---------------------------\n")
 
+    # If the request is only for the prompt, return it immediately without calling the AI API
+    if user_input.get('get_prompt_only'):
+        return jsonify({'prompt': final_prompt})
+
     # Prepare messages for Litellm API
     messages = [{"role": "user", "content": final_prompt}]
     ai_summary = "Error: Could not generate summary."
@@ -554,5 +564,5 @@ def ai_generate(event_slug, position):
         print(f"Error calling Litellm API: {e}")
         ai_summary = f"Error generating content: {e}. Please check your API key and model settings in preferences."
 
-    # Return the full prompt string for debugging
-    return jsonify({'summary': ai_summary})
+    # Return the generated summary and the full prompt for debugging/review
+    return jsonify({'summary': ai_summary, 'prompt': final_prompt})

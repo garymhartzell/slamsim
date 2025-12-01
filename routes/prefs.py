@@ -10,7 +10,7 @@ from src.date_utils import get_current_working_date # Import the new utility
 prefs_bp = Blueprint('prefs', __name__, url_prefix='/prefs')
 
 AVAILABLE_MODELS = {
-    "Google": ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-flash"],
+    "Google": ["gemini-2.5-pro", "gemini-2.5-flash"],
     "OpenAI": ["gpt-5.0", "gpt-4.0", "gpt-3.5"]
 }
 
