@@ -7,8 +7,9 @@ from src.belts import (
 from src.wrestlers import load_wrestlers
 from src.tagteams import load_tagteams
 from src.segments import _slugify
+from src.prefs import load_preferences # Import load_preferences
 import uuid
-from datetime import datetime
+from datetime import datetime, date # Import date
 
 belts_bp = Blueprint('belts', __name__, url_prefix='/belts')
 
@@ -93,11 +94,17 @@ def history(belt_id):
         flash('Belt not found.', 'danger')
         return redirect(url_for('belts.list_belts'))
     history = sorted(load_history_for_belt(belt_id), key=lambda r: r.get('Date_Won', '0'), reverse=True)
-    today = datetime.now().date()
+
+    # Load game date from preferences
+    prefs = load_preferences()
+    game_date_str = prefs.get('game_date', date.today().isoformat())
+    game_date = datetime.strptime(game_date_str, "%Y-%m-%d").date()
+
     for reign in history:
         try:
             date_won = datetime.strptime(reign['Date_Won'], "%Y-%m-%d").date()
-            date_lost = datetime.strptime(reign['Date_Lost'], "%Y-%m-%d").date() if reign.get('Date_Lost') else today
+            # Use game_date for current reigns (where Date_Lost is not set)
+            date_lost = datetime.strptime(reign['Date_Lost'], "%Y-%m-%d").date() if reign.get('Date_Lost') else game_date
             reign['Days'] = (date_lost - date_won).days
         except (ValueError, TypeError): reign['Days'] = 'Error'
     return render_template('booker/belts/history.html', belt=belt, history=history)

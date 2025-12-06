@@ -277,6 +277,7 @@
 
                 <div class="ai-modal-footer">
                     <button type="button" class="btn btn-primary" id="ai-generate-prompt-btn">Generate Prompt</button>
+                    <button type="button" class="btn btn-success" id="ai-send-to-ai-direct-btn">Send to AI Directly</button>
                     <button type="button" class="btn btn-secondary close-modal-btn">Cancel</button>
                 </div>
             </div>
@@ -364,8 +365,8 @@
         // Control visibility of the AI Assistant button
         const aiAssistantBtn = document.getElementById('ai-assistant-btn');
         if (aiAssistantBtn) {
-            if (segmentType === 'Match' || segmentType === 'Promo' || segmentType === 'Interview' || segmentType === 'In-ring' || segmentType === 'Brawl' || segmentType === 'Video Package') {
-                aiAssistantBtn.style.display = 'inline-block'; // Or 'block' depending on desired layout
+            if (segmentType === 'Match') { // Only show for Match type
+                aiAssistantBtn.style.display = 'inline-block';
             } else {
                 aiAssistantBtn.style.display = 'none';
             }
@@ -829,6 +830,8 @@
     let lastFocusedElement = null; // To restore focus after modal closes
     let currentPrompt = ""; // To store the generated prompt
 
+    const aiSendToAiDirectBtn = document.getElementById('ai-send-to-ai-direct-btn'); // New
+
     function populatePromoSpeakers() {
         const speakerSelect = document.getElementById('promo_speaker');
         speakerSelect.innerHTML = '<option value="">-- Select Speaker --</option>';
@@ -1043,6 +1046,7 @@
         aiInputView.style.display = 'block';
     });
     aiRegenerateBtn.addEventListener('click', sendPromptToAI); // Regenerate now means re-send the prompt to AI
+    aiSendToAiDirectBtn.addEventListener('click', sendPromptToAI); // New: Direct send to AI
 
     aiAcceptBtn.addEventListener('click', () => {
         summaryTextarea.value = aiResponseTextarea.value;

@@ -457,80 +457,75 @@ def ai_generate(event_slug, position):
     promo_speaker = user_input.get('promo_speaker', '')
     promo_style = user_input.get('promo_style', '')
 
-    # Assemble the final prompt
-    prompt_parts = []
-    prompt_parts.append("You are an AI assistant for a professional wrestling booking simulator. Your task is to generate a segment summary based on the provided context and creative direction.")
-    prompt_parts.append("\n--- Event Context ---")
-    prompt_parts.append(f"Event Name: {event.get('Event_Name', 'N/A')}") # Default for Event_Name
-    prompt_parts.append(f"Event Date: {event.get('Event_Date', 'N/A')}") # Default for Event_Date
-    prompt_parts.append(f"Segment Position: {segment.get('position', 'N/A')}") # Default for Segment Position
-    prompt_parts.append(f"Segment Type: {segment.get('type', 'N/A')}") # Default for Segment Type
+    # Assemble the final prompt for the AI
+    ai_prompt_parts = []
+    ai_prompt_parts.append("You are an AI assistant for a professional wrestling booking simulator. Your task is to generate a segment summary based on the provided context and creative direction.")
+    ai_prompt_parts.append("\n--- Event Context ---")
+    ai_prompt_parts.append(f"Event Name: {event.get('Event_Name', 'N/A')}")
+    ai_prompt_parts.append(f"Event Date: {event.get('Event_Date', 'N/A')}")
+    ai_prompt_parts.append(f"Segment Position: {segment.get('position', 'N/A')}")
+    ai_prompt_parts.append(f"Segment Type: {segment.get('type', 'N/A')}")
     if segment.get('header'):
-        prompt_parts.append(f"Segment Header: {segment.get('header')}")
+        ai_prompt_parts.append(f"Segment Header: {segment.get('header')}")
 
     if segment.get('type') == 'Match':
         if segment.get('match_championship'):
-            prompt_parts.append(f"Championship on the line: {segment.get('match_championship')}")
+            ai_prompt_parts.append(f"Championship on the line: {segment.get('match_championship')}")
         if segment.get('match_result'):
-            prompt_parts.append(f"Overall Match Result: {segment.get('match_result')}")
+            ai_prompt_parts.append(f"Overall Match Result: {segment.get('match_result')}")
         if segment.get('winner_method'):
-            prompt_parts.append(f"Winning Method: {segment.get('winner_method')}")
+            ai_prompt_parts.append(f"Winning Method: {segment.get('winner_method')}")
         if segment.get('match_time'):
-            prompt_parts.append(f"Match Time: {segment.get('match_time')}")
+            ai_prompt_parts.append(f"Match Time: {segment.get('match_time')}")
         if segment.get('match_visibility', {}).get('hide_from_card'):
-            prompt_parts.append("Match Visibility: Hidden from card")
+            ai_prompt_parts.append("Match Visibility: Hidden from card")
         if segment.get('match_visibility', {}).get('hide_summary'):
-            prompt_parts.append("Match Visibility: Summary hidden from event summary")
+            ai_prompt_parts.append("Match Visibility: Summary hidden from event summary")
         if segment.get('match_visibility', {}).get('hide_result'):
-            prompt_parts.append("Match Visibility: Result hidden from card")
+            ai_prompt_parts.append("Match Visibility: Result hidden from card")
     elif segment.get('type') == 'Promo':
         if promo_speaker:
-            prompt_parts.append(f"Promo Speaker: {promo_speaker}")
+            ai_prompt_parts.append(f"Promo Speaker: {promo_speaker}")
         if promo_style:
-            prompt_parts.append(f"Promo Style: {promo_style}")
+            ai_prompt_parts.append(f"Promo Style: {promo_style}")
 
-
-    prompt_parts.append("\n--- Creative Direction ---")
-    prompt_parts.append("IN-RING ACTION INSTRUCTIONS:")
+    ai_prompt_parts.append("\n--- Creative Direction ---")
+    ai_prompt_parts.append("IN-RING ACTION INSTRUCTIONS:")
     
-    # Get narrative style specific instructions
     style_instructions = NARRATIVE_STYLE_INSTRUCTIONS.get(narrative_style, STANDARD_NARRATIVE_PROMPT)
-    prompt_parts.append(style_instructions)
-    prompt_parts.append("---")
+    ai_prompt_parts.append(style_instructions)
+    ai_prompt_parts.append("---")
 
     if feud_summary:
-        prompt_parts.append(f"Feud/Storyline Summary: {feud_summary}")
+        ai_prompt_parts.append(f"Feud/Storyline Summary: {feud_summary}")
     if story_beats:
-        prompt_parts.append(f"Key Story Beats & Desired Outcome: {story_beats}")
+        ai_prompt_parts.append(f"Key Story Beats & Desired Outcome: {story_beats}")
     
-    # Add segment-type specific creative direction
     if segment.get('type') == 'Match':
-        prompt_parts.append(f"Desired Level of Detail: {detail_level}")
-        prompt_parts.append(f"Narrative Style: {narrative_style}")
-        prompt_parts.append(f"Include Ring Entrances: {'Yes' if include_entrances else 'No'}")
-        prompt_parts.append(f"Commentary Level: {commentary_level}")
+        ai_prompt_parts.append(f"Desired Level of Detail: {detail_level}")
+        ai_prompt_parts.append(f"Narrative Style: {narrative_style}")
+        ai_prompt_parts.append(f"Include Ring Entrances: {'Yes' if include_entrances else 'No'}")
+        ai_prompt_parts.append(f"Commentary Level: {commentary_level}")
     elif segment.get('type') == 'Promo':
-        prompt_parts.append(f"Promo Speaker: {promo_speaker}")
-        prompt_parts.append(f"Promo Style: {promo_style}")
-        # For promo, detail_level and narrative_style might still apply, but entrances/commentary less so.
-        # For now, only include these if they are explicitly passed for promo.
-        if detail_level != 'Brief Summary': # Only add if not default
-            prompt_parts.append(f"Desired Level of Detail: {detail_level}")
-        if narrative_style != 'Standard Commentary': # Only add if not default
-            prompt_parts.append(f"Narrative Style: {narrative_style}")
-    else: # For 'In-ring', 'Brawl', 'Interview', 'Video Package'
-        if detail_level != 'Brief Summary': # Only add if not default
-            prompt_parts.append(f"Desired Level of Detail: {detail_level}")
-        if narrative_style != 'Standard Commentary': # Only add if not default
-            prompt_parts.append(f"Narrative Style: {narrative_style}")
+        ai_prompt_parts.append(f"Promo Speaker: {promo_speaker}")
+        ai_prompt_parts.append(f"Promo Style: {promo_style}")
+        if detail_level != 'Brief Summary':
+            ai_prompt_parts.append(f"Desired Level of Detail: {detail_level}")
+        if narrative_style != 'Standard Commentary':
+            ai_prompt_parts.append(f"Narrative Style: {narrative_style}")
+    else:
+        if detail_level != 'Brief Summary':
+            ai_prompt_parts.append(f"Desired Level of Detail: {detail_level}")
+        if narrative_style != 'Standard Commentary':
+            ai_prompt_parts.append(f"Narrative Style: {narrative_style}")
 
     if dossiers:
-        prompt_parts.append("\n--- Participant Dossiers ---")
+        ai_prompt_parts.append("\n--- Participant Dossiers ---")
         for dossier in dossiers:
-            prompt_parts.append(json.dumps(dossier, indent=2)) # Pretty print JSON for readability
-        prompt_parts.append("--- End Participant Dossiers ---")
+            ai_prompt_parts.append(json.dumps(dossier, indent=2))
+        ai_prompt_parts.append("--- End Participant Dossiers ---")
 
-    prompt_parts.append("\n--- Task ---")
+    ai_prompt_parts.append("\n--- Task ---")
     task_description = f"Generate a segment summary for Segment {segment.get('position', 'N/A')} of {event.get('Event_Name', 'N/A')}. The summary should be written in the specified narrative style and detail level, incorporating the feud/storyline context, key story beats, and participant information."
     
     if segment.get('type') == 'Match':
@@ -541,17 +536,75 @@ def ai_generate(event_slug, position):
     elif segment.get('type') == 'Promo':
         task_description += f" Focus on the promo delivered by {promo_speaker} in a {promo_style} style."
     
-    prompt_parts.append(task_description)
-    prompt_parts.append("\n--- Generated Segment Summary ---")
+    ai_prompt_parts.append(task_description)
+    ai_prompt_parts.append("\n--- Generated Segment Summary ---")
 
-    final_prompt = "\n".join(prompt_parts)
-    print("\n--- Generated AI Prompt ---")
+    final_prompt = "\n".join(ai_prompt_parts)
+
+    # Assemble the user-facing prompt for review
+    user_review_prompt_parts = []
+    user_review_prompt_parts.append("\n--- Event Context ---")
+    user_review_prompt_parts.append(f"Event Name: {event.get('Event_Name', 'N/A')}")
+    user_review_prompt_parts.append(f"Event Date: {event.get('Event_Date', 'N/A')}")
+    user_review_prompt_parts.append(f"Segment Position: {segment.get('position', 'N/A')}")
+    user_review_prompt_parts.append(f"Segment Type: {segment.get('type', 'N/A')}")
+    if segment.get('header'):
+        user_review_prompt_parts.append(f"Segment Header: {segment.get('header')}")
+
+    if segment.get('type') == 'Match':
+        if segment.get('match_championship'):
+            user_review_prompt_parts.append(f"Championship on the line: {segment.get('match_championship')}")
+        if segment.get('match_result'):
+            user_review_prompt_parts.append(f"Overall Match Result: {segment.get('match_result')}")
+        if segment.get('winner_method'):
+            user_review_prompt_parts.append(f"Winning Method: {segment.get('winner_method')}")
+        if segment.get('match_time'):
+            user_review_prompt_parts.append(f"Match Time: {segment.get('match_time')}")
+        if segment.get('match_visibility', {}).get('hide_from_card'):
+            user_review_prompt_parts.append("Match Visibility: Hidden from card")
+        if segment.get('match_visibility', {}).get('hide_summary'):
+            user_review_prompt_parts.append("Match Visibility: Summary hidden from event summary")
+        if segment.get('match_visibility', {}).get('hide_result'):
+            user_review_prompt_parts.append("Match Visibility: Result hidden from card")
+    elif segment.get('type') == 'Promo':
+        if promo_speaker:
+            user_review_prompt_parts.append(f"Promo Speaker: {promo_speaker}")
+        if promo_style:
+            user_review_prompt_parts.append(f"Promo Style: {promo_style}")
+
+    user_review_prompt_parts.append("\n--- Creative Direction ---")
+    if feud_summary:
+        user_review_prompt_parts.append(f"Feud/Storyline Summary: {feud_summary}")
+    if story_beats:
+        user_review_prompt_parts.append(f"Key Story Beats & Desired Outcome: {story_beats}")
+    
+    if segment.get('type') == 'Match':
+        user_review_prompt_parts.append(f"Desired Level of Detail: {detail_level}")
+        user_review_prompt_parts.append(f"Narrative Style: {narrative_style}")
+        user_review_prompt_parts.append(f"Include Ring Entrances: {'Yes' if include_entrances else 'No'}")
+        user_review_prompt_parts.append(f"Commentary Level: {commentary_level}")
+    elif segment.get('type') == 'Promo':
+        user_review_prompt_parts.append(f"Promo Speaker: {promo_speaker}")
+        user_review_prompt_parts.append(f"Promo Style: {promo_style}")
+        if detail_level != 'Brief Summary':
+            user_review_prompt_parts.append(f"Desired Level of Detail: {detail_level}")
+        if narrative_style != 'Standard Commentary':
+            user_review_prompt_parts.append(f"Narrative Style: {narrative_style}")
+    else:
+        if detail_level != 'Brief Summary':
+            user_review_prompt_parts.append(f"Desired Level of Detail: {detail_level}")
+        if narrative_style != 'Standard Commentary':
+            user_review_prompt_parts.append(f"Narrative Style: {narrative_style}")
+
+    user_review_prompt = "\n".join(user_review_prompt_parts)
+
+    print("\n--- Generated AI Prompt (Full for AI) ---")
     print(final_prompt)
     print("---------------------------\n")
 
     # If the request is only for the prompt, return it immediately without calling the AI API
     if user_input.get('get_prompt_only'):
-        return jsonify({'prompt': final_prompt})
+        return jsonify({'prompt': user_review_prompt})
 
     # Prepare messages for Litellm API
     messages = [{"role": "user", "content": final_prompt}]
