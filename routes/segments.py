@@ -462,7 +462,7 @@ def ai_generate(event_slug, position):
     ai_prompt_parts.append("You are an AI assistant for a professional wrestling booking simulator. Your task is to generate a segment summary based on the provided context and creative direction.")
     ai_prompt_parts.append("\n--- Event Context ---")
     ai_prompt_parts.append(f"Event Name: {event.get('Event_Name', 'N/A')}")
-    ai_prompt_parts.append(f"Event Date: {event.get('Event_Date', 'N/A')}")
+    ai_prompt_parts.append(f"Event Date: {event.get('Date', 'N/A')}")
     ai_prompt_parts.append(f"Segment Position: {segment.get('position', 'N/A')}")
     ai_prompt_parts.append(f"Segment Type: {segment.get('type', 'N/A')}")
     if segment.get('header'):
@@ -545,7 +545,7 @@ def ai_generate(event_slug, position):
     user_review_prompt_parts = []
     user_review_prompt_parts.append("\n--- Event Context ---")
     user_review_prompt_parts.append(f"Event Name: {event.get('Event_Name', 'N/A')}")
-    user_review_prompt_parts.append(f"Event Date: {event.get('Event_Date', 'N/A')}")
+    user_review_prompt_parts.append(f"Event Date: {event.get('Date', 'N/A')}")
     user_review_prompt_parts.append(f"Segment Position: {segment.get('position', 'N/A')}")
     user_review_prompt_parts.append(f"Segment Type: {segment.get('type', 'N/A')}")
     if segment.get('header'):
