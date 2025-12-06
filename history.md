@@ -4,6 +4,32 @@ This document tracks the major changes, new features, and bug fixes for the 1.0 
 
 ---
 
+## v1.0 Beta 5 (2025-12-05)
+
+This release concentrates on enhancements and bug fixes.
+
+### Enhancement: 'Concise' narrative style
+
+- 'Concise' is now one of the options for the narrative style you can choose in the AI match writing assistant.
+- This style mimics what you may see on real match summary blogs like CageSideSeats.com or BleacherReport.com.
+
+### Prompt Review
+- You can now review your prompt in the AI match writing assistant before submitting it to the AI.
+- You can bypass this review by clicking 'Send directly to AI.'
+
+### Enhancement: Weights as Numbers
+
+- Weights are now stored as integers rather than text.
+- Combined weights of tag-teams is now automatically calculated.
+- You can trigger recalculation of combined weights in Preferences -> Danger Zone.
+- Also in Preferences, you can choose either 'Pounds (lb.)' or 'Kilograms (kg.)' as the preferred weight unit used.
+
+### Bug fixes
+- Fixed a bug where tagteam data was being deleted when updating that team.
+- Fixed a bug (hopefully) where wrestler names and signature moves were not getting passed to the AI for match generation.
+- Fixed a bug in Booker Mode where Belt History was not using game_date, always using current_date instead.
+
+
 ## V1.0 Beta 4 (2025-11-22)
 
 This release introduces a new AI tool for quickly creating wrestler rosters.
